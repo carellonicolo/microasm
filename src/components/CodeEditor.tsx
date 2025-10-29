@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Play, Pause, RotateCcw, SkipForward } from "lucide-react";
 import { ExecutionState } from "@/types/microasm";
+import { DocumentationDialog } from "./DocumentationDialog";
 
 interface CodeEditorProps {
   code: string;
@@ -31,6 +32,7 @@ export function CodeEditor({
       <div className="flex items-center justify-between p-4 border-b">
         <h2 className="text-lg font-semibold">Codice Sorgente</h2>
         <div className="flex gap-2">
+          <DocumentationDialog />
           <Button onClick={onLoad} variant="secondary" size="sm">
             Carica
           </Button>
