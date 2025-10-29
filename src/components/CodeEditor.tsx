@@ -50,28 +50,31 @@ export function CodeEditor({
           </Button>
         </div>
       </div>
-      <div className="flex-1 p-4 overflow-auto bg-code-bg">
-        <div className="font-mono text-sm">
-          {lines.map((line, idx) => (
-            <div
-              key={idx}
-              className={`flex ${
-                currentLine === idx + 1 ? 'bg-code-highlight/20' : ''
-              } hover:bg-code-highlight/10 transition-colors`}
-            >
-              <span className="text-muted-foreground mr-4 select-none w-12 text-right">
+      <div className="flex-1 p-4 overflow-auto bg-code-bg relative">
+        <div className="flex font-mono text-sm h-full">
+          <div className="text-muted-foreground mr-4 select-none text-right flex-shrink-0">
+            {lines.map((_, idx) => (
+              <div 
+                key={idx}
+                className={`leading-6 ${
+                  currentLine === idx + 1 ? 'bg-code-highlight/20' : ''
+                }`}
+              >
                 {idx + 1}
-              </span>
-              <span className="text-code-text flex-1">{line || ' '}</span>
-            </div>
-          ))}
+              </div>
+            ))}
+          </div>
+          <textarea
+            value={code}
+            onChange={(e) => onCodeChange(e.target.value)}
+            className="flex-1 bg-transparent text-code-text font-mono text-sm resize-none outline-none leading-6 overflow-hidden"
+            spellCheck={false}
+            style={{ 
+              minHeight: '100%',
+              tabSize: 2
+            }}
+          />
         </div>
-        <textarea
-          value={code}
-          onChange={(e) => onCodeChange(e.target.value)}
-          className="absolute inset-0 opacity-0 w-full h-full resize-none"
-          spellCheck={false}
-        />
       </div>
     </Card>
   );
