@@ -24,7 +24,7 @@ All colors MUST be HSL.
     --secondary-foreground: 215 25% 15%;
 
     --muted: 210 20% 92%;
-    --muted-foreground: 215 16% 45%;
+    --muted-foreground: 215 20% 40%;
 
     --accent: 142 76% 36%;
     --accent-foreground: 0 0% 100%;
@@ -46,7 +46,7 @@ All colors MUST be HSL.
     --warning: 38 92% 50%;
     --error: 0 84% 60%;
     
-    --register: 271 81% 56%;
+    --register: 271 81% 48%;
     --memory: 199 89% 48%;
     
     --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
