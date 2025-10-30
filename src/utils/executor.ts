@@ -1,5 +1,8 @@
 import { CPUState, Instruction, Register, RuntimeError } from '@/types/microasm';
 
+// Maximum number of instructions to execute before stopping (prevents infinite loops)
+const MAX_INSTRUCTIONS = 100000;
+
 export class CPUExecutor {
   cpu: CPUState;
   memory: number[];
@@ -7,6 +10,7 @@ export class CPUExecutor {
   labels: Map<string, number>;
   output: string[];
   halted: boolean;
+  private executionCount: number;
   
   constructor(instructions: Instruction[], labels: Map<string, number>) {
     this.cpu = {
@@ -19,6 +23,7 @@ export class CPUExecutor {
     this.labels = labels;
     this.output = [];
     this.halted = false;
+    this.executionCount = 0;
   }
   
   reset() {
@@ -30,10 +35,19 @@ export class CPUExecutor {
     this.memory.fill(0);
     this.output = [];
     this.halted = false;
+    this.executionCount = 0;
   }
   
   step(): RuntimeError | null {
     if (this.halted) return null;
+    
+    // Check for execution limit to prevent infinite loops
+    this.executionCount++;
+    if (this.executionCount > MAX_INSTRUCTIONS) {
+      this.halted = true;
+      return { message: `Execution limit exceeded (${MAX_INSTRUCTIONS} instructions). Possible infinite loop detected.` };
+    }
+    
     if (this.cpu.PC >= this.instructions.length) {
       return { message: 'Execution out of bounds' };
     }
