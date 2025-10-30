@@ -7,8 +7,10 @@ import { DisplayFormat, ExecutionState } from "@/types/microasm";
 import { parseProgram } from "@/utils/assembler";
 import { CPUExecutor } from "@/utils/executor";
 import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const EXAMPLE_PROGRAM = `; Esempio: Calcolo fattoriale
+const EXAMPLE_PROGRAMS = {
+  factorial: `; Esempio: Calcolo fattoriale
 MOV R0, 5          ; Numero per calcolare il fattoriale
 MOV R1, 1          ; Risultato (inizia con 1)
 
@@ -21,10 +23,56 @@ JMP LOOP           ; Ripeti il loop
 
 END:
 OUT R1             ; Stampa il risultato
-HLT                ; Termina il programma`;
+HLT                ; Termina il programma`,
+
+  stackDemo: `; Esempio: Uso dello Stack
+; Mostra come funzionano PUSH e POP
+
+MOV R0, 10         ; R0 = 10
+MOV R1, 20         ; R1 = 20
+MOV R2, 30         ; R2 = 30
+
+; Salva i valori nello stack
+PUSH R0            ; Stack: [10], SP: 256→255
+PUSH R1            ; Stack: [10, 20], SP: 255→254
+PUSH R2            ; Stack: [10, 20, 30], SP: 254→253
+
+; Ora modifica i registri
+MOV R0, 0
+MOV R1, 0
+MOV R2, 0
+
+; Recupera i valori dallo stack (ordine inverso!)
+POP R2             ; R2 = 30, Stack: [10, 20], SP: 253→254
+POP R1             ; R1 = 20, Stack: [10], SP: 254→255
+POP R0             ; R0 = 10, Stack: [], SP: 255→256
+
+; Stampa i risultati
+OUT R0             ; Dovrebbe stampare 10
+OUT R1             ; Dovrebbe stampare 20
+OUT R2             ; Dovrebbe stampare 30
+HLT`,
+
+  subroutine: `; Esempio: Chiamata a Subroutine
+; Dimostra l'uso di CALL e RET con lo stack
+
+MOV R0, 5          ; Argomento per la funzione
+CALL DOUBLE        ; Chiama la subroutine (pushia PC nello stack)
+OUT R0             ; Stampa il risultato (dovrebbe essere 10)
+HLT
+
+DOUBLE:
+; Subroutine che raddoppia R0
+PUSH R1            ; Salva R1 (lo useremo temporaneamente)
+MOV R1, R0         ; R1 = R0
+ADD R0, R1         ; R0 = R0 + R1 (raddoppia)
+POP R1             ; Ripristina R1
+RET                ; Torna al chiamante (poppa PC dallo stack)`
+};
 
 const Index = () => {
-  const [code, setCode] = useState(EXAMPLE_PROGRAM);
+  const [selectedExample, setSelectedExample] = useState<keyof typeof EXAMPLE_PROGRAMS>('factorial');
+  const [code, setCode] = useState(EXAMPLE_PROGRAMS.factorial);
   const [format, setFormat] = useState<DisplayFormat>('decimal');
   const [executionState, setExecutionState] = useState<ExecutionState>('idle');
   const [errors, setErrors] = useState<string[]>([]);
@@ -170,6 +218,26 @@ const Index = () => {
         
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-center gap-3 mb-2">
+              <label className="text-sm font-medium">Esempi:</label>
+              <Select 
+                value={selectedExample} 
+                onValueChange={(value) => {
+                  const exampleKey = value as keyof typeof EXAMPLE_PROGRAMS;
+                  setSelectedExample(exampleKey);
+                  setCode(EXAMPLE_PROGRAMS[exampleKey]);
+                }}
+              >
+                <SelectTrigger className="w-[220px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="factorial">Fattoriale (base)</SelectItem>
+                  <SelectItem value="stackDemo">Demo Stack (PUSH/POP)</SelectItem>
+                  <SelectItem value="subroutine">Subroutine (CALL/RET)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="h-[500px]">
               <CodeEditor
                 code={code}
