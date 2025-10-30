@@ -214,6 +214,9 @@ const Index = () => {
           <p className="text-muted-foreground">
             Simulatore Didattico di Pseudo-Assembly
           </p>
+          <p className="text-sm text-muted-foreground/80 italic">
+            Powered by Prof. Nicolò Carello
+          </p>
         </header>
         
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -269,6 +272,25 @@ const Index = () => {
             </div>
           </div>
         </main>
+
+        <footer className="mt-8 border-t border-border pt-4 pb-2">
+          <div className="text-center space-y-1">
+            <p className="text-sm font-medium text-foreground">
+              Prof. Nicolò Carello
+            </p>
+            <p className="text-sm text-muted-foreground">
+              <a href="mailto:info@nicolocarello.it" className="hover:text-primary transition-colors">
+                info@nicolocarello.it
+              </a>
+            </p>
+            <p className="text-xs text-muted-foreground/80">
+              © 2025 - Tutti i diritti riservati
+            </p>
+            <p className="text-xs text-muted-foreground/70 italic">
+              Per qualsiasi problema riscontrato, contattami via email
+            </p>
+          </div>
+        </footer>
       </div>
     </div>
   );
