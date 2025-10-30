@@ -71,6 +71,7 @@ export function CodeEditor({
             onChange={(e) => onCodeChange(e.target.value)}
             className="flex-1 bg-transparent text-code-text font-mono text-sm resize-none outline-none leading-6 overflow-hidden"
             spellCheck={false}
+            aria-label="MicroASM source code editor"
             style={{ 
               minHeight: '100%',
               tabSize: 2
