@@ -41,13 +41,25 @@ export function CodeEditor({
             variant={executionState === 'running' ? 'destructive' : 'default'}
             size="sm"
             disabled={executionState === 'error'}
+            aria-label={executionState === 'running' ? 'Pause execution' : 'Run program'}
           >
             {executionState === 'running' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
           </Button>
-          <Button onClick={onStep} variant="outline" size="sm" disabled={executionState === 'running'}>
+          <Button 
+            onClick={onStep} 
+            variant="outline" 
+            size="sm" 
+            disabled={executionState === 'running'}
+            aria-label="Step through program"
+          >
             <SkipForward className="w-4 h-4" />
           </Button>
-          <Button onClick={onReset} variant="outline" size="sm">
+          <Button 
+            onClick={onReset} 
+            variant="outline" 
+            size="sm"
+            aria-label="Reset program"
+          >
             <RotateCcw className="w-4 h-4" />
           </Button>
         </div>
