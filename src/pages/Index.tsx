@@ -168,7 +168,7 @@ const Index = () => {
           </p>
         </header>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <main className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-4">
             <div className="h-[500px]">
               <CodeEditor
@@ -200,7 +200,7 @@ const Index = () => {
               <OutputLog output={output} errors={errors} />
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
