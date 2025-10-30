@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { CPUState, DisplayFormat } from "@/types/microasm";
 import { formatValue } from "@/utils/formatter";
+import { CPUArchitectureDialog } from "./CPUArchitectureDialog";
+import { Cpu } from "lucide-react";
 
 interface CPUStatusProps {
   cpu: CPUState;
@@ -8,9 +12,23 @@ interface CPUStatusProps {
 }
 
 export function CPUStatus({ cpu, format }: CPUStatusProps) {
+  const [architectureDialogOpen, setArchitectureDialogOpen] = useState(false);
+
   return (
-    <Card className="p-4">
-      <h2 className="text-lg font-semibold mb-4">Stato CPU</h2>
+    <>
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Stato CPU</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setArchitectureDialogOpen(true)}
+            className="gap-2"
+          >
+            <Cpu className="h-4 w-4" />
+            Architettura CPU
+          </Button>
+        </div>
       
       <div className="space-y-3">
         <div className="space-y-2">
@@ -57,6 +75,12 @@ export function CPUStatus({ cpu, format }: CPUStatusProps) {
           </div>
         </div>
       </div>
-    </Card>
+      </Card>
+
+      <CPUArchitectureDialog
+        open={architectureDialogOpen}
+        onOpenChange={setArchitectureDialogOpen}
+      />
+    </>
   );
 }
