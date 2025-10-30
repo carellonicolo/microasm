@@ -1,0 +1,2061 @@
+% !TEX encoding = UTF-8
+\documentclass[11pt,a4paper,twoside]{report}
+
+% ============================================================================
+% PACCHETTI ESSENZIALI
+% ============================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% Layout e geometria
+\usepackage[a4paper,top=3cm,bottom=3cm,left=3.5cm,right=2.5cm,headheight=15pt]{geometry}
+\usepackage{fancyhdr}
+\usepackage{emptypage}
+
+% Grafica e colori
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,calc}
+
+% Tabelle
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{array}
+
+% Codice e listati
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% Collegamenti e riferimenti
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{cleveref}
+
+% Matematica e simboli
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+% Utilità
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+
+% ============================================================================
+% CONFIGURAZIONE COLORI
+% ============================================================================
+\definecolor{primarycolor}{RGB}{20,90,150}
+\definecolor{accentcolor}{RGB}{40,170,100}
+\definecolor{codebackground}{RGB}{245,245,245}
+\definecolor{commentcolor}{RGB}{100,120,100}
+\definecolor{keywordcolor}{RGB}{150,40,40}
+\definecolor{stringcolor}{RGB}{40,120,40}
+
+% ============================================================================
+% CONFIGURAZIONE HYPERREF
+% ============================================================================
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primarycolor,
+    filecolor=primarycolor,
+    urlcolor=primarycolor,
+    citecolor=primarycolor,
+    pdftitle={MicroASM - Manuale Tecnico Completo},
+    pdfauthor={Prof. Nicolò Carello},
+    pdfsubject={Simulatore Didattico di Pseudo-Assembly},
+    pdfkeywords={Assembly, Microprocessore, Didattica, Simulatore},
+    bookmarksnumbered=true,
+    bookmarksopen=true
+}
+
+% ============================================================================
+% CONFIGURAZIONE LISTINGS (CODICE ASSEMBLY)
+% ============================================================================
+\lstdefinelanguage{MicroASM}{
+    keywords={MOV, LDR, STR, ADD, SUB, MOL, DIV, INC, DEC, AND, OR, NOT, XOR,
+              JMP, JZ, JNZ, JS, CMP, PUSH, POP, CALL, RET, OUT, HLT},
+    keywordstyle=\color{keywordcolor}\bfseries,
+    comment=[l]{;},
+    commentstyle=\color{commentcolor}\itshape,
+    string=[b]",
+    stringstyle=\color{stringcolor},
+    showstringspaces=false,
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{codebackground},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=4,
+    captionpos=b,
+    xleftmargin=2em,
+    framexleftmargin=1.5em,
+    sensitive=false,
+    morecomment=[s]{/*}{*/},
+    emphstyle=\color{accentcolor}\bfseries
+}
+
+\lstset{
+    language=MicroASM,
+    escapechar=@
+}
+
+% ============================================================================
+% CONFIGURAZIONE HEADER E FOOTER
+% ============================================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\slshape\nouppercase{\leftmark}}
+\fancyhead[RO]{\slshape\nouppercase{\rightmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ============================================================================
+% STILI TEOREMI E DEFINIZIONI
+% ============================================================================
+\theoremstyle{definition}
+\newtheorem{definizione}{Definizione}[chapter]
+\newtheorem{esempio}{Esempio}[chapter]
+\newtheorem{nota}{Nota}[chapter]
+
+% ============================================================================
+% COMANDI PERSONALIZZATI
+% ============================================================================
+\newcommand{\microasm}{\textsc{MicroASM}}
+\newcommand{\reg}[1]{\texttt{R#1}}
+\newcommand{\instruction}[1]{\texttt{\textbf{#1}}}
+\newcommand{\register}[1]{\texttt{#1}}
+\newcommand{\memory}[1]{\texttt{[#1]}}
+\newcommand{\flag}[1]{\texttt{#1}}
+
+% ============================================================================
+% INIZIO DOCUMENTO
+% ============================================================================
+\begin{document}
+
+% ============================================================================
+% FRONTESPIZIO
+% ============================================================================
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+
+    {\Huge\bfseries\color{primarycolor} MicroASM\par}
+    \vspace{0.5cm}
+    {\Large Simulatore Didattico di Pseudo-Assembly\par}
+    \vspace{1cm}
+    {\LARGE\bfseries Manuale Tecnico Completo\par}
+
+    \vspace{2cm}
+
+    \begin{tikzpicture}[scale=0.8]
+        % CPU rappresentazione
+        \draw[fill=primarycolor!20, draw=primarycolor, thick, rounded corners]
+            (0,0) rectangle (8,6);
+        \node at (4,5.5) {\Large\bfseries CPU};
+
+        % Registri
+        \draw[fill=accentcolor!20, thick] (0.5,3.5) rectangle (3.5,5);
+        \node at (2,4.5) {\small Registri};
+        \node at (2,4.1) {\tiny R0 R1 R2 R3};
+        \node at (2,3.8) {\tiny PC SP};
+
+        % ALU
+        \draw[fill=primarycolor!30, thick] (4.5,3.5) rectangle (7.5,5);
+        \node at (6,4.5) {\small ALU};
+        \node at (6,4.1) {\tiny +  -  ×  ÷};
+        \node at (6,3.8) {\tiny \&  |  \textasciitilde};
+
+        % Memoria
+        \draw[fill=gray!20, thick] (2,0.5) rectangle (6,2.5);
+        \node at (4,2) {\small Memoria};
+        \node at (4,1.5) {\tiny 256 celle × 16 bit};
+
+        % Bus
+        \draw[->, thick] (2,3.5) -- (2,2.5) node[midway, left] {\tiny Data};
+        \draw[->, thick] (6,3.5) -- (6,2.5) node[midway, right] {\tiny Addr};
+    \end{tikzpicture}
+
+    \vfill
+
+    {\Large\itshape Powered by\par}
+    {\Large\bfseries Prof. Nicolò Carello\par}
+    \vspace{0.5cm}
+    {\large info@nicolocarello.it\par}
+
+    \vspace{1cm}
+
+    {\large Versione 1.0\par}
+    {\large \today\par}
+
+    \vspace{1cm}
+
+    {\small © 2025 - Tutti i diritti riservati\par}
+\end{titlepage}
+
+% ============================================================================
+% PAGINA BIANCA
+% ============================================================================
+\clearpage
+\thispagestyle{empty}
+\mbox{}
+
+% ============================================================================
+% INDICE
+% ============================================================================
+\tableofcontents
+\clearpage
+
+% ============================================================================
+% LISTA DELLE FIGURE E DELLE TABELLE
+% ============================================================================
+\listoffigures
+\listoftables
+\clearpage
+
+% ============================================================================
+% PREFAZIONE
+% ============================================================================
+\chapter*{Prefazione}
+\addcontentsline{toc}{chapter}{Prefazione}
+
+Questo manuale tecnico rappresenta la documentazione completa ed esaustiva del linguaggio \microasm{}, un simulatore didattico di pseudo-assembly progettato per l'insegnamento dei fondamenti dell'architettura dei microprocessori e della programmazione a basso livello.
+
+\section*{Obiettivi del Manuale}
+
+Il presente documento si propone di fornire:
+
+\begin{itemize}[leftmargin=*]
+    \item Una descrizione completa dell'architettura della CPU simulata
+    \item La specifica dettagliata di tutte le 21 istruzioni del set
+    \item Esempi pratici e casi d'uso per ogni istruzione
+    \item Linee guida per la programmazione in assembly
+    \item Riferimenti tecnici per l'implementazione di programmi complessi
+\end{itemize}
+
+\section*{A Chi è Rivolto}
+
+Questo manuale è destinato a:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Studenti} che affrontano per la prima volta il linguaggio assembly
+    \item \textbf{Docenti} che utilizzano \microasm{} come strumento didattico
+    \item \textbf{Sviluppatori} interessati all'architettura dei microprocessori
+    \item \textbf{Appassionati} di sistemi embedded e programmazione a basso livello
+\end{itemize}
+
+\section*{Struttura del Documento}
+
+Il manuale è organizzato in modo gerarchico e progressivo:
+
+\begin{description}[leftmargin=*]
+    \item[Capitolo 1] Introduzione generale all'architettura \microasm{}
+    \item[Capitolo 2] Architettura dettagliata della CPU e dei registri
+    \item[Capitolo 3] Set completo di istruzioni con descrizioni dettagliate
+    \item[Capitolo 4] Regole sintattiche e modalità di indirizzamento
+    \item[Capitolo 5] Esempi pratici e pattern di programmazione
+    \item[Capitolo 6] Gestione degli errori e debugging
+    \item[Appendici] Riferimenti rapidi e tabelle di riepilogo
+\end{description}
+
+\section*{Convenzioni Tipografiche}
+
+Nel corso del manuale vengono utilizzate le seguenti convenzioni:
+
+\begin{itemize}[leftmargin=*]
+    \item \instruction{ISTRUZIONE} --- Istruzioni assembly
+    \item \register{R0}, \register{PC}, \register{SP} --- Registri
+    \item \memory{100}, \memory{R0} --- Riferimenti a memoria
+    \item \flag{ZF}, \flag{SF} --- Flag di stato
+    \item \texttt{codice} --- Codice inline o valori letterali
+\end{itemize}
+
+\vspace{1cm}
+
+\noindent\textit{Buono studio!}
+
+\vspace{0.5cm}
+
+\noindent Prof. Nicolò Carello\\
+\href{mailto:info@nicolocarello.it}{info@nicolocarello.it}
+
+\clearpage
+
+% ============================================================================
+% CAPITOLO 1: INTRODUZIONE
+% ============================================================================
+\chapter{Introduzione}
+
+\section{Panoramica di MicroASM}
+
+\microasm{} è un simulatore didattico di pseudo-assembly sviluppato con l'obiettivo di fornire un ambiente di apprendimento completo e interattivo per lo studio dei fondamenti dell'architettura dei microprocessori. Il simulatore implementa un'architettura semplificata ma funzionalmente completa, che include tutti gli elementi essenziali di un processore reale.
+
+\subsection{Caratteristiche Principali}
+
+Il simulatore \microasm{} offre le seguenti caratteristiche:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Architettura RISC semplificata}
+    \begin{itemize}
+        \item 4 registri general-purpose a 16 bit
+        \item Registri speciali (PC, SP)
+        \item Flag di stato (ZF, SF)
+    \end{itemize}
+
+    \item \textbf{Spazio di memoria dedicato}
+    \begin{itemize}
+        \item 256 celle di memoria
+        \item Ogni cella contiene un intero con segno a 16 bit
+        \item Stack integrato con gestione automatica
+    \end{itemize}
+
+    \item \textbf{Set di istruzioni completo}
+    \begin{itemize}
+        \item 21 istruzioni totali (20 implementate, 1 documentata)
+        \item Trasferimento dati, aritmetica, logica
+        \item Controllo del flusso, stack, I/O
+    \end{itemize}
+
+    \item \textbf{Modalità di indirizzamento multiple}
+    \begin{itemize}
+        \item Immediato
+        \item Registro
+        \item Diretto
+        \item Indiretto
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Ambito Didattico}
+
+\microasm{} è stato progettato specificamente per scopi didattici e presenta i seguenti vantaggi nell'insegnamento:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Semplicità} --- L'architettura è abbastanza semplice da essere compresa rapidamente, ma sufficientemente completa da illustrare tutti i concetti fondamentali
+
+    \item \textbf{Interattività} --- L'interfaccia web permette l'esecuzione passo-passo e la visualizzazione in tempo reale dello stato della CPU
+
+    \item \textbf{Feedback immediato} --- Gli errori vengono rilevati e segnalati immediatamente, facilitando il processo di apprendimento
+
+    \item \textbf{Esempi integrati} --- Il simulatore include numerosi programmi di esempio che dimostrano tecniche di programmazione comuni
+\end{itemize}
+
+\section{Architettura Generale}
+
+\subsection{Modello di Von Neumann}
+
+\microasm{} implementa un'architettura basata sul modello di Von Neumann, caratterizzata da:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Unità di elaborazione centrale (CPU)} --- Contiene ALU, registri e unità di controllo
+    \item \textbf{Memoria} --- Unico spazio di indirizzamento per dati e programma
+    \item \textbf{Bus di sistema} --- Tre bus separati (dati, indirizzi, controllo)
+    \item \textbf{Unità I/O} --- Gestione dell'output tramite istruzione \instruction{OUT}
+\end{itemize}
+
+\subsection{Schema a Blocchi}
+
+La \Cref{fig:architecture-overview} mostra lo schema a blocchi semplificato dell'architettura \microasm{}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    block/.style={rectangle, draw, fill=blue!20, text width=5em, text centered, rounded corners, minimum height=3em},
+    wideblock/.style={rectangle, draw, fill=blue!20, text width=10em, text centered, rounded corners, minimum height=3em},
+    memory/.style={rectangle, draw, fill=gray!20, text width=8em, text centered, minimum height=4em},
+    bus/.style={draw, thick, ->, >=stealth}
+]
+
+% Registri
+\node [block] (registers) {Registri\\R0-R3\\PC, SP};
+
+% ALU
+\node [block, right=of registers] (alu) {ALU\\+, -, ×, ÷\\AND, OR, NOT};
+
+% Unità di Controllo
+\node [wideblock, above=of $(registers)!0.5!(alu)$] (control) {Unità di Controllo};
+
+% Memoria
+\node [memory, below=2cm of $(registers)!0.5!(alu)$] (memory) {Memoria\\256 celle × 16 bit};
+
+% Flag
+\node [block, right=of alu] (flags) {Flag\\ZF, SF};
+
+% Bus
+\draw [bus] (control) -- (registers);
+\draw [bus] (control) -- (alu);
+\draw [bus] (control) -- (flags);
+\draw [bus] (registers) -- (alu);
+\draw [bus] (alu) -- (flags);
+\draw [bus] (registers) -- (memory) node[midway, left] {\tiny Data Bus};
+\draw [bus] (control) -- (memory) node[midway, right] {\tiny Address Bus};
+
+\end{tikzpicture}
+\caption{Schema a blocchi dell'architettura \microasm{}}
+\label{fig:architecture-overview}
+\end{figure}
+
+\subsection{Ciclo di Esecuzione}
+
+Ogni istruzione in \microasm{} viene eseguita attraverso un ciclo composto da tre fasi:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Fetch (Prelievo)}
+    \begin{itemize}
+        \item Il Program Counter (PC) punta all'istruzione corrente
+        \item L'istruzione viene prelevata dalla memoria di programma
+        \item Il PC viene incrementato
+    \end{itemize}
+
+    \item \textbf{Decode (Decodifica)}
+    \begin{itemize}
+        \item L'unità di controllo decodifica l'istruzione
+        \item Vengono identificati l'opcode e gli operandi
+        \item Vengono preparati i segnali di controllo
+    \end{itemize}
+
+    \item \textbf{Execute (Esecuzione)}
+    \begin{itemize}
+        \item L'operazione viene eseguita dall'ALU o dall'unità appropriata
+        \item I risultati vengono scritti nei registri o in memoria
+        \item I flag vengono aggiornati (se applicabile)
+    \end{itemize}
+\end{enumerate}
+
+\section{Requisiti di Sistema}
+
+\subsection{Ambiente di Esecuzione}
+
+Il simulatore \microasm{} è implementato come applicazione web e richiede:
+
+\begin{itemize}[leftmargin=*]
+    \item Browser web moderno (Chrome, Firefox, Safari, Edge)
+    \item JavaScript abilitato
+    \item Risoluzione minima: 1024×768 pixel
+\end{itemize}
+
+\subsection{Conoscenze Preliminari}
+
+Per utilizzare efficacemente questo manuale e il simulatore, è consigliabile avere:
+
+\begin{itemize}[leftmargin=*]
+    \item Conoscenze di base di sistemi numerici (binario, decimale, esadecimale)
+    \item Comprensione elementare della logica booleana
+    \item Familiarità con i concetti di programmazione (variabili, cicli, condizioni)
+\end{itemize}
+
+\section{Come Utilizzare Questo Manuale}
+
+\subsection{Percorsi di Lettura Suggeriti}
+
+A seconda del livello di esperienza e degli obiettivi, si suggeriscono i seguenti percorsi:
+
+\subsubsection{Principianti Assoluti}
+
+\begin{enumerate}[leftmargin=*]
+    \item Leggere attentamente i Capitoli 1 e 2 per comprendere l'architettura
+    \item Studiare le istruzioni di base (Sezione 3.1 - Trasferimento dati)
+    \item Eseguire gli esempi del Capitolo 5 nel simulatore
+    \item Gradualmente esplorare istruzioni più avanzate
+\end{enumerate}
+
+\subsubsection{Studenti con Esperienza di Programmazione}
+
+\begin{enumerate}[leftmargin=*]
+    \item Panoramica rapida dei Capitoli 1-2
+    \item Studio approfondito del Capitolo 3 (Set di istruzioni)
+    \item Implementazione diretta degli esempi complessi
+    \item Utilizzo delle appendici come riferimento rapido
+\end{enumerate}
+
+\subsubsection{Docenti e Sviluppatori}
+
+\begin{enumerate}[leftmargin=*]
+    \item Consultazione delle specifiche tecniche (Capitolo 2 e 4)
+    \item Analisi dei pattern di programmazione (Capitolo 5)
+    \item Utilizzo del manuale come riferimento durante lo sviluppo
+\end{enumerate}
+
+% ============================================================================
+% CAPITOLO 2: ARCHITETTURA DELLA CPU
+% ============================================================================
+\chapter{Architettura della CPU}
+
+Questo capitolo fornisce una descrizione dettagliata dell'architettura interna della CPU \microasm{}, includendo la specifica completa di tutti i registri, la struttura della memoria e il funzionamento dei bus di sistema.
+
+\section{Registri}
+
+I registri sono elementi di memoria ad alta velocità integrati direttamente nella CPU. \microasm{} implementa due categorie di registri: general-purpose e special-purpose.
+
+\subsection{Registri General-Purpose}
+
+\microasm{} fornisce quattro registri general-purpose denominati \reg{0}, \reg{1}, \reg{2} e \reg{3}.
+
+\begin{table}[H]
+\centering
+\caption{Specifica dei registri general-purpose}
+\label{tab:gp-registers}
+\begin{tabular}{@{}lllp{6cm}@{}}
+\toprule
+\textbf{Nome} & \textbf{Dimensione} & \textbf{Range} & \textbf{Scopo} \\
+\midrule
+R0 & 16 bit & -32,768 \ldots 32,767 & Operazioni generiche, accumulatore \\
+R1 & 16 bit & -32,768 \ldots 32,767 & Operazioni generiche, indirizzamento \\
+R2 & 16 bit & -32,768 \ldots 32,767 & Operazioni generiche \\
+R3 & 16 bit & -32,768 \ldots 32,767 & Operazioni generiche \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Caratteristiche Tecniche}
+
+\begin{definizione}[Registro General-Purpose]
+Un registro general-purpose è un registro della CPU che può essere utilizzato per memorizzare qualsiasi tipo di dato (operandi, risultati intermedi, indirizzi) senza restrizioni funzionali.
+\end{definizione}
+
+Caratteristiche dei registri general-purpose:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Formato}: Intero con segno a 16 bit in complemento a due
+    \item \textbf{Range}: $-2^{15}$ a $2^{15}-1$ (da -32,768 a 32,767)
+    \item \textbf{Inizializzazione}: Tutti i registri vengono inizializzati a 0 all'avvio
+    \item \textbf{Overflow}: I valori che eccedono il range vengono automaticamente limitati (clamping)
+\end{itemize}
+
+\subsection{Registri Special-Purpose}
+
+Oltre ai registri general-purpose, \microasm{} implementa registri speciali con funzioni dedicate.
+
+\begin{table}[H]
+\centering
+\caption{Registri special-purpose}
+\label{tab:sp-registers}
+\begin{tabular}{@{}lllp{7cm}@{}}
+\toprule
+\textbf{Registro} & \textbf{Nome Completo} & \textbf{Range} & \textbf{Funzione} \\
+\midrule
+PC & Program Counter & 0 \ldots $n-1$ & Punta all'istruzione corrente \\
+SP & Stack Pointer & 0 \ldots 256 & Gestisce il top dello stack \\
+ZF & Zero Flag & 0 o 1 & Indica se il risultato è zero \\
+SF & Sign Flag & 0 o 1 & Indica se il risultato è negativo \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Program Counter (PC)}
+
+Il \textbf{Program Counter} mantiene l'indirizzo dell'istruzione correntemente in esecuzione.
+
+\begin{description}[leftmargin=*]
+    \item[Valore iniziale] 0 (punta alla prima istruzione)
+    \item[Incremento automatico] Dopo ogni istruzione, PC = PC + 1
+    \item[Modifica esplicita] Le istruzioni di salto (\instruction{JMP}, \instruction{JZ}, ecc.) modificano direttamente PC
+    \item[Salvataggio] L'istruzione \instruction{CALL} salva PC+1 nello stack
+    \item[Ripristino] L'istruzione \instruction{RET} ripristina PC dallo stack
+\end{description}
+
+\subsubsection{Stack Pointer (SP)}
+
+Lo \textbf{Stack Pointer} punta alla cima dello stack e gestisce le operazioni di push e pop.
+
+\begin{description}[leftmargin=*]
+    \item[Valore iniziale] 256 (stack vuoto)
+    \item[Crescita] Lo stack cresce verso il basso (da 255 verso 0)
+    \item[Operazione PUSH] SP viene decrementato \emph{prima} della scrittura (pre-decremento)
+    \item[Operazione POP] Il valore viene letto, \emph{poi} SP viene incrementato (post-incremento)
+    \item[Range valido] 0 (stack pieno) \ldots 256 (stack vuoto)
+    \item[Overflow] SP $\leq$ 0 genera errore ``Stack overflow''
+    \item[Underflow] SP $>$ 256 genera errore ``Stack underflow''
+\end{description}
+
+\begin{nota}
+La scelta di inizializzare SP a 256 (invece di 255) permette di distinguere chiaramente lo stack vuoto (SP=256) dal caso in cui lo stack contiene un singolo elemento (SP=255).
+\end{nota}
+
+\subsubsection{Flag di Stato}
+
+I flag sono registri a 1 bit che memorizzano informazioni sullo stato del risultato dell'ultima operazione aritmetico-logica.
+
+\paragraph{Zero Flag (ZF)}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Significato}: Indica se il risultato dell'ultima operazione è uguale a zero
+    \item \textbf{Valore 1}: Il risultato è zero
+    \item \textbf{Valore 0}: Il risultato è diverso da zero
+    \item \textbf{Utilizzato da}: \instruction{JZ} (salta se zero), \instruction{JNZ} (salta se non zero)
+    \item \textbf{Impostato da}: Tutte le operazioni aritmetiche e logiche, \instruction{CMP}
+\end{itemize}
+
+\paragraph{Sign Flag (SF)}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Significato}: Indica se il risultato dell'ultima operazione è negativo
+    \item \textbf{Valore 1}: Il risultato è negativo (< 0)
+    \item \textbf{Valore 0}: Il risultato è zero o positivo ($\geq$ 0)
+    \item \textbf{Utilizzato da}: \instruction{JS} (salta se negativo)
+    \item \textbf{Impostato da}: Tutte le operazioni aritmetiche e logiche, \instruction{CMP}
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Comportamento dei flag in base al risultato}
+\label{tab:flag-behavior}
+\begin{tabular}{@{}crrl@{}}
+\toprule
+\textbf{Risultato} & \textbf{ZF} & \textbf{SF} & \textbf{Condizione} \\
+\midrule
+$< 0$ & 0 & 1 & Negativo \\
+$= 0$ & 1 & 0 & Zero \\
+$> 0$ & 0 & 0 & Positivo \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Persistenza dei Flag}
+
+I flag mantengono il loro valore fino a quando non vengono esplicitamente modificati da un'istruzione che li aggiorna. Istruzioni che \emph{non} modificano i flag (come \instruction{MOV}, \instruction{PUSH}, \instruction{POP}) lasciano invariati i valori precedenti.
+
+\begin{esempio}[Persistenza dei flag]
+\begin{lstlisting}
+MOV R0, 10       ; ZF e SF non modificati
+CMP R0, 10       ; ZF = 1, SF = 0 (risultato = 0)
+MOV R1, 20       ; ZF e SF rimangono 1 e 0
+JZ EQUAL         ; Salta perché ZF = 1
+\end{lstlisting}
+\end{esempio}
+
+\section{Memoria}
+
+\microasm{} implementa uno spazio di memoria unico che contiene sia i dati del programma che lo stack.
+
+\subsection{Organizzazione della Memoria}
+
+\begin{table}[H]
+\centering
+\caption{Specifiche della memoria}
+\label{tab:memory-specs}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Proprietà} & \textbf{Valore} \\
+\midrule
+Dimensione totale & 256 celle \\
+Range di indirizzi & 0 \ldots 255 \\
+Dimensione cella & 16 bit \\
+Tipo dato & Intero con segno (complemento a due) \\
+Range per cella & -32,768 \ldots 32,767 \\
+Stato iniziale & Tutte le celle a 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Layout della Memoria}
+
+La memoria è concettualmente suddivisa in due regioni principali:
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+    % Memoria
+    \draw[thick] (0,0) rectangle (4,8);
+
+    % Divisioni
+    \draw[dashed] (0,6) -- (4,6);
+
+    % Etichette regioni
+    \node at (2,7) {\textbf{Stack}};
+    \node at (2,7-0.4) {\small (cresce verso il basso)};
+    \node[text width=3cm, align=center] at (2,3) {\textbf{Dati Utente}\\e\\Area Libera};
+
+    % Indirizzi
+    \node[left] at (0,8) {\small 256 (SP iniziale)};
+    \node[left] at (0,6) {\small 255};
+    \node[left] at (0,3) {\small ...};
+    \node[left] at (0,0) {\small 0};
+
+    % Stack pointer
+    \draw[->, very thick, red] (5,6) -- (4,6) node[right, pos=0] {\small SP};
+
+    % Direzione crescita stack
+    \draw[->, thick, blue] (4.5,6.5) -- (4.5,5.5) node[right, pos=0.5] {\tiny stack};
+\end{tikzpicture}
+\caption{Layout della memoria in \microasm{}}
+\label{fig:memory-layout}
+\end{figure}
+
+\subsubsection{Regione Stack}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Posizione}: Dall'indirizzo SP fino a 255
+    \item \textbf{Crescita}: Verso il basso (SP decresce)
+    \item \textbf{Accesso}: Automatico tramite \instruction{PUSH}, \instruction{POP}, \instruction{CALL}, \instruction{RET}
+    \item \textbf{Utilizzo}: Salvataggio temporaneo di dati, gestione chiamate a subroutine
+\end{itemize}
+
+\subsubsection{Regione Dati Utente}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Posizione}: Dall'indirizzo 0 fino a SP-1
+    \item \textbf{Accesso}: Tramite \instruction{LDR}, \instruction{STR}, indirizzamento diretto/indiretto
+    \item \textbf{Utilizzo}: Variabili, array, strutture dati del programma
+\end{itemize}
+
+\begin{nota}
+Non esiste una separazione fisica tra le due regioni. È responsabilità del programmatore evitare sovrapposizioni tra dati utente e stack.
+\end{nota}
+
+\subsection{Accesso alla Memoria}
+
+La memoria può essere accessibile attraverso diverse modalità:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Indirizzamento diretto}: \texttt{LDR R0, [100]} --- accede alla cella 100
+    \item \textbf{Indirizzamento indiretto}: \texttt{MOV R1, 50; LDR R0, [R1]} --- accede alla cella il cui indirizzo è contenuto in R1
+    \item \textbf{Stack implicito}: \texttt{PUSH R0} --- scrive nella cella puntata da SP
+\end{enumerate}
+
+\section{Bus di Sistema}
+
+\microasm{} utilizza tre bus separati per la comunicazione tra i componenti della CPU e la memoria.
+
+\subsection{Data Bus (Bus Dati)}
+
+\begin{description}[leftmargin=*]
+    \item[Larghezza] 16 bit
+    \item[Direzione] Bidirezionale
+    \item[Funzione] Trasporto di dati tra registri, ALU e memoria
+    \item[Partecipanti] Registri, ALU, Memoria, valori immediati
+\end{description}
+
+\subsection{Address Bus (Bus Indirizzi)}
+
+\begin{description}[leftmargin=*]
+    \item[Larghezza] 8 bit (0--255)
+    \item[Direzione] Unidirezionale (CPU → Memoria)
+    \item[Funzione] Specificare l'indirizzo di memoria da accedere
+    \item[Partecipanti] PC, operandi di indirizzamento, SP
+\end{description}
+
+\subsection{Control Bus (Bus di Controllo)}
+
+\begin{description}[leftmargin=*]
+    \item[Segnali] READ, WRITE, HALT
+    \item[Funzione] Coordinare le operazioni tra CPU e memoria
+    \item[Direzione] Unidirezionale (CPU → Memoria)
+\end{description}
+
+\subsubsection{Segnali di Controllo}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{READ}: Richiede la lettura di un dato dalla memoria
+    \item \textbf{WRITE}: Richiede la scrittura di un dato in memoria
+    \item \textbf{HALT}: Termina l'esecuzione del programma
+\end{itemize}
+
+\section{Unità Aritmetico-Logica (ALU)}
+
+L'ALU è responsabile di eseguire tutte le operazioni aritmetiche e logiche in \microasm{}.
+
+\subsection{Operazioni Supportate}
+
+\begin{table}[H]
+\centering
+\caption{Operazioni dell'ALU}
+\label{tab:alu-operations}
+\begin{tabular}{@{}llc@{}}
+\toprule
+\textbf{Categoria} & \textbf{Operazioni} & \textbf{Modifica Flag} \\
+\midrule
+Aritmetiche & ADD, SUB, MOL, DIV, INC, DEC & Sì \\
+Logiche & AND, OR, NOT & Sì \\
+Confronto & CMP & Sì \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Gestione Overflow}
+
+Quando il risultato di un'operazione eccede il range valido a 16 bit, \microasm{} applica il \textbf{clamping}:
+
+\begin{align*}
+\text{Se } \text{risultato} > 32767 &\Rightarrow \text{risultato} = 32767 \\
+\text{Se } \text{risultato} < -32768 &\Rightarrow \text{risultato} = -32768
+\end{align*}
+
+In caso di overflow, viene generato anche un errore di tipo ``Arithmetic overflow''.
+
+% ============================================================================
+% CAPITOLO 3: SET DI ISTRUZIONI COMPLETO
+% ============================================================================
+\chapter{Set di Istruzioni}\label{ch:instruction-set}
+
+\microasm{} implementa un set di 21 istruzioni organizzate in 6 categorie funzionali. Questo capitolo fornisce la specifica completa di ogni istruzione, includendo sintassi, semantica, effetti sui flag e esempi d'uso.
+
+\section{Classificazione delle Istruzioni}
+
+Le istruzioni sono suddivise nelle seguenti categorie:
+
+\begin{table}[H]
+\centering
+\caption{Categorie di istruzioni}
+\label{tab:instruction-categories}
+\begin{tabular}{@{}lcp{8cm}@{}}
+\toprule
+\textbf{Categoria} & \textbf{N°} & \textbf{Istruzioni} \\
+\midrule
+Trasferimento dati & 3 & MOV, LDR, STR \\
+Aritmetiche & 6 & ADD, SUB, MOL, DIV, INC, DEC \\
+Logiche & 3 & AND, OR, NOT (XOR documentata) \\
+Controllo flusso & 5 & JMP, JZ, JNZ, JS, CMP \\
+Stack & 4 & PUSH, POP, CALL, RET \\
+I/O e Sistema & 2 & OUT, HLT \\
+\midrule
+\textbf{Totale} & \textbf{21} & \textbf{20 implementate + 1 documentata} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Istruzioni di Trasferimento Dati}
+
+Le istruzioni di questa categoria spostano dati tra registri e memoria senza eseguire operazioni aritmetiche o logiche.
+
+\subsection{MOV --- Move/Copy Value}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{MOV Rdest, src}
+\item[Operandi]
+    \begin{itemize}
+        \item \texttt{Rdest}: Registro destinazione (R0--R3)
+        \item \texttt{src}: Sorgente (registro, immediato, o indirizzo memoria)
+    \end{itemize}
+\item[Descrizione] Copia il valore dalla sorgente al registro destinazione. L'operando sorgente rimane invariato.
+\item[Operazione] \texttt{Rdest ← src}
+\item[Flag modificati] Nessuno
+\item[Cicli] 1
+\end{description}
+
+\begin{esempio}[Utilizzo di MOV]
+\begin{lstlisting}
+MOV R0, 42         ; R0 = 42 (immediato)
+MOV R1, R0         ; R1 = R0 = 42 (registro)
+MOV R2, [100]      ; R2 = Memory[100] (diretto)
+MOV R3, 50
+MOV R0, [R3]       ; R0 = Memory[50] (indiretto)
+\end{lstlisting}
+\end{esempio}
+
+\subsection{LDR --- Load from Memory}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{LDR Rdest, [addr]}
+\item[Operandi]
+    \begin{itemize}
+        \item \texttt{Rdest}: Registro destinazione (R0--R3)
+        \item \texttt{[addr]}: Indirizzo di memoria (0--255) o registro
+    \end{itemize}
+\item[Descrizione] Carica in un registro il valore memorizzato all'indirizzo specificato.
+\item[Operazione] \texttt{Rdest ← Memory[addr]}
+\item[Flag modificati] Nessuno
+\item[Cicli] 2
+\item[Errori] Invalid memory access se addr < 0 o addr > 255
+\end{description}
+
+\begin{esempio}[Caricamento da memoria]
+\begin{lstlisting}
+LDR R0, [100]      ; R0 = Memory[100]
+MOV R1, 50
+LDR R2, [R1]       ; R2 = Memory[50] (indiretto)
+\end{lstlisting}
+\end{esempio}
+
+\subsection{STR --- Store to Memory}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{STR src, [addr]}
+\item[Operandi]
+    \begin{itemize}
+        \item \texttt{src}: Sorgente (registro o immediato)
+        \item \texttt{[addr]}: Indirizzo di memoria (0--255) o registro
+    \end{itemize}
+\item[Descrizione] Memorizza un valore all'indirizzo specificato.
+\item[Operazione] \texttt{Memory[addr] ← src}
+\item[Flag modificati] Nessuno
+\item[Cicli] 2
+\item[Errori] Invalid memory access se addr < 0 o addr > 255
+\end{description}
+
+\begin{esempio}[Scrittura in memoria]
+\begin{lstlisting}
+MOV R0, 42
+STR R0, [100]      ; Memory[100] = 42
+MOV R1, 50
+STR R0, [R1]       ; Memory[50] = 42 (indiretto)
+\end{lstlisting}
+\end{esempio}
+
+\section{Istruzioni Aritmetiche}
+
+\subsection{ADD --- Addition}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{ADD Rdest, src}
+\item[Operandi]
+    \begin{itemize}
+        \item \texttt{Rdest}: Registro destinazione e primo operando
+        \item \texttt{src}: Secondo operando (registro, immediato, memoria)
+    \end{itemize}
+\item[Descrizione] Somma il valore sorgente al registro destinazione.
+\item[Operazione] \texttt{Rdest ← Rdest + src}
+\item[Flag modificati] ZF, SF
+\item[Cicli] 1
+\item[Errori] Arithmetic overflow se risultato > 32767 o < -32768
+\end{description}
+
+\begin{esempio}[Addizione]
+\begin{lstlisting}
+MOV R0, 10
+ADD R0, 5          ; R0 = 15, ZF=0, SF=0
+ADD R0, -15        ; R0 = 0, ZF=1, SF=0
+\end{lstlisting}
+\end{esempio}
+
+\subsection{SUB --- Subtraction}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{SUB Rdest, src}
+\item[Operandi] Come ADD
+\item[Descrizione] Sottrae il valore sorgente dal registro destinazione.
+\item[Operazione] \texttt{Rdest ← Rdest - src}
+\item[Flag modificati] ZF, SF
+\item[Cicli] 1
+\end{description}
+
+\subsection{MOL --- Multiplication}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{MOL Rdest, src}
+\item[Operandi] Come ADD
+\item[Descrizione] Moltiplica il registro destinazione per il valore sorgente. Il nome deriva dall'italiano ``moltiplicazione''.
+\item[Operazione] \texttt{Rdest ← Rdest × src}
+\item[Flag modificati] ZF, SF
+\item[Cicli] 3
+\end{description}
+
+\begin{esempio}[Calcolo del fattoriale]
+\begin{lstlisting}
+; Calcola 5! = 120
+MOV R0, 5          ; N = 5
+MOV R1, 1          ; Result = 1
+LOOP:
+CMP R0, 1
+JZ END
+MOL R1, R0         ; Result = Result * N
+DEC R0             ; N = N - 1
+JMP LOOP
+END:
+OUT R1             ; Output: 120
+HLT
+\end{lstlisting}
+\end{esempio}
+
+\subsection{DIV --- Division}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{DIV Rdest, src}
+\item[Operandi] Come ADD
+\item[Descrizione] Divide il registro destinazione per il valore sorgente (divisione intera con arrotondamento verso $-\infty$).
+\item[Operazione] \texttt{Rdest ← floor(Rdest / src)}
+\item[Flag modificati] ZF, SF
+\item[Cicli] 1
+\item[Errori] Division by zero se src = 0
+\end{description}
+
+\subsection{INC --- Increment}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{INC Rdest}
+\item[Operandi] \texttt{Rdest}: Registro da incrementare
+\item[Descrizione] Incrementa di 1 il valore del registro.
+\item[Operazione] \texttt{Rdest ← Rdest + 1}
+\item[Flag modificati] ZF, SF
+\item[Cicli] 1
+\end{description}
+
+\subsection{DEC --- Decrement}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{DEC Rdest}
+\item[Operandi] \texttt{Rdest}: Registro da decrementare
+\item[Descrizione] Decrementa di 1 il valore del registro.
+\item[Operazione] \texttt{Rdest ← Rdest - 1}
+\item[Flag modificati] ZF, SF
+\item[Cicli] 1
+\end{description}
+
+\section{Istruzioni Logiche}
+
+\subsection{AND --- Bitwise AND}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{AND Rdest, src}
+\item[Descrizione] Esegue l'AND bit a bit tra destinazione e sorgente.
+\item[Operazione] \texttt{Rdest ← Rdest \& src}
+\item[Flag modificati] ZF, SF
+\item[Cicli] 1
+\end{description}
+
+\subsection{OR --- Bitwise OR}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{OR Rdest, src}
+\item[Descrizione] Esegue l'OR bit a bit tra destinazione e sorgente.
+\item[Operazione] \texttt{Rdest ← Rdest | src}
+\item[Flag modificati] ZF, SF
+\item[Cicli] 1
+\end{description}
+
+\subsection{NOT --- Bitwise NOT}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{NOT Rdest}
+\item[Descrizione] Inverte tutti i bit del registro (complemento a uno).
+\item[Operazione] \texttt{Rdest ← \textasciitilde Rdest}
+\item[Flag modificati] ZF, SF
+\item[Cicli] 1
+\item[Nota] Per un valore $N$, \texttt{NOT(N) = -(N+1)}
+\end{description}
+
+\begin{esempio}[Operazioni logiche]
+\begin{lstlisting}
+MOV R0, 15         ; R0 = 0000 1111 (binario)
+MOV R1, 7          ; R1 = 0000 0111
+AND R0, R1         ; R0 = 0000 0111 = 7
+
+MOV R0, 15
+OR R0, R1          ; R0 = 0000 1111 = 15
+
+MOV R0, 5
+NOT R0             ; R0 = -6
+\end{lstlisting}
+\end{esempio}
+
+\section{Istruzioni di Controllo del Flusso}
+
+\subsection{JMP --- Unconditional Jump}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{JMP label}
+\item[Descrizione] Salta incondizionatamente all'etichetta specificata.
+\item[Operazione] \texttt{PC ← address\_of\_label}
+\item[Flag modificati] Nessuno
+\item[Cicli] 1
+\end{description}
+
+\subsection{JZ --- Jump if Zero}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{JZ label}
+\item[Descrizione] Salta all'etichetta se ZF = 1 (risultato precedente = 0).
+\item[Operazione] \texttt{if ZF = 1 then PC ← address\_of\_label}
+\item[Flag modificati] Nessuno (legge ZF)
+\item[Cicli] 1
+\end{description}
+
+\subsection{JNZ --- Jump if Not Zero}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{JNZ label}
+\item[Descrizione] Salta all'etichetta se ZF = 0 (risultato precedente ≠ 0).
+\item[Operazione] \texttt{if ZF = 0 then PC ← address\_of\_label}
+\item[Flag modificati] Nessuno (legge ZF)
+\item[Cicli] 1
+\end{description}
+
+\subsection{JS --- Jump if Sign}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{JS label}
+\item[Descrizione] Salta all'etichetta se SF = 1 (risultato precedente < 0).
+\item[Operazione] \texttt{if SF = 1 then PC ← address\_of\_label}
+\item[Flag modificati] Nessuno (legge SF)
+\item[Cicli] 1
+\end{description}
+
+\subsection{CMP --- Compare}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{CMP op1, op2}
+\item[Descrizione] Confronta due operandi eseguendo una sottrazione senza memorizzare il risultato. Aggiorna solo i flag.
+\item[Operazione] \texttt{temp ← op1 - op2; aggiorna ZF e SF; scarta temp}
+\item[Flag modificati] ZF, SF
+    \begin{itemize}
+        \item ZF = 1 se op1 = op2
+        \item SF = 1 se op1 < op2
+    \end{itemize}
+\item[Cicli] 1
+\end{description}
+
+\begin{esempio}[Confronto e salti condizionali]
+\begin{lstlisting}
+MOV R0, 10
+MOV R1, 20
+
+CMP R0, R1         ; 10 - 20 = -10
+                   ; ZF=0 (diversi), SF=1 (negativo)
+JZ EQUAL           ; Non salta (ZF=0)
+JS LESS            ; Salta qui (SF=1)
+
+EQUAL:
+  OUT 1
+  JMP END
+
+LESS:
+  OUT 2            ; Esegue questo: output 2
+
+END:
+  HLT
+\end{lstlisting}
+\end{esempio}
+
+\section{Istruzioni di Stack}
+
+\subsection{PUSH --- Push to Stack}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{PUSH src}
+\item[Descrizione] Inserisce un valore nello stack. SP viene decrementato \emph{prima} della scrittura (pre-decremento).
+\item[Operazione] \texttt{SP ← SP - 1; Memory[SP] ← src}
+\item[Flag modificati] Nessuno
+\item[Cicli] 2
+\item[Errori] Stack overflow se SP ≤ 0
+\end{description}
+
+\subsection{POP --- Pop from Stack}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{POP dest}
+\item[Descrizione] Estrae un valore dallo stack. Il valore viene letto, \emph{poi} SP viene incrementato (post-incremento).
+\item[Operazione] \texttt{dest ← Memory[SP]; SP ← SP + 1}
+\item[Flag modificati] Nessuno
+\item[Cicli] 2
+\item[Errori] Stack underflow se SP ≥ 256
+\end{description}
+
+\begin{esempio}[Utilizzo dello stack]
+\begin{lstlisting}
+MOV R0, 10
+MOV R1, 20
+MOV R2, 30
+
+; Salva i valori
+PUSH R0            ; Stack: [10], SP: 255
+PUSH R1            ; Stack: [10, 20], SP: 254
+PUSH R2            ; Stack: [10, 20, 30], SP: 253
+
+; Modifica i registri
+MOV R0, 0
+MOV R1, 0
+MOV R2, 0
+
+; Ripristina (ordine LIFO)
+POP R2             ; R2 = 30, SP: 254
+POP R1             ; R1 = 20, SP: 255
+POP R0             ; R0 = 10, SP: 256
+
+OUT R0             ; Output: 10
+OUT R1             ; Output: 20
+OUT R2             ; Output: 30
+HLT
+\end{lstlisting}
+\end{esempio}
+
+\subsection{CALL --- Call Subroutine}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{CALL label}
+\item[Descrizione] Chiama una subroutine salvando l'indirizzo di ritorno (PC+1) nello stack e saltando all'etichetta.
+\item[Operazione] \texttt{SP ← SP - 1; Memory[SP] ← PC + 1; PC ← address\_of\_label}
+\item[Flag modificati] Nessuno
+\item[Cicli] 3
+\item[Errori] Stack overflow se SP ≤ 0
+\end{description}
+
+\subsection{RET --- Return from Subroutine}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{RET}
+\item[Descrizione] Ritorna dalla subroutine ripristinando PC dallo stack.
+\item[Operazione] \texttt{PC ← Memory[SP]; SP ← SP + 1}
+\item[Flag modificati] Nessuno
+\item[Cicli] 2
+\item[Errori] Stack underflow se SP ≥ 256
+\end{description}
+
+\begin{esempio}[Chiamata a subroutine]
+\begin{lstlisting}
+; Programma principale
+MOV R0, 5
+CALL DOUBLE        ; Chiama DOUBLE
+OUT R0             ; Output: 10
+HLT
+
+; Subroutine: raddoppia R0
+DOUBLE:
+  PUSH R1          ; Salva R1
+  MOV R1, R0       ; R1 = R0
+  ADD R0, R1       ; R0 = R0 + R1 (raddoppio)
+  POP R1           ; Ripristina R1
+  RET              ; Ritorna al chiamante
+\end{lstlisting}
+\end{esempio}
+
+\section{Istruzioni I/O e Sistema}
+
+\subsection{OUT --- Output Value}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{OUT src}
+\item[Descrizione] Visualizza il valore nella console di output.
+\item[Operazione] \texttt{Output ← src}
+\item[Flag modificati] Nessuno
+\item[Cicli] 1
+\end{description}
+
+\subsection{HLT --- Halt Execution}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[Sintassi] \texttt{HLT}
+\item[Descrizione] Termina l'esecuzione del programma.
+\item[Operazione] \texttt{halted ← true}
+\item[Flag modificati] Nessuno
+\item[Cicli] 1
+\item[Nota] Ogni programma deve terminare con HLT
+\end{description}
+
+% ============================================================================
+% CAPITOLO 4: SINTASSI E MODALITÀ DI INDIRIZZAMENTO
+% ============================================================================
+\chapter{Sintassi e Modalità di Indirizzamento}
+
+\section{Regole Sintattiche}
+
+\subsection{Formato Generale di un'Istruzione}
+
+\begin{lstlisting}[numbers=none, frame=none, backgroundcolor=\color{white}]
+[LABEL:] OPCODE operand1, operand2 ; commento
+\end{lstlisting}
+
+\begin{description}[leftmargin=*]
+\item[LABEL] (opzionale) Etichetta seguita da due punti
+\item[OPCODE] Codice operativo dell'istruzione (obbligatorio)
+\item[operand1, operand2] Operandi separati da virgola (numero variabile)
+\item[; commento] (opzionale) Commento che inizia con punto e virgola
+\end{description}
+
+\subsection{Commenti}
+
+I commenti iniziano con il carattere \texttt{;} e si estendono fino alla fine della riga.
+
+\begin{lstlisting}
+; Questo è un commento su riga intera
+
+MOV R0, 42    ; Questo è un commento inline
+\end{lstlisting}
+
+\subsection{Etichette (Labels)}
+
+Le etichette identificano posizioni nel codice e sono utilizzate come target per i salti.
+
+\begin{itemize}[leftmargin=*]
+    \item Sintassi: \texttt{NOME\_LABEL:}
+    \item Case-insensitive (ma convenzionalmente maiuscole)
+    \item Devono essere univoche
+    \item Possono essere su riga dedicata o prima di un'istruzione
+\end{itemize}
+
+\begin{lstlisting}
+LOOP:              ; Etichetta su riga dedicata
+  INC R0
+  CMP R0, 10
+  JNZ LOOP
+
+END: HLT           ; Etichetta e istruzione sulla stessa riga
+\end{lstlisting}
+
+\subsection{Case Sensitivity}
+
+\microasm{} è \textbf{case-insensitive}:
+
+\begin{lstlisting}
+MOV R0, 10    ; Equivalente a mov r0, 10
+Mov r0, 10    ; Equivalente a MOV R0, 10
+\end{lstlisting}
+
+\subsection{Spazi Bianchi}
+
+Gli spazi e le tabulazioni sono generalmente ignorati e possono essere utilizzati liberamente per migliorare la leggibilità:
+
+\begin{lstlisting}
+MOV R0,42      ; Valido
+MOV R0, 42     ; Valido (più leggibile)
+MOV  R0  ,  42 ; Valido (ma poco leggibile)
+\end{lstlisting}
+
+\section{Modalità di Indirizzamento}
+
+\microasm{} supporta quattro modalità di indirizzamento che determinano come vengono specificati gli operandi.
+
+\subsection{Indirizzamento Immediato}
+
+Il valore è specificato direttamente nell'istruzione come costante.
+
+\begin{lstlisting}
+MOV R0, 42         ; 42 è un valore immediato
+ADD R1, -10        ; -10 è un valore immediato
+\end{lstlisting}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Vantaggi}: Veloce, non richiede accessi a memoria
+    \item \textbf{Limiti}: Valori tra -32,768 e 32,767
+    \item \textbf{Uso tipico}: Costanti, inizializzazioni
+\end{itemize}
+
+\subsection{Indirizzamento a Registro}
+
+L'operando è contenuto in un registro.
+
+\begin{lstlisting}
+MOV R0, R1         ; Copia il contenuto di R1 in R0
+ADD R0, R2         ; Somma R2 a R0
+\end{lstlisting}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Vantaggi}: Molto veloce, massima flessibilità
+    \item \textbf{Uso tipico}: Operazioni tra variabili temporanee
+\end{itemize}
+
+\subsection{Indirizzamento Diretto (Assoluto)}
+
+L'indirizzo di memoria è specificato direttamente nell'istruzione.
+
+\begin{lstlisting}
+LDR R0, [100]      ; Carica il valore da memoria[100]
+STR R1, [200]      ; Salva R1 in memoria[200]
+MOV R2, [50]       ; Copia memoria[50] in R2
+\end{lstlisting}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Sintassi}: \texttt{[numero]}
+    \item \textbf{Range}: 0--255
+    \item \textbf{Uso tipico}: Accesso a variabili globali con indirizzo noto
+\end{itemize}
+
+\subsection{Indirizzamento Indiretto (Tramite Registro)}
+
+L'indirizzo di memoria è contenuto in un registro.
+
+\begin{lstlisting}
+MOV R1, 50         ; R1 contiene l'indirizzo 50
+LDR R0, [R1]       ; Carica da memoria[50] (indirizzo in R1)
+STR R2, [R1]       ; Salva R2 in memoria[50]
+\end{lstlisting}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Sintassi}: \texttt{[Rn]} dove n = 0, 1, 2, 3
+    \item \textbf{Vantaggi}: Permette array, strutture dinamiche
+    \item \textbf{Uso tipico}: Accesso ad array, puntatori
+\end{itemize}
+
+\begin{esempio}[Scansione di un array con indirizzamento indiretto]
+\begin{lstlisting}
+; Inizializza array in memoria
+MOV R0, 0          ; Indice base
+MOV [0], 10        ; Array[0] = 10
+MOV [1], 20        ; Array[1] = 20
+MOV [2], 30        ; Array[2] = 30
+
+; Scansione dell'array
+MOV R1, 0          ; R1 = indice corrente
+
+LOOP:
+  LDR R0, [R1]     ; R0 = Array[R1]
+  OUT R0           ; Stampa elemento
+  INC R1           ; Incrementa indice
+  CMP R1, 3        ; Fine array?
+  JNZ LOOP         ; Continua se R1 != 3
+
+HLT
+; Output: 10, 20, 30
+\end{lstlisting}
+\end{esempio}
+
+\section{Tabella Riassuntiva delle Modalità}
+
+\begin{table}[H]
+\centering
+\caption{Modalità di indirizzamento in \microasm{}}
+\label{tab:addressing-modes}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Modalità} & \textbf{Sintassi} & \textbf{Esempio} & \textbf{Significato} \\
+\midrule
+Immediato & \texttt{valore} & \texttt{MOV R0, 42} & R0 ← 42 \\
+Registro & \texttt{Rn} & \texttt{MOV R0, R1} & R0 ← R1 \\
+Diretto & \texttt{[addr]} & \texttt{MOV R0, [100]} & R0 ← Memory[100] \\
+Indiretto & \texttt{[Rn]} & \texttt{MOV R0, [R1]} & R0 ← Memory[R1] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+% CAPITOLO 5: ESEMPI PRATICI E PATTERN
+% ============================================================================
+\chapter{Esempi Pratici e Pattern di Programmazione}
+
+Questo capitolo presenta una collezione di esempi completi che dimostrano tecniche di programmazione comuni in \microasm{}.
+
+\section{Esempi di Base}
+
+\subsection{Somma di Due Numeri}
+
+\begin{lstlisting}
+; Somma 15 + 27 e stampa il risultato
+MOV R0, 15
+MOV R1, 27
+ADD R0, R1
+OUT R0             ; Output: 42
+HLT
+\end{lstlisting}
+
+\subsection{Valore Assoluto}
+
+\begin{lstlisting}
+; Calcola |R0| (valore assoluto di R0)
+MOV R0, -15        ; Numero di partenza
+
+CMP R0, 0          ; Confronta con 0
+JS NEGATIVE        ; Salta se negativo
+JMP END            ; Altrimenti già positivo
+
+NEGATIVE:
+  MOV R1, 0
+  SUB R1, R0       ; R1 = 0 - R0 = -R0
+  MOV R0, R1       ; R0 = |R0|
+
+END:
+OUT R0             ; Output: 15
+HLT
+\end{lstlisting}
+
+\section{Cicli e Iterazioni}
+
+\subsection{Conta da 1 a N}
+
+\begin{lstlisting}
+; Conta da 1 a 5
+MOV R0, 1          ; Contatore
+
+LOOP:
+  OUT R0           ; Stampa contatore
+  INC R0           ; Incrementa
+  CMP R0, 6        ; Raggiunto 6?
+  JNZ LOOP         ; Se no, ripeti
+
+HLT
+; Output: 1, 2, 3, 4, 5
+\end{lstlisting}
+
+\subsection{Somma dei Primi N Numeri}
+
+\begin{lstlisting}
+; Calcola 1 + 2 + 3 + ... + N (con N=10)
+MOV R0, 10         ; N
+MOV R1, 0          ; Somma
+MOV R2, 1          ; Contatore
+
+LOOP:
+  ADD R1, R2       ; Somma += Contatore
+  INC R2           ; Contatore++
+  CMP R2, R0       ; Contatore > N?
+  JZ END           ; Se uguale, termina
+  JMP LOOP         ; Altrimenti continua
+
+END:
+  ADD R1, R0       ; Aggiungi l'ultimo (N)
+  OUT R1           ; Output: 55
+  HLT
+\end{lstlisting}
+
+\section{Operazioni su Array}
+
+\subsection{Somma Elementi di un Array}
+
+\begin{lstlisting}
+; Inizializza array
+MOV [0], 5
+MOV [1], 10
+MOV [2], 15
+MOV [3], 20
+
+; Somma elementi
+MOV R0, 0          ; Somma
+MOV R1, 0          ; Indice
+
+LOOP:
+  LDR R2, [R1]     ; R2 = Array[indice]
+  ADD R0, R2       ; Somma += R2
+  INC R1           ; Indice++
+  CMP R1, 4        ; Fine array?
+  JNZ LOOP         ; Continua
+
+OUT R0             ; Output: 50
+HLT
+\end{lstlisting}
+
+\subsection{Ricerca del Massimo}
+
+\begin{lstlisting}
+; Array: [12, 45, 23, 67, 34]
+MOV [0], 12
+MOV [1], 45
+MOV [2], 23
+MOV [3], 67
+MOV [4], 34
+
+MOV R0, [0]        ; Max = primo elemento
+MOV R1, 1          ; Indice = 1
+
+LOOP:
+  LDR R2, [R1]     ; R2 = Array[indice]
+  CMP R2, R0       ; R2 > Max?
+  JS NEXT          ; Se R2 < Max, salta
+  MOV R0, R2       ; Altrimenti Max = R2
+
+NEXT:
+  INC R1
+  CMP R1, 5
+  JNZ LOOP
+
+OUT R0             ; Output: 67
+HLT
+\end{lstlisting}
+
+\section{Subroutine e Procedure}
+
+\subsection{Funzione di Fibonacci}
+
+\begin{lstlisting}
+; Calcola l'n-esimo numero di Fibonacci
+; Input: R0 = n
+; Output: R0 = Fib(n)
+
+MOV R0, 7          ; Calcola Fib(7)
+CALL FIB
+OUT R0             ; Output: 13
+HLT
+
+FIB:
+  PUSH R1
+  PUSH R2
+  PUSH R3
+
+  ; Casi base
+  CMP R0, 0
+  JZ FIB_0
+  CMP R0, 1
+  JZ FIB_1
+
+  ; Caso ricorsivo: Fib(n) = Fib(n-1) + Fib(n-2)
+  MOV R3, R0       ; Salva n
+
+  DEC R0           ; n-1
+  CALL FIB         ; Fib(n-1)
+  MOV R1, R0       ; R1 = Fib(n-1)
+
+  MOV R0, R3       ; Ripristina n
+  DEC R0
+  DEC R0           ; n-2
+  CALL FIB         ; Fib(n-2)
+  MOV R2, R0       ; R2 = Fib(n-2)
+
+  MOV R0, R1
+  ADD R0, R2       ; R0 = Fib(n-1) + Fib(n-2)
+  JMP FIB_END
+
+FIB_0:
+  MOV R0, 0
+  JMP FIB_END
+
+FIB_1:
+  MOV R0, 1
+
+FIB_END:
+  POP R3
+  POP R2
+  POP R1
+  RET
+\end{lstlisting}
+
+\section{Pattern Comuni}
+
+\subsection{Scambio di Valori (Swap)}
+
+\begin{lstlisting}
+; Scambia R0 e R1 senza registro temporaneo
+MOV R0, 10
+MOV R1, 20
+
+PUSH R0
+PUSH R1
+POP R0
+POP R1
+
+; Ora R0=20, R1=10
+\end{lstlisting}
+
+\subsection{Moltiplicazione per Somme Ripetute}
+
+\begin{lstlisting}
+; Calcola R0 * R1 senza usare MOL
+MOV R0, 7
+MOV R1, 6
+MOV R2, 0          ; Risultato
+MOV R3, 0          ; Contatore
+
+MULT_LOOP:
+  ADD R2, R0       ; Risultato += R0
+  INC R3
+  CMP R3, R1       ; Ripetuto R1 volte?
+  JNZ MULT_LOOP
+
+OUT R2             ; Output: 42
+HLT
+\end{lstlisting}
+
+% ============================================================================
+% CAPITOLO 6: GESTIONE ERRORI E DEBUGGING
+% ============================================================================
+\chapter{Gestione Errori e Debugging}
+
+\section{Errori a Tempo di Compilazione}
+
+Questi errori vengono rilevati durante la fase di parsing del codice.
+
+\subsection{Invalid Instruction}
+
+\textbf{Causa}: Opcode non riconosciuto.
+
+\begin{lstlisting}[backgroundcolor=\color{red!10}]
+MULTIPLY R0, 5     ; Errore: istruzione non valida
+                   ; Usare MOL invece
+\end{lstlisting}
+
+\textbf{Soluzione}: Verificare la corretta ortografia dell'istruzione consultando la \Cref{tab:instruction-categories}.
+
+\subsection{Undefined Label}
+
+\textbf{Causa}: Riferimento a un'etichetta non definita.
+
+\begin{lstlisting}[backgroundcolor=\color{red!10}]
+JMP LOOP           ; Errore se LOOP non è definita
+\end{lstlisting}
+
+\textbf{Soluzione}: Definire l'etichetta con la sintassi \texttt{LOOP:}
+
+\subsection{Missing Operand}
+
+\textbf{Causa}: Numero di operandi insufficiente.
+
+\begin{lstlisting}[backgroundcolor=\color{red!10}]
+MOV R0             ; Errore: manca l'operando sorgente
+ADD R0             ; Errore: manca il secondo operando
+\end{lstlisting}
+
+\subsection{Invalid Memory Address}
+
+\textbf{Causa}: Indirizzo di memoria fuori dal range 0--255.
+
+\begin{lstlisting}[backgroundcolor=\color{red!10}]
+LDR R0, [300]      ; Errore: 300 > 255
+LDR R0, [-5]       ; Errore: -5 < 0
+\end{lstlisting}
+
+\section{Errori a Tempo di Esecuzione}
+
+Questi errori si verificano durante l'esecuzione del programma.
+
+\subsection{Stack Overflow}
+
+\textbf{Causa}: Troppi \instruction{PUSH} o \instruction{CALL} senza corrispondenti \instruction{POP} o \instruction{RET}.
+
+\begin{lstlisting}[backgroundcolor=\color{red!10}]
+LOOP:
+  PUSH R0
+  JMP LOOP         ; Stack overflow dopo 256 iterazioni
+\end{lstlisting}
+
+\textbf{Soluzione}: Bilanciare ogni \instruction{PUSH} con un \instruction{POP}.
+
+\subsection{Stack Underflow}
+
+\textbf{Causa}: Troppi \instruction{POP} o \instruction{RET} senza corrispondenti \instruction{PUSH} o \instruction{CALL}.
+
+\begin{lstlisting}[backgroundcolor=\color{red!10}]
+POP R0             ; Errore se stack è vuoto
+RET                ; Errore se non preceduto da CALL
+\end{lstlisting}
+
+\subsection{Division by Zero}
+
+\textbf{Causa}: Tentativo di dividere per zero.
+
+\begin{lstlisting}[backgroundcolor=\color{red!10}]
+MOV R0, 10
+MOV R1, 0
+DIV R0, R1         ; Errore: divisione per zero
+\end{lstlisting}
+
+\textbf{Soluzione}: Verificare il divisore prima della divisione.
+
+\begin{lstlisting}
+MOV R0, 10
+MOV R1, 0
+CMP R1, 0
+JZ SKIP_DIV
+DIV R0, R1
+SKIP_DIV:
+  ; Continua...
+\end{lstlisting}
+
+\subsection{Arithmetic Overflow}
+
+\textbf{Causa}: Risultato fuori dal range -32,768 \ldots 32,767.
+
+\begin{lstlisting}[backgroundcolor=\color{red!10}]
+MOV R0, 32767
+ADD R0, 1          ; Overflow
+\end{lstlisting}
+
+\subsection{Invalid Memory Access}
+
+\textbf{Causa}: Accesso a memoria con indirizzo calcolato a runtime fuori dal range valido.
+
+\begin{lstlisting}[backgroundcolor=\color{red!10}]
+MOV R1, 300
+LDR R0, [R1]       ; Errore: 300 > 255
+\end{lstlisting}
+
+\subsection{Execution Limit Exceeded}
+
+\textbf{Causa}: Il programma ha eseguito più di 100,000 istruzioni (probabile loop infinito).
+
+\begin{lstlisting}[backgroundcolor=\color{red!10}]
+LOOP:
+  INC R0
+  JMP LOOP         ; Loop infinito
+\end{lstlisting}
+
+\section{Tecniche di Debugging}
+
+\subsection{Esecuzione Passo-Passo}
+
+Utilizzare il pulsante \textbf{STEP} nel simulatore per eseguire un'istruzione alla volta e osservare:
+
+\begin{itemize}[leftmargin=*]
+    \item Valori dei registri
+    \item Stato dei flag (ZF, SF)
+    \item Contenuto della memoria
+    \item Stack pointer
+\end{itemize}
+
+\subsection{Output di Debug}
+
+Inserire istruzioni \instruction{OUT} strategiche per monitorare i valori durante l'esecuzione.
+
+\begin{lstlisting}
+MOV R0, 10
+OUT R0             ; Debug: verifica valore iniziale
+
+; ... operazioni ...
+
+OUT R0             ; Debug: verifica valore finale
+\end{lstlisting}
+
+\subsection{Verifica dei Flag}
+
+Dopo operazioni critiche, verificare i flag con salti condizionali di debug.
+
+\begin{lstlisting}
+CMP R0, R1
+OUT 100            ; Marker prima del salto
+JZ EQUAL
+OUT 200            ; Eseguito se diversi
+EQUAL:
+  OUT 300          ; Eseguito se uguali
+\end{lstlisting}
+
+\subsection{Tracciamento dello Stack}
+
+Monitorare SP e lo stack durante operazioni critiche.
+
+\begin{lstlisting}
+; Prima di CALL
+OUT R0             ; Valore da passare
+CALL FUNC
+
+; Dopo RET
+OUT R0             ; Valore di ritorno
+\end{lstlisting}
+
+% ============================================================================
+% APPENDICI
+% ============================================================================
+\appendix
+
+\chapter{Riferimento Rapido}
+
+\section{Tabella Completa Istruzioni}
+
+\begin{longtable}{@{}llccl@{}}
+\caption{Riferimento completo delle istruzioni \microasm{}} \\
+\toprule
+\textbf{Istruzione} & \textbf{Operandi} & \textbf{Flag} & \textbf{Cicli} & \textbf{Categoria} \\
+\midrule
+\endfirsthead
+
+\multicolumn{5}{c}{\tablename\ \thetable\ -- \textit{Continua dalla pagina precedente}} \\
+\toprule
+\textbf{Istruzione} & \textbf{Operandi} & \textbf{Flag} & \textbf{Cicli} & \textbf{Categoria} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{5}{r}{\textit{Continua nella pagina successiva}} \\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+MOV & Rdest, src & --- & 1 & Trasferimento \\
+LDR & Rdest, [addr] & --- & 2 & Trasferimento \\
+STR & src, [addr] & --- & 2 & Trasferimento \\
+\midrule
+ADD & Rdest, src & ZF, SF & 1 & Aritmetica \\
+SUB & Rdest, src & ZF, SF & 1 & Aritmetica \\
+MOL & Rdest, src & ZF, SF & 3 & Aritmetica \\
+DIV & Rdest, src & ZF, SF & 1 & Aritmetica \\
+INC & Rdest & ZF, SF & 1 & Aritmetica \\
+DEC & Rdest & ZF, SF & 1 & Aritmetica \\
+\midrule
+AND & Rdest, src & ZF, SF & 1 & Logica \\
+OR & Rdest, src & ZF, SF & 1 & Logica \\
+NOT & Rdest & ZF, SF & 1 & Logica \\
+\midrule
+JMP & label & --- & 1 & Controllo \\
+JZ & label & --- & 1 & Controllo \\
+JNZ & label & --- & 1 & Controllo \\
+JS & label & --- & 1 & Controllo \\
+CMP & op1, op2 & ZF, SF & 1 & Controllo \\
+\midrule
+PUSH & src & --- & 2 & Stack \\
+POP & dest & --- & 2 & Stack \\
+CALL & label & --- & 3 & Stack \\
+RET & --- & --- & 2 & Stack \\
+\midrule
+OUT & src & --- & 1 & I/O \\
+HLT & --- & --- & 1 & Sistema \\
+\end{longtable}
+
+\section{Codici di Errore}
+
+\begin{table}[H]
+\centering
+\caption{Codici e messaggi di errore}
+\begin{tabular}{@{}lp{10cm}@{}}
+\toprule
+\textbf{Errore} & \textbf{Descrizione} \\
+\midrule
+Invalid instruction & Opcode non riconosciuto \\
+Undefined label & Etichetta non definita \\
+Missing operand & Numero di operandi insufficiente \\
+Out of range immediate & Valore immediato fuori dal range -32768 \ldots 32767 \\
+Invalid memory address & Indirizzo < 0 o > 255 \\
+\midrule
+Stack overflow & SP ≤ 0 \\
+Stack underflow & SP > 256 \\
+Division by zero & Divisore = 0 \\
+Arithmetic overflow & Risultato > 32767 o < -32768 \\
+Execution out of bounds & PC oltre l'ultima istruzione \\
+Execution limit exceeded & Oltre 100,000 istruzioni eseguite \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Valori Notevoli}
+
+\begin{table}[H]
+\centering
+\caption{Costanti e limiti di sistema}
+\begin{tabular}{@{}lr@{}}
+\toprule
+\textbf{Parametro} & \textbf{Valore} \\
+\midrule
+Numero di registri GP & 4 (R0--R3) \\
+Dimensione registro & 16 bit \\
+Valore minimo registro & -32,768 \\
+Valore massimo registro & 32,767 \\
+\midrule
+Dimensione memoria & 256 celle \\
+Range indirizzi & 0--255 \\
+Dimensione cella & 16 bit \\
+\midrule
+SP iniziale & 256 \\
+PC iniziale & 0 \\
+Numero max istruzioni & 21 (20 implementate) \\
+Limite esecuzione & 100,000 istruzioni \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\chapter{Glossario}
+
+\begin{description}[style=nextline,leftmargin=*]
+\item[ALU (Arithmetic Logic Unit)] Unità aritmetico-logica. Componente della CPU che esegue operazioni aritmetiche e logiche.
+
+\item[Assembler] Programma che traduce codice assembly in codice macchina eseguibile.
+
+\item[Assembly] Linguaggio di programmazione a basso livello che utilizza mnemonici per rappresentare istruzioni macchina.
+
+\item[Bus] Canale di comunicazione che collega i componenti del computer. \microasm{} utilizza tre bus: dati, indirizzi e controllo.
+
+\item[Clamping] Tecnica di limitazione di un valore entro un range specificato.
+
+\item[Flag] Bit che indica il risultato di un'operazione (es. zero, negativo).
+
+\item[Label] Etichetta simbolica che identifica una posizione nel codice.
+
+\item[LIFO (Last In, First Out)] Politica di accesso dello stack: l'ultimo elemento inserito è il primo ad essere estratto.
+
+\item[Opcode] Codice operativo che identifica univocamente un'istruzione.
+
+\item[Overflow] Condizione in cui il risultato di un'operazione supera il range rappresentabile.
+
+\item[PC (Program Counter)] Registro che contiene l'indirizzo dell'istruzione corrente.
+
+\item[RISC (Reduced Instruction Set Computer)] Architettura con set di istruzioni ridotto e semplificato.
+
+\item[SP (Stack Pointer)] Registro che punta alla cima dello stack.
+
+\item[Stack] Struttura dati LIFO utilizzata per salvare temporaneamente dati e indirizzi di ritorno.
+
+\item[Subroutine] Sequenza di istruzioni che può essere chiamata da più punti del programma.
+
+\item[Underflow] Condizione dello stack quando si tenta di estrarre un elemento da uno stack vuoto.
+\end{description}
+
+\chapter{Indice Analitico}
+
+\textit{Nota: In un documento completo, qui verrebbe generato automaticamente l'indice analitico con \texttt{\textbackslash printindex}. Per semplicità, questa versione non include la generazione automatica.}
+
+% ============================================================================
+% BIBLIOGRAFIA
+% ============================================================================
+\chapter*{Bibliografia e Risorse}
+\addcontentsline{toc}{chapter}{Bibliografia e Risorse}
+
+\section*{Risorse Online}
+
+\begin{itemize}[leftmargin=*]
+    \item Simulatore \microasm{}: \url{https://microasm.nicolocarello.it}
+    \item Repository GitHub: Consultare il progetto per il codice sorgente
+    \item Documentazione online: Disponibile nell'interfaccia del simulatore
+\end{itemize}
+
+\section*{Testi Consigliati}
+
+\begin{itemize}[leftmargin=*]
+    \item Patterson, D. A., \& Hennessy, J. L. (2020). \textit{Computer Organization and Design: The Hardware/Software Interface}. Morgan Kaufmann.
+
+    \item Tanenbaum, A. S., \& Austin, T. (2012). \textit{Structured Computer Organization}. Pearson.
+
+    \item Bryant, R. E., \& O'Hallaron, D. R. (2015). \textit{Computer Systems: A Programmer's Perspective}. Pearson.
+\end{itemize}
+
+\section*{Concetti Correlati}
+
+\begin{itemize}[leftmargin=*]
+    \item Architettura Von Neumann
+    \item Set di istruzioni RISC vs CISC
+    \item Pipeline di esecuzione
+    \item Memoria cache e gerarchie di memoria
+    \item Assembly x86, ARM, MIPS
+\end{itemize}
+
+% ============================================================================
+% COLOPHON
+% ============================================================================
+\cleardoublepage
+\thispagestyle{empty}
+
+\vspace*{\fill}
+
+\begin{center}
+\Large
+\textbf{MicroASM}
+
+\vspace{0.5cm}
+
+\normalsize
+\textit{Simulatore Didattico di Pseudo-Assembly}
+
+\vspace{1cm}
+
+Manuale Tecnico Completo --- Versione 1.0
+
+\vspace{2cm}
+
+Sviluppato da\\
+\textbf{Prof. Nicolò Carello}
+
+\vspace{0.5cm}
+
+\href{mailto:info@nicolocarello.it}{info@nicolocarello.it}
+
+\vspace{2cm}
+
+© 2025 --- Tutti i diritti riservati
+
+\vspace{1cm}
+
+\small
+Questo documento è stato composto in \LaTeX{} \\
+con font Latin Modern e pacchetto \texttt{listings} \\
+per il codice assembly.
+
+\vspace{0.5cm}
+
+Per qualsiasi problema o suggerimento,\\
+contattare l'autore via email.
+
+\vspace{1cm}
+
+\rule{0.3\textwidth}{0.4pt}
+
+\vspace{0.5cm}
+
+\textit{``Il miglior modo di imparare è fare.''}
+
+\end{center}
+
+\vspace*{\fill}
+
+\end{document}
