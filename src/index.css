@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 210 25% 98%;
+    --background: 220 25% 95%;
     --foreground: 215 25% 15%;
 
     --card: 0 0% 100%;
@@ -17,8 +17,10 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 15%;
 
-    --primary: 217 91% 35%;
+    --primary: 210 100% 60%;
     --primary-foreground: 0 0% 100%;
+    --primary-light: 210 100% 70%;
+    --primary-dark: 210 100% 50%;
 
     --secondary: 210 20% 92%;
     --secondary-foreground: 215 25% 15%;
@@ -26,28 +28,34 @@ All colors MUST be HSL.
     --muted: 210 20% 92%;
     --muted-foreground: 215 20% 40%;
 
-    --accent: 142 76% 36%;
+    --accent: 280 90% 65%;
     --accent-foreground: 0 0% 100%;
+    --accent-light: 280 90% 75%;
+    --accent-dark: 280 90% 55%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 90% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 214 20% 88%;
     --input: 214 20% 88%;
-    --ring: 217 91% 35%;
+    --ring: 210 100% 60%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
 
-    --code-bg: 217 19% 27%;
-    --code-text: 210 17% 98%;
-    --code-highlight: 217 91% 35%;
+    --code-bg: 230 30% 10%;
+    --code-text: 210 40% 95%;
+    --code-highlight: 210 100% 60%;
+    --code-comment: 210 30% 50%;
+    --code-keyword: 280 90% 70%;
     
-    --success: 142 76% 36%;
-    --warning: 38 92% 50%;
-    --error: 0 84% 60%;
+    --success: 145 85% 50%;
+    --warning: 330 100% 65%;
+    --error: 0 90% 60%;
     
-    --register: 271 81% 48%;
-    --memory: 199 89% 48%;
+    --register: 280 90% 65%;
+    --register-to: 250 90% 70%;
+    --memory: 190 100% 55%;
+    --memory-to: 210 100% 60%;
     
     --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -69,44 +77,52 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 217 19% 13%;
+    --background: 230 25% 8%;
     --foreground: 210 17% 98%;
 
-    --card: 217 19% 18%;
+    --card: 230 20% 12%;
     --card-foreground: 210 17% 98%;
 
-    --popover: 217 19% 18%;
+    --popover: 230 20% 12%;
     --popover-foreground: 210 17% 98%;
 
-    --primary: 217 91% 45%;
+    --primary: 210 100% 60%;
     --primary-foreground: 0 0% 100%;
+    --primary-light: 210 100% 70%;
+    --primary-dark: 210 100% 50%;
 
-    --secondary: 217 19% 23%;
+    --secondary: 230 18% 18%;
     --secondary-foreground: 210 17% 98%;
 
-    --muted: 217 19% 23%;
+    --muted: 230 18% 18%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 142 76% 45%;
+    --accent: 280 90% 65%;
     --accent-foreground: 0 0% 100%;
+    --accent-light: 280 90% 75%;
+    --accent-dark: 280 90% 55%;
 
-    --destructive: 0 84% 65%;
+    --destructive: 0 90% 65%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 217 19% 23%;
-    --input: 217 19% 23%;
-    --ring: 217 91% 45%;
+    --border: 230 18% 20%;
+    --input: 230 18% 20%;
+    --ring: 210 100% 60%;
     
-    --code-bg: 217 19% 18%;
-    --code-text: 210 17% 98%;
-    --code-highlight: 217 91% 45%;
+    --code-bg: 230 30% 10%;
+    --code-text: 210 40% 95%;
+    --code-highlight: 210 100% 60%;
+    --code-comment: 210 30% 50%;
+    --code-keyword: 280 90% 70%;
     
-    --success: 142 76% 45%;
-    --warning: 38 92% 60%;
-    --error: 0 84% 65%;
+    --success: 145 85% 50%;
+    --warning: 330 100% 65%;
+    --error: 0 90% 65%;
     
-    --register: 271 81% 66%;
-    --memory: 199 89% 58%;
+    --register: 280 90% 65%;
+    --register-to: 250 90% 70%;
+    --memory: 190 100% 55%;
+    --memory-to: 210 100% 60%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -125,5 +141,99 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+}
+
+@layer utilities {
+  /* Glassmorphism effects */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-card-light {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+
+  /* Gradient text animation */
+  @keyframes gradient-x {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-x 3s ease infinite;
+  }
+
+  /* Glow pulse animation */
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(51, 153, 255, 0.4); }
+    50% { box-shadow: 0 0 30px rgba(51, 153, 255, 0.8); }
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  /* Float animation */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* Scanline effect for code editor */
+  @keyframes scan {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+
+  .animate-scan {
+    animation: scan 8s linear infinite;
+  }
+
+  /* Card hover lift effect */
+  .card-hover {
+    transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms;
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Neon glow effects */
+  .glow-primary {
+    box-shadow: 0 0 20px rgba(51, 153, 255, 0.6);
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 20px rgba(170, 85, 255, 0.6);
+  }
+
+  .glow-success {
+    box-shadow: 0 0 20px rgba(15, 255, 80, 0.6);
   }
 }

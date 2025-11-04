@@ -240,25 +240,39 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-[1800px] mx-auto space-y-4">
-        <header className="text-center space-y-2">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+    <div className="min-h-screen bg-background p-4 relative overflow-hidden">
+      {/* Animated background pattern */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        {/* Gradient mesh */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(51,153,255,0.08),rgba(170,85,255,0.04),transparent)]" />
+        
+        {/* Dots pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(51,153,255,0.06)_1px,transparent_1px)] bg-[length:40px_40px] opacity-40" />
+        
+        {/* Floating orbs */}
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/8 rounded-full blur-3xl animate-float" style={{animationDelay: '1s'}} />
+      </div>
+
+      <div className="max-w-[1800px] mx-auto space-y-6 relative z-0">
+        <header className="text-center space-y-3 py-4">
+          <h1 className="text-5xl md:text-6xl font-bold font-heading bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient">
             MicroASM
           </h1>
-          <p className="text-muted-foreground">
-            Simulatore Didattico di Pseudo-Assembly •{' '}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card backdrop-blur-md border border-primary/20">
+            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+            <span className="text-sm font-medium">Simulatore Assembly Didattico</span>
+          </div>
+          <p className="text-muted-foreground text-sm">
+            Powered by{' '}
             <a 
               href="https://apps.nicolocarello.it" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="hover:text-primary transition-colors underline underline-offset-2"
+              className="font-semibold hover:text-primary transition-colors underline underline-offset-2"
             >
-              apps.nicolocarello.it
+              Prof. Nicolò Carello
             </a>
-          </p>
-          <p className="text-sm text-muted-foreground/80 italic">
-            Powered by Prof. Nicolò Carello
           </p>
         </header>
         

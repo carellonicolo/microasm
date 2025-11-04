@@ -14,10 +14,10 @@ interface MemoryViewProps {
 
 export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewProps) {
   return (
-    <Card className="p-4 flex flex-col h-full">
-      <div className="flex items-center justify-between mb-4">
+    <Card className="p-6 flex flex-col h-full card-hover rounded-2xl border-2 border-memory/10 bg-gradient-to-br from-card via-card to-card/80">
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">Memoria e Stack</h2>
+          <h2 className="text-xl font-bold font-heading">Memoria e Stack</h2>
           <Popover>
             <PopoverTrigger asChild>
               <button className="text-muted-foreground hover:text-foreground transition-colors">
@@ -54,11 +54,12 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
             </PopoverContent>
           </Popover>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-2">
           <Button
             size="sm"
             variant={format === 'decimal' ? 'default' : 'outline'}
             onClick={() => onFormatChange('decimal')}
+            className={format === 'decimal' ? 'glow-primary' : ''}
           >
             DEC
           </Button>
@@ -66,6 +67,7 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
             size="sm"
             variant={format === 'hexadecimal' ? 'default' : 'outline'}
             onClick={() => onFormatChange('hexadecimal')}
+            className={format === 'hexadecimal' ? 'glow-primary' : ''}
           >
             HEX
           </Button>
@@ -73,6 +75,7 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
             size="sm"
             variant={format === 'binary' ? 'default' : 'outline'}
             onClick={() => onFormatChange('binary')}
+            className={format === 'binary' ? 'glow-primary' : ''}
           >
             BIN
           </Button>
@@ -89,19 +92,26 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
             return (
               <div
                 key={addr}
-                className={`p-1 rounded text-center transition-colors ${
+                className={`relative p-2 rounded-lg text-center transition-all duration-300 hover:scale-105 hover:z-10 group ${
                   isTopOfStack
-                    ? 'bg-orange-500/30 border-2 border-orange-600' 
+                    ? 'bg-gradient-to-br from-warning/30 to-warning/10 border-2 border-warning animate-glow-pulse ring-2 ring-warning/30' 
                     : isStack 
-                    ? 'bg-warning/20 border border-warning/40' 
+                    ? 'bg-gradient-to-br from-warning/15 to-transparent border border-warning/30 hover:border-warning/50' 
                     : nonZero
-                    ? 'bg-memory/10 border border-memory/30'
-                    : 'bg-secondary/50'
+                    ? 'bg-gradient-to-br from-memory/15 to-memory-to/5 border border-memory/30 hover:border-memory/50'
+                    : 'bg-secondary/30 border border-border/50 hover:border-border'
                 }`}
                 title={`[${addr}] = ${formatValue(value, format)}${
                   isTopOfStack ? ' (SP - Top of Stack)' : ''
                 }`}
               >
+                {/* Tooltip glassmorphism */}
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                  <div className="glass-card px-3 py-2 rounded-lg whitespace-nowrap text-xs font-mono border border-primary/30">
+                    [{addr}] = {formatValue(value, format)}
+                    {isTopOfStack && <span className="text-warning font-bold ml-2">← SP</span>}
+                  </div>
+                </div>
                 <div className="text-[10px] text-muted-foreground">
                   {addr}{isTopOfStack ? ' ←SP' : ''}
                 </div>
@@ -114,18 +124,18 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
         </div>
       </div>
       
-      <div className="mt-2 text-xs text-muted-foreground flex gap-4">
+      <div className="mt-3 text-xs text-muted-foreground flex flex-wrap gap-4">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-memory/10 border border-memory/30 rounded"></div>
-          <span>Dati</span>
+          <div className="w-4 h-4 bg-gradient-to-br from-memory/15 to-memory-to/5 border border-memory/30 rounded"></div>
+          <span className="font-medium">Dati</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-warning/20 border border-warning/40 rounded"></div>
-          <span>Stack</span>
+          <div className="w-4 h-4 bg-gradient-to-br from-warning/15 to-transparent border border-warning/30 rounded"></div>
+          <span className="font-medium">Stack</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-orange-500/30 border-2 border-orange-600 rounded"></div>
-          <span>Top of Stack (SP)</span>
+          <div className="w-4 h-4 bg-gradient-to-br from-warning/30 to-warning/10 border-2 border-warning rounded ring-1 ring-warning/30"></div>
+          <span className="font-medium">Top (SP)</span>
         </div>
       </div>
     </Card>
