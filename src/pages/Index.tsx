@@ -225,6 +225,12 @@ const Index = () => {
     toast.info('Reset completato');
   };
 
+  const handleClearLog = () => {
+    setOutput([]);
+    setErrors([]);
+    toast.info('Log pulito');
+  };
+
   useEffect(() => {
     return () => {
       if (runIntervalRef.current) {
@@ -306,7 +312,7 @@ const Index = () => {
             <CPUStatus cpu={cpu} format={format} />
             
             <div className="h-[400px]">
-              <OutputLog output={output} errors={errors} />
+              <OutputLog output={output} errors={errors} onClear={handleClearLog} />
             </div>
           </div>
         </main>

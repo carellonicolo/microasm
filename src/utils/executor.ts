@@ -364,8 +364,10 @@ export class CPUExecutor {
   
   private execOUT(instr: Instruction): RuntimeError | null {
     if (instr.operands.length < 1) return { message: 'OUT requires 1 operand', line: instr.line };
-    const value = this.getValue(instr.operands[0]);
-    this.output.push(value.toString());
+    const operand = instr.operands[0];
+    const value = this.getValue(operand);
+    // Formato migliorato: mostra l'operando e il suo valore
+    this.output.push(`${operand} = ${value}`);
     return null;
   }
 }
