@@ -4,7 +4,7 @@ const VALID_OPCODES = [
   'MOV', 'PUSH', 'POP',
   'ADD', 'SUB', 'MOL', 'DIV', 'INC', 'DEC',
   'AND', 'OR', 'NOT',
-  'JMP', 'JZ', 'JNZ', 'JS', 'CALL', 'RET',
+  'JMP', 'JZ', 'JNZ', 'JS', 'JNS', 'CALL', 'RET',
   'CMP', 'OUT', 'HLT'
 ];
 
@@ -67,7 +67,7 @@ export function parseProgram(sourceCode: string): { instructions: Instruction[],
   
   // Validate label references
   for (const instr of instructions) {
-    if (['JMP', 'JZ', 'JNZ', 'JS', 'CALL'].includes(instr.opcode)) {
+    if (['JMP', 'JZ', 'JNZ', 'JS', 'JNS', 'CALL'].includes(instr.opcode)) {
       if (instr.operands.length === 0) {
         return {
           instructions: [],

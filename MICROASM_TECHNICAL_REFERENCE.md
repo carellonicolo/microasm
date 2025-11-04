@@ -29,7 +29,7 @@ MicroASM is a didactic pseudo-assembly language simulator designed to teach the 
 - **256-byte Memory Space**: Each cell stores a 16-bit signed integer
 - **Integrated Stack**: For function calls and data storage
 - **Status Flags**: Zero Flag (ZF) and Sign Flag (SF) for conditional control flow
-- **Complete Instruction Set**: 21 instructions covering data movement, arithmetic, logic, control flow, stack operations, and I/O
+- **Complete Instruction Set**: 22 instructions covering data movement, arithmetic, logic, control flow, stack operations, and I/O
 
 ---
 
@@ -79,7 +79,7 @@ MicroASM is a didactic pseudo-assembly language simulator designed to teach the 
   - Set by arithmetic operations
   - Set by logical operations
   - Set by comparison (CMP)
-  - Used by conditional jumps (JS)
+  - Used by conditional jumps (JS, JNS)
 
 ### Memory Architecture
 
@@ -696,9 +696,66 @@ Special Notes:
 - Conditional jump based on Sign Flag
 - Used for signed number comparisons
 - SF is set by arithmetic/logical operations
+- Complement of JNS instruction
 ```
 
-#### 4.5 CMP - Compare
+#### 4.5 JNS - Jump if Not Sign
+```
+Syntax: JNS label
+Operands:
+  - label: Label name (target instruction location)
+
+Description:
+Jumps to label if Sign Flag (SF) is NOT set (result of last operation ≥ 0).
+If SF = 0: PC = address_of_label (result was zero or positive)
+If SF = 1: PC = PC + 1 (continue to next instruction)
+
+This instruction is the complement of JS and is useful for detecting non-negative results.
+
+Examples:
+  SUB R0, R1           ; R0 = R0 - R1
+  JNS NON_NEGATIVE     ; Jump if result ≥ 0
+  
+  CMP R0, 0
+  JNS POSITIVE_OR_ZERO ; Jump if R0 ≥ 0
+  
+  ; Absolute value implementation
+  MOV R0, -15
+  CMP R0, 0
+  JNS SKIP_NEGATE      ; Skip if already non-negative
+  MOV R1, 0
+  SUB R1, R0           ; R1 = -R0 (negate)
+  MOV R0, R1
+  SKIP_NEGATE:
+  OUT R0               ; Output: 15
+
+Flags Affected: None (reads SF but doesn't modify)
+Cycles: 1
+Data Flow:
+  - Control Unit ← SF
+  - If SF=0: Address Bus ← label_address, PC ← Address Bus
+  - If SF=1: PC = PC + 1
+
+Error Conditions:
+- Undefined label: "Undefined label: {LABEL}"
+
+Special Notes:
+- Conditional jump based on NOT Sign Flag
+- Complement of JS instruction
+- Useful for detecting non-negative results (result ≥ 0)
+- Combined with CMP, implements ">=" comparisons
+- Essential for proper signed arithmetic flow control
+
+Comparison Table:
+| Condition       | Previous Result | Jump Instruction |
+|-----------------|-----------------|------------------|
+| result < 0      | SF = 1          | JS               |
+| result ≥ 0      | SF = 0          | JNS              |
+| result = 0      | ZF = 1          | JZ               |
+| result ≠ 0      | ZF = 0          | JNZ              |
+```
+
+#### 4.6 CMP - Compare
 ```
 Syntax: CMP op1, op2
 Operands:
@@ -1725,6 +1782,50 @@ Output:
 - Outer loop iterates R0 from 1 to 3
 - Inner loop iterates R1 from 1 to 2 for each R0
 - Demonstrates nested loop structure
+
+---
+
+### Example 11: Absolute Value using JNS
+
+```assembly
+; Calculate absolute value of R0
+; Input: R0 = any signed value
+; Output: R0 = |R0| (absolute value)
+
+START:
+  MOV R0, -15       ; Test value (change to test positive/negative)
+  
+  CMP R0, 0         ; Compare with 0
+  JNS ALREADY_POS   ; If R0 >= 0, skip negation
+  
+NEGATE:
+  ; R0 is negative, need to negate it
+  MOV R1, 0
+  SUB R1, R0        ; R1 = 0 - R0 (negate)
+  MOV R0, R1        ; R0 = -R0 (now positive)
+  
+ALREADY_POS:
+  OUT R0            ; Output: 15 (absolute value)
+  HLT
+
+; Test Cases:
+; R0 = -15  → Output: 15
+; R0 = 15   → Output: 15
+; R0 = 0    → Output: 0
+```
+
+**Explanation:**
+- **CMP R0, 0**: Sets SF=1 if R0<0, SF=0 if R0≥0
+- **JNS ALREADY_POS**: Uses new JNS instruction to skip negation for non-negative values
+- **Negation logic**: For negative values, compute 0 - R0 to get positive equivalent
+- **Key concept**: JNS complements JS, allowing elegant handling of ≥ 0 conditions
+- **Educational value**: Demonstrates signed number handling and conditional flow with new instruction
+
+**Why JNS is useful here:**
+- Without JNS, would need JS followed by JMP (less elegant)
+- JNS directly expresses "if non-negative" condition
+- Makes code more readable and maintainable
+- Mirrors real CPU architectures that have both signed/unsigned jump variants
 
 ---
 

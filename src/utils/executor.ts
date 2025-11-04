@@ -81,6 +81,7 @@ export class CPUExecutor {
         case 'JZ': return this.execJZ(instr);
         case 'JNZ': return this.execJNZ(instr);
         case 'JS': return this.execJS(instr);
+        case 'JNS': return this.execJNS(instr);
         case 'CALL': return this.execCALL(instr);
         case 'RET': return this.execRET(instr);
         case 'CMP': return this.execCMP(instr);
@@ -310,6 +311,17 @@ export class CPUExecutor {
   private execJS(instr: Instruction): RuntimeError | null {
     if (instr.operands.length < 1) return { message: 'JS requires a label', line: instr.line };
     if (this.cpu.SF) {
+      const label = instr.operands[0].toUpperCase();
+      const addr = this.labels.get(label);
+      if (addr === undefined) return { message: `Undefined label: ${label}`, line: instr.line };
+      this.cpu.PC = addr - 1;
+    }
+    return null;
+  }
+  
+  private execJNS(instr: Instruction): RuntimeError | null {
+    if (instr.operands.length < 1) return { message: 'JNS requires a label', line: instr.line };
+    if (!this.cpu.SF) {
       const label = instr.operands[0].toUpperCase();
       const addr = this.labels.get(label);
       if (addr === undefined) return { message: `Undefined label: ${label}`, line: instr.line };

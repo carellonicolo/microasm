@@ -246,6 +246,32 @@ export const CPU_INSTRUCTIONS: InstructionCategory[] = [
         ]
       },
       {
+        opcode: 'JS',
+        syntax: 'JS label',
+        description: 'Salta se Sign Flag è settato (risultato < 0)',
+        example: 'JS NEGATIVE ; se SF=1 allora PC = NEGATIVE',
+        flags: 'Legge SF',
+        cycles: 1,
+        dataFlow: [
+          'Control Unit ← SF',
+          'Se SF=1: PC ← label_address',
+          'Se SF=0: PC = PC + 1'
+        ]
+      },
+      {
+        opcode: 'JNS',
+        syntax: 'JNS label',
+        description: 'Salta se Sign Flag non è settato (risultato ≥ 0)',
+        example: 'JNS POSITIVE ; se SF=0 allora PC = POSITIVE',
+        flags: 'Legge SF',
+        cycles: 1,
+        dataFlow: [
+          'Control Unit ← SF',
+          'Se SF=0: PC ← label_address',
+          'Se SF=1: PC = PC + 1'
+        ]
+      },
+      {
         opcode: 'CMP',
         syntax: 'CMP Ra, Rb',
         description: 'Confronta Ra con Rb (esegue Ra - Rb e aggiorna i flag)',
@@ -596,7 +622,7 @@ export const BUS_EXAMPLES: Record<string, BusExample> = {
   },
   JZ: {
     instruction: 'JZ LOOP',
-    title: 'Salto Condizionato',
+    title: 'Salto Condizionato (Zero)',
     steps: [
       {
         phase: 'Fetch',
@@ -621,6 +647,36 @@ export const BUS_EXAMPLES: Record<string, BusExample> = {
         desc: 'Indirizzo LOOP (10) → Address Bus → PC',
         activeBuses: ['address'],
         state: { PC: 10 }
+      }
+    ]
+  },
+  JNS: {
+    instruction: 'JNS POSITIVE',
+    title: 'Salto Condizionato (Non Segnato)',
+    steps: [
+      {
+        phase: 'Fetch',
+        desc: 'Fetch istruzione da Memory[PC]',
+        activeBuses: ['address', 'data', 'control'],
+        state: { PC: 5, SF: 0 }
+      },
+      {
+        phase: 'Decode',
+        desc: 'Decodifica: JNS POSITIVE (addr=20)',
+        activeBuses: [],
+        state: {}
+      },
+      {
+        phase: 'Execute - Check',
+        desc: 'Control Unit legge SF = 0 (condizione vera, numero ≥ 0)',
+        activeBuses: [],
+        state: {}
+      },
+      {
+        phase: 'Execute - Jump',
+        desc: 'Indirizzo POSITIVE (20) → Address Bus → PC',
+        activeBuses: ['address'],
+        state: { PC: 20 }
       }
     ]
   }

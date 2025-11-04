@@ -67,7 +67,36 @@ PUSH R1            ; Salva R1 (lo useremo temporaneamente)
 MOV R1, R0         ; R1 = R0
 ADD R0, R1         ; R0 = R0 + R1 (raddoppia)
 POP R1             ; Ripristina R1
-RET                ; Torna al chiamante (poppa PC dallo stack)`
+RET                ; Torna al chiamante (poppa PC dallo stack)`,
+
+  signCheck: `; Esempio: Test del segno con JNS
+; Controlla se un numero è positivo, negativo o zero
+
+MOV R0, 10         ; Cambia questo valore per testare
+
+; Test se zero
+CMP R0, 0
+JZ IS_ZERO
+
+; Test se positivo (>= 0 e != 0, quindi > 0)
+CMP R0, 0
+JNS IS_POSITIVE
+
+; Se arriviamo qui, è negativo
+IS_NEGATIVE:
+MOV R1, -1         ; R1 = -1 (codice per negativo)
+JMP END
+
+IS_POSITIVE:
+MOV R1, 1          ; R1 = 1 (codice per positivo)
+JMP END
+
+IS_ZERO:
+MOV R1, 0          ; R1 = 0 (codice per zero)
+
+END:
+OUT R1             ; Stampa: -1, 0, o 1
+HLT`
 };
 
 const Index = () => {
@@ -238,6 +267,7 @@ const Index = () => {
                   <SelectItem value="factorial">Fattoriale (base)</SelectItem>
                   <SelectItem value="stackDemo">Demo Stack (PUSH/POP)</SelectItem>
                   <SelectItem value="subroutine">Subroutine (CALL/RET)</SelectItem>
+                  <SelectItem value="signCheck">Test Segno (JNS)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -9,7 +9,7 @@ This document summarizes the comprehensive technical reference created for the M
 
 ## What Was Extracted
 
-### 1. Complete Instruction Set (21 Instructions)
+### 1. Complete Instruction Set (22 Instructions)
 
 #### Data Transfer (3 Instructions)
 - **MOV** - Move/Copy value between registers, immediates, and memory
@@ -30,11 +30,12 @@ This document summarizes the comprehensive technical reference created for the M
 - **NOT** - Bitwise NOT (~Rdest)
 - *Note: XOR is documented but NOT implemented in the executor*
 
-#### Control Flow (5 Instructions)
+#### Control Flow (6 Instructions)
 - **JMP** - Unconditional jump to label
 - **JZ** - Jump if Zero (conditional on ZF flag)
 - **JNZ** - Jump if Not Zero (opposite of JZ)
 - **JS** - Jump if Sign/Negative (conditional on SF flag)
+- **JNS** - Jump if Not Sign (conditional on SF flag, jumps if result ≥ 0)
 - **CMP** - Compare two operands (non-destructive)
 
 #### Stack Operations (4 Instructions)
@@ -297,7 +298,7 @@ Address from register value
 
 | Category | Count |
 |----------|-------|
-| Instructions | 21 (20 implemented) |
+| Instructions | 22 |
 | Registers | 8 (4 general + 4 special) |
 | Addressing Modes | 4 |
 | Example Programs | 10 |
@@ -309,7 +310,7 @@ Address from register value
 ## Completeness Notes
 
 This documentation covers:
-- ✓ All 21 instruction definitions
+- ✓ All 22 instruction definitions
 - ✓ All register types and sizes
 - ✓ Complete syntax rules
 - ✓ All 4 addressing modes
