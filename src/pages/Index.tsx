@@ -313,22 +313,20 @@ const Index = () => {
 
         <footer className="mt-8 border-t border-border pt-3 pb-2">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Prof. Nicolò Carello</span>
+            <a 
+              href="https://apps.nicolocarello.it" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="font-medium text-foreground hover:text-primary transition-colors"
+            >
+              Prof. Nicolò Carello
+            </a>
             <span className="hidden sm:inline text-border">•</span>
             <a 
               href="mailto:info@nicolocarello.it" 
               className="hover:text-primary transition-colors"
             >
               info@nicolocarello.it
-            </a>
-            <span className="hidden sm:inline text-border">•</span>
-            <a 
-              href="https://apps.nicolocarello.it" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-primary transition-colors"
-            >
-              apps.nicolocarello.it
             </a>
             <span className="hidden sm:inline text-border">•</span>
             <span className="text-xs">© 2025</span>
