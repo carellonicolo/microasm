@@ -3,6 +3,7 @@ import { CodeEditor } from "@/components/CodeEditor";
 import { CPUStatus } from "@/components/CPUStatus";
 import { MemoryView } from "@/components/MemoryView";
 import { OutputLog } from "@/components/OutputLog";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { DisplayFormat, ExecutionState } from "@/types/microasm";
 import { parseProgram } from "@/utils/assembler";
 import { CPUExecutor } from "@/utils/executor";
@@ -244,18 +245,23 @@ const Index = () => {
       {/* Animated background pattern */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         {/* Gradient mesh */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(51,153,255,0.08),rgba(170,85,255,0.04),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(51,153,255,0.08),rgba(170,85,255,0.04),transparent)] dark:opacity-100 opacity-30 transition-opacity duration-500" />
         
         {/* Dots pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(51,153,255,0.06)_1px,transparent_1px)] bg-[length:40px_40px] opacity-40" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(51,153,255,0.06)_1px,transparent_1px)] bg-[length:40px_40px] dark:opacity-40 opacity-20 transition-opacity duration-500" />
         
         {/* Floating orbs */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/8 rounded-full blur-3xl animate-float" style={{animationDelay: '1s'}} />
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 dark:bg-primary/10 bg-primary/5 rounded-full blur-3xl animate-float transition-all duration-500" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 dark:bg-accent/8 bg-accent/4 rounded-full blur-3xl animate-float transition-all duration-500" style={{animationDelay: '1s'}} />
       </div>
 
       <div className="max-w-[1800px] mx-auto space-y-6 relative z-0">
-        <header className="text-center space-y-3 py-4">
+        <header className="text-center space-y-3 py-4 relative">
+          {/* Theme Toggle - Top Right */}
+          <div className="absolute top-0 right-0">
+            <ThemeToggle />
+          </div>
+          
           <h1 className="text-5xl md:text-6xl font-bold font-heading bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient">
             MicroASM
           </h1>
