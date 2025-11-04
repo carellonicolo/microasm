@@ -241,7 +241,15 @@ const Index = () => {
             MicroASM
           </h1>
           <p className="text-muted-foreground">
-            Simulatore Didattico di Pseudo-Assembly
+            Simulatore Didattico di Pseudo-Assembly •{' '}
+            <a 
+              href="https://apps.nicolocarello.it" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-primary transition-colors underline underline-offset-2"
+            >
+              apps.nicolocarello.it
+            </a>
           </p>
           <p className="text-sm text-muted-foreground/80 italic">
             Powered by Prof. Nicolò Carello
@@ -312,6 +320,15 @@ const Index = () => {
               className="hover:text-primary transition-colors"
             >
               info@nicolocarello.it
+            </a>
+            <span className="hidden sm:inline text-border">•</span>
+            <a 
+              href="https://apps.nicolocarello.it" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-primary transition-colors"
+            >
+              apps.nicolocarello.it
             </a>
             <span className="hidden sm:inline text-border">•</span>
             <span className="text-xs">© 2025</span>
