@@ -303,22 +303,18 @@ const Index = () => {
           </div>
         </main>
 
-        <footer className="mt-8 border-t border-border pt-4 pb-2">
-          <div className="text-center space-y-1">
-            <p className="text-sm font-medium text-foreground">
-              Prof. Nicolò Carello
-            </p>
-            <p className="text-sm text-muted-foreground">
-              <a href="mailto:info@nicolocarello.it" className="hover:text-primary transition-colors">
-                info@nicolocarello.it
-              </a>
-            </p>
-            <p className="text-xs text-muted-foreground/80">
-              © 2025 - Tutti i diritti riservati
-            </p>
-            <p className="text-xs text-muted-foreground/70 italic">
-              Per qualsiasi problema riscontrato, contattami via email
-            </p>
+        <footer className="mt-8 border-t border-border pt-3 pb-2">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">Prof. Nicolò Carello</span>
+            <span className="hidden sm:inline text-border">•</span>
+            <a 
+              href="mailto:info@nicolocarello.it" 
+              className="hover:text-primary transition-colors"
+            >
+              info@nicolocarello.it
+            </a>
+            <span className="hidden sm:inline text-border">•</span>
+            <span className="text-xs">© 2025</span>
           </div>
         </footer>
       </div>
