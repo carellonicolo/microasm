@@ -4,6 +4,7 @@ import { CPUStatus } from "@/components/CPUStatus";
 import { MemoryView } from "@/components/MemoryView";
 import { OutputLog } from "@/components/OutputLog";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ExercisesDialog } from "@/components/ExercisesDialog";
 import { DisplayFormat, ExecutionState } from "@/types/microasm";
 import { parseProgram } from "@/utils/assembler";
 import { CPUExecutor } from "@/utils/executor";
@@ -284,7 +285,9 @@ const Index = () => {
         
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex flex-wrap items-center gap-3 mb-2">
+              <ExercisesDialog onLoadExercise={setCode} />
+              <div className="h-6 w-px bg-border hidden sm:block" />
               <label className="text-sm font-medium">Esempi:</label>
               <Select 
                 value={selectedExample} 
