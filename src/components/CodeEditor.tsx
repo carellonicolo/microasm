@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Play, Pause, RotateCcw, SkipForward } from "lucide-react";
 import { ExecutionState } from "@/types/microasm";
 import { DocumentationDialog } from "./DocumentationDialog";
+import { useEffect, useRef } from "react";
 
 interface CodeEditorProps {
   code: string;
@@ -26,6 +28,19 @@ export function CodeEditor({
   currentLine
 }: CodeEditorProps) {
   const lines = code.split('\n');
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  // Auto-scroll to current line during execution
+  useEffect(() => {
+    if (currentLine && scrollRef.current) {
+      const lineHeight = 24; // leading-6 = 1.5rem = 24px
+      const scrollTop = (currentLine - 1) * lineHeight;
+      const containerHeight = scrollRef.current.clientHeight;
+      
+      // Center the current line in viewport
+      scrollRef.current.scrollTop = scrollTop - (containerHeight / 2) + (lineHeight / 2);
+    }
+  }, [currentLine]);
   
   return (
     <Card className="flex flex-col h-full card-hover rounded-2xl border-2 border-primary/10 overflow-hidden bg-gradient-to-br from-card via-card to-card/80">
@@ -74,47 +89,51 @@ export function CodeEditor({
           </Button>
         </div>
       </div>
-      <div className="flex-1 p-4 overflow-auto bg-code-bg relative">
+      <div className="flex-1 bg-code-bg relative overflow-hidden">
         {/* Scanline effect */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-10">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/3 to-transparent h-20 animate-scan opacity-30" />
         </div>
         
         {/* Grid pattern background */}
         <div 
-          className="absolute inset-0 opacity-[0.02]" 
+          className="absolute inset-0 opacity-[0.02] z-0" 
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h60v60H0z' fill='none'/%3E%3Cpath d='M30 0v60M0 30h60' stroke='%2333aaff' stroke-width='0.5'/%3E%3C/svg%3E")`
           }}
         />
         
-        <div className="flex font-mono text-sm h-full relative z-10">
-          <div className="bg-gradient-to-r from-primary/5 to-transparent mr-4 pr-3 select-none text-right flex-shrink-0 border-r border-primary/20">
-            {lines.map((_, idx) => (
-              <div 
-                key={idx}
-                className={`leading-6 px-2 transition-all ${
-                  currentLine === idx + 1 
-                    ? 'bg-primary/20 border-l-4 border-primary text-primary font-bold scale-105 glow-primary' 
-                    : 'text-muted-foreground/60'
-                }`}
-              >
-                {idx + 1}
-              </div>
-            ))}
+        <ScrollArea className="h-full" ref={scrollRef}>
+          <div className="flex font-mono text-sm min-h-full relative z-20 p-4">
+            <div className="bg-gradient-to-r from-primary/5 to-transparent mr-4 pr-3 select-none text-right flex-shrink-0 border-r border-primary/20">
+              {lines.map((_, idx) => (
+                <div 
+                  key={idx}
+                  className={`leading-6 px-2 transition-all ${
+                    currentLine === idx + 1 
+                      ? 'bg-primary/20 border-l-4 border-primary text-primary font-bold scale-105 glow-primary' 
+                      : 'text-muted-foreground/60'
+                  }`}
+                >
+                  {idx + 1}
+                </div>
+              ))}
+            </div>
+            <textarea
+              value={code}
+              onChange={(e) => onCodeChange(e.target.value)}
+              rows={Math.max(lines.length, 20)}
+              className="flex-1 bg-transparent text-code-text font-mono text-sm resize-none outline-none leading-6"
+              spellCheck={false}
+              wrap="off"
+              aria-label="MicroASM source code editor"
+              style={{ 
+                tabSize: 2,
+                height: 'auto'
+              }}
+            />
           </div>
-          <textarea
-            value={code}
-            onChange={(e) => onCodeChange(e.target.value)}
-            className="flex-1 bg-transparent text-code-text font-mono text-sm resize-none outline-none leading-6 overflow-hidden"
-            spellCheck={false}
-            aria-label="MicroASM source code editor"
-            style={{ 
-              minHeight: '100%',
-              tabSize: 2
-            }}
-          />
-        </div>
+        </ScrollArea>
       </div>
     </Card>
   );
