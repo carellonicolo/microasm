@@ -4,7 +4,6 @@ import {
   Tag,
   FileText,
   CheckCircle2,
-  Lightbulb,
   Target,
   Code,
   ChevronLeft,
@@ -318,24 +317,6 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
                     ))}
                   </ul>
                 </div>
-
-                {/* Suggerimenti */}
-                {selectedExercise.hints && selectedExercise.hints.length > 0 && (
-                  <div className="glass-card p-5 rounded-xl border border-yellow-500/20 bg-yellow-500/5">
-                    <h4 className="font-semibold mb-3 flex items-center gap-2 text-base">
-                      <Lightbulb className="w-5 h-5 text-yellow-500" />
-                      Suggerimenti
-                    </h4>
-                    <ul className="space-y-2">
-                      {selectedExercise.hints.map((hint, idx) => (
-                        <li key={idx} className="text-sm text-muted-foreground italic flex items-start gap-2">
-                          <span className="text-yellow-500">💡</span>
-                          <span>{hint}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
 
                 {/* Output Atteso */}
                 {selectedExercise.expectedOutput && (

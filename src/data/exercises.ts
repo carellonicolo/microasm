@@ -5,7 +5,6 @@ export interface Exercise {
   category: string;
   description: string;
   requirements: string[];
-  hints?: string[];
   expectedOutput?: string;
 }
 
@@ -22,10 +21,6 @@ export const EXERCISES: Exercise[] = [
       "Usare l'istruzione OUT per visualizzare R0",
       "Terminare con HLT"
     ],
-    hints: [
-      "La sintassi è: MOV destinazione, sorgente",
-      "OUT richiede un registro come parametro"
-    ],
     expectedOutput: "R0 = 42"
   },
   {
@@ -39,10 +34,6 @@ export const EXERCISES: Exercise[] = [
       "Caricare 27 in R1",
       "Sommare R1 a R0",
       "Visualizzare il risultato in R0"
-    ],
-    hints: [
-      "ADD somma il secondo operando al primo e salva in R0",
-      "Il risultato finale dovrebbe essere 42"
     ],
     expectedOutput: "R0 = 42"
   },
@@ -59,11 +50,6 @@ export const EXERCISES: Exercise[] = [
       "Visualizzare ogni valore",
       "Fermarsi quando il contatore raggiunge 5"
     ],
-    hints: [
-      "INC incrementa un registro di 1",
-      "CMP confronta due valori e imposta i flag",
-      "JZ salta se il flag Zero è attivo"
-    ],
     expectedOutput: "6 righe di output:\nR0 = 0\nR0 = 1\nR0 = 2\nR0 = 3\nR0 = 4\nR0 = 5"
   },
   {
@@ -76,10 +62,6 @@ export const EXERCISES: Exercise[] = [
       "Caricare 100 in R0",
       "Sottrarre 37 da R0",
       "Visualizzare il risultato"
-    ],
-    hints: [
-      "SUB sottrae il secondo operando dal primo",
-      "Attenzione all'ordine degli operandi per ottenere un risultato positivo!"
     ],
     expectedOutput: "R0 = 63"
   },
@@ -94,10 +76,6 @@ export const EXERCISES: Exercise[] = [
       "Leggere il valore dalla memoria",
       "Caricare in R0",
       "Visualizzare R0"
-    ],
-    hints: [
-      "La sintassi [10] indica indirizzamento diretto alla cella 10",
-      "Prima scrivi in memoria, poi leggi"
     ],
     expectedOutput: "R0 = 99"
   },
@@ -116,11 +94,6 @@ export const EXERCISES: Exercise[] = [
       "Usare un registro come accumulatore",
       "Il risultato finale deve essere 28"
     ],
-    hints: [
-      "7 × 4 significa sommare 7 per 4 volte",
-      "Usa un registro per contare quante volte hai sommato",
-      "Decrementa il contatore ad ogni iterazione"
-    ],
     expectedOutput: "R0 = 28"
   },
   {
@@ -134,11 +107,6 @@ export const EXERCISES: Exercise[] = [
       "Confrontare i due valori",
       "Salvare il maggiore in R2",
       "Visualizzare R2"
-    ],
-    hints: [
-      "Usa SUB per confrontare R0 e R1",
-      "Il Sign Flag (SF) ti dice se il risultato è negativo",
-      "Se R0 - R1 è negativo, allora R1 è maggiore"
     ],
     expectedOutput: "R2 = 45"
   },
@@ -154,11 +122,6 @@ export const EXERCISES: Exercise[] = [
       "Sommare tutti i valori in un accumulatore",
       "Visualizzare il risultato finale"
     ],
-    hints: [
-      "Usa un registro per l'indice corrente",
-      "Usa un registro per l'accumulatore",
-      "Incrementa l'indice ad ogni iterazione"
-    ],
     expectedOutput: "R0 = 150"
   },
   {
@@ -172,11 +135,6 @@ export const EXERCISES: Exercise[] = [
       "Determinare se è pari o dispari",
       "Salvare 0 in R0 se pari, 1 se dispari",
       "Visualizzare R0"
-    ],
-    hints: [
-      "Usa AND con 1 per testare il bit meno significativo",
-      "Se il bit LSB è 0, il numero è pari",
-      "Se il bit LSB è 1, il numero è dispari"
     ],
     expectedOutput: "R0 = 1 (per numeri dispari)\nR0 = 0 (per numeri pari)"
   },
@@ -192,11 +150,6 @@ export const EXERCISES: Exercise[] = [
       "Non modificare R1",
       "Visualizzare tutti e tre i registri alla fine"
     ],
-    hints: [
-      "PUSH salva un valore nello stack",
-      "POP recupera un valore dallo stack (LIFO)",
-      "Lo stack funziona come una pila: last in, first out"
-    ],
     expectedOutput: "R0 = 15\nR1 = 10\nR2 = 5"
   },
   {
@@ -211,12 +164,6 @@ export const EXERCISES: Exercise[] = [
       "Contare solo i valori strettamente positivi (> 0)",
       "Visualizzare il conteggio finale"
     ],
-    hints: [
-      "Usa CMP per confrontare con 0",
-      "JS salta se il Sign Flag è attivo (numero negativo)",
-      "JZ salta se il numero è zero",
-      "I numeri positivi sono quelli che non saltano con nessuna delle due condizioni"
-    ],
     expectedOutput: "R3 = 2"
   },
   {
@@ -230,12 +177,6 @@ export const EXERCISES: Exercise[] = [
       "Implementare la divisione tramite sottrazioni successive",
       "Calcolare sia il quoziente che il resto",
       "Visualizzare entrambi i risultati"
-    ],
-    hints: [
-      "Sottrai il divisore dal dividendo finché puoi",
-      "Conta quante volte riesci a sottrarre (quoziente)",
-      "Ciò che rimane è il resto",
-      "20 - 3 - 3 - 3 - 3 - 3 - 3 = 2 (resto), hai sottratto 6 volte (quoziente)"
     ],
     expectedOutput: "R0 = 6 (quoziente)\nR1 = 2 (resto)"
   },
@@ -253,12 +194,6 @@ export const EXERCISES: Exercise[] = [
       "Il risultato deve essere 720",
       "Visualizzare il risultato"
     ],
-    hints: [
-      "Parti da un accumulatore a 1",
-      "Moltiplica progressivamente per 6, poi 5, poi 4, ecc.",
-      "Usa un contatore che parte da 6 e decrementa fino a 1",
-      "Usa MOL per la moltiplicazione"
-    ],
     expectedOutput: "R0 = 720"
   },
   {
@@ -274,12 +209,6 @@ export const EXERCISES: Exercise[] = [
       "Chiamare la subroutine 3 volte",
       "Partire da R0=5"
     ],
-    hints: [
-      "CALL salta alla subroutine e salva l'indirizzo di ritorno",
-      "RET ritorna all'istruzione dopo CALL",
-      "Raddoppiare significa moltiplicare per 2 o sommare a se stesso",
-      "5 → 10 → 20 → 40"
-    ],
     expectedOutput: "R0 = 40"
   },
   {
@@ -293,12 +222,6 @@ export const EXERCISES: Exercise[] = [
       "Visualizzare ogni numero della sequenza",
       "Usare un loop per generare i numeri",
       "Fermarsi dopo il settimo numero"
-    ],
-    hints: [
-      "La sequenza inizia con 0 e 1",
-      "Ogni numero successivo è la somma dei due precedenti",
-      "Usa 3 registri: F(n-2), F(n-1), F(n)",
-      "Dopo ogni calcolo, 'ruota' i valori: F(n-2) = F(n-1), F(n-1) = F(n)"
     ],
     expectedOutput: "7 righe:\nR0 = 0\nR0 = 1\nR0 = 1\nR0 = 2\nR0 = 3\nR0 = 5\nR0 = 8"
   },
@@ -314,12 +237,6 @@ export const EXERCISES: Exercise[] = [
       "Salvare la posizione trovata in un registro",
       "Visualizzare l'indice (dovrebbe essere 3)"
     ],
-    hints: [
-      "Itera sull'array con un indice",
-      "Confronta ogni elemento con 23",
-      "Quando trovi una corrispondenza, salva l'indice corrente",
-      "Esci dal loop quando trovi il valore"
-    ],
     expectedOutput: "R2 = 3"
   },
   {
@@ -333,12 +250,6 @@ export const EXERCISES: Exercise[] = [
       "Implementare l'algoritmo Bubble Sort",
       "Ordinare in ordine crescente",
       "Visualizzare tutti e 4 i valori ordinati"
-    ],
-    hints: [
-      "Bubble Sort confronta coppie adiacenti e le scambia se non in ordine",
-      "Servono due loop nidificati",
-      "Per scambiare due valori in memoria, usa registri temporanei",
-      "Ripeti il processo finché non ci sono più scambi"
     ],
     expectedOutput: "4 righe:\nR0 = 10\nR0 = 20\nR0 = 30\nR0 = 40"
   },
@@ -354,12 +265,6 @@ export const EXERCISES: Exercise[] = [
       "Gestire correttamente lo stack per i parametri e i valori di ritorno",
       "Implementare il caso base (esponente = 0 → ritorna 1)"
     ],
-    hints: [
-      "Caso base: se esponente = 0, ritorna 1",
-      "Caso ricorsivo: base × potenza(base, esponente-1)",
-      "Usa lo stack per salvare i valori temporanei",
-      "PUSH prima della chiamata ricorsiva, POP al ritorno"
-    ],
     expectedOutput: "R0 = 32"
   },
   {
@@ -374,12 +279,6 @@ export const EXERCISES: Exercise[] = [
       "Salvare 1 in R0 se primo, 0 se non primo",
       "Visualizzare il risultato"
     ],
-    hints: [
-      "Un numero è primo se divisibile solo per 1 e se stesso",
-      "Testa la divisibilità da 2 fino a √n",
-      "Per 17, devi testare 2, 3, 4 (√17 ≈ 4.1)",
-      "Se nessun divisore trovato, è primo"
-    ],
     expectedOutput: "R0 = 1 (per 17, che è primo)\nR0 = 0 (per numeri non primi)"
   },
   {
@@ -393,12 +292,6 @@ export const EXERCISES: Exercise[] = [
       "Calcolare MCD(48, 18)",
       "Il risultato deve essere 6",
       "Visualizzare il risultato"
-    ],
-    hints: [
-      "L'algoritmo di Euclide: MCD(a, b) = MCD(b, a mod b)",
-      "Continua finché b = 0, poi il risultato è a",
-      "Il modulo può essere calcolato con sottrazioni successive",
-      "48 → 18 → 12 → 6 → 0, quindi MCD = 6"
     ],
     expectedOutput: "R2 = 6"
   }
@@ -416,7 +309,6 @@ export const generateExerciseTemplate = (exercise: Exercise): string => {
 ; REQUISITI:
 ${exercise.requirements.map(req => `; - ${req}`).join('\n')}
 ;
-${exercise.hints ? `; SUGGERIMENTI:\n${exercise.hints.map(h => `; 💡 ${h}`).join('\n')}\n;` : ''}
 ; OUTPUT ATTESO:
 ; ${exercise.expectedOutput || 'Vedi descrizione'}
 ;
