@@ -5,11 +5,15 @@ import { MemoryView } from "@/components/MemoryView";
 import { OutputLog } from "@/components/OutputLog";
 import { ExercisesDialog } from "@/components/ExercisesDialog";
 import { Header } from "@/components/shared/Header";
+import { SaveProgramDialog } from "@/components/dialogs/SaveProgramDialog";
+import { Button } from "@/components/ui/button";
 import { DisplayFormat, ExecutionState } from "@/types/microasm";
 import { parseProgram } from "@/utils/assembler";
 import { CPUExecutor } from "@/utils/executor";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/hooks/useAuth";
+import { Save } from "lucide-react";
 
 const EXAMPLE_PROGRAMS = {
   factorial: `; Esempio: Calcolo fattoriale
@@ -102,11 +106,13 @@ HLT`
 };
 
 const Index = () => {
+  const { user } = useAuth();
   const [selectedExample, setSelectedExample] = useState<keyof typeof EXAMPLE_PROGRAMS>('factorial');
   const [code, setCode] = useState(EXAMPLE_PROGRAMS.factorial);
   const [format, setFormat] = useState<DisplayFormat>('decimal');
   const [executionState, setExecutionState] = useState<ExecutionState>('idle');
   const [errors, setErrors] = useState<string[]>([]);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   
   const executorRef = useRef<CPUExecutor | null>(null);
   const [cpu, setCpu] = useState({
@@ -118,6 +124,16 @@ const Index = () => {
   const [output, setOutput] = useState<string[]>([]);
   const [currentLine, setCurrentLine] = useState<number | undefined>();
   const runIntervalRef = useRef<number | null>(null);
+
+  // Load code from localStorage if coming from dashboard
+  useEffect(() => {
+    const savedCode = localStorage.getItem('microasm_loaded_code');
+    if (savedCode) {
+      setCode(savedCode);
+      localStorage.removeItem('microasm_loaded_code');
+      toast.success('Programma caricato');
+    }
+  }, []);
 
   const updateState = () => {
     if (executorRef.current) {
@@ -263,6 +279,20 @@ const Index = () => {
           <div className="lg:col-span-2 space-y-4">
             <div className="flex flex-wrap items-center gap-3 mb-2">
               <ExercisesDialog onLoadExercise={setCode} />
+              {user && (
+                <>
+                  <div className="h-6 w-px bg-border hidden sm:block" />
+                  <Button 
+                    onClick={() => setSaveDialogOpen(true)} 
+                    variant="outline" 
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    Salva Programma
+                  </Button>
+                </>
+              )}
               <div className="h-6 w-px bg-border hidden sm:block" />
               <label className="text-sm font-medium">Esempi:</label>
               <Select 
@@ -338,6 +368,12 @@ const Index = () => {
           </div>
         </footer>
       </div>
+
+      <SaveProgramDialog 
+        open={saveDialogOpen} 
+        onOpenChange={setSaveDialogOpen} 
+        code={code} 
+      />
     </div>
   );
 };

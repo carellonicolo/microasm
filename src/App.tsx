@@ -9,6 +9,9 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import Dashboard from "./pages/Dashboard";
+import DashboardPrograms from "./pages/DashboardPrograms";
+import DashboardClasses from "./pages/DashboardClasses";
+import DashboardExercises from "./pages/DashboardExercises";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +32,9 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/programs" element={<DashboardPrograms />} />
+            <Route path="/dashboard/classes" element={<DashboardClasses />} />
+            <Route path="/dashboard/exercises" element={<DashboardExercises />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
