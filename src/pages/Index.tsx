@@ -3,8 +3,8 @@ import { CodeEditor } from "@/components/CodeEditor";
 import { CPUStatus } from "@/components/CPUStatus";
 import { MemoryView } from "@/components/MemoryView";
 import { OutputLog } from "@/components/OutputLog";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { ExercisesDialog } from "@/components/ExercisesDialog";
+import { Header } from "@/components/shared/Header";
 import { DisplayFormat, ExecutionState } from "@/types/microasm";
 import { parseProgram } from "@/utils/assembler";
 import { CPUExecutor } from "@/utils/executor";
@@ -257,31 +257,7 @@ const Index = () => {
       </div>
 
       <div className="max-w-[1800px] mx-auto space-y-6 relative z-0">
-        <header className="text-center space-y-3 py-4 relative">
-          {/* Theme Toggle - Top Right */}
-          <div className="absolute top-0 right-0">
-            <ThemeToggle />
-          </div>
-          
-          <h1 className="text-5xl md:text-6xl font-bold font-heading bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient">
-            MicroASM
-          </h1>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card backdrop-blur-md border border-primary/20">
-            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <span className="text-sm font-medium">Simulatore Assembly Didattico</span>
-          </div>
-          <p className="text-muted-foreground text-sm">
-            Powered by{' '}
-            <a 
-              href="https://apps.nicolocarello.it" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="font-semibold hover:text-primary transition-colors underline underline-offset-2"
-            >
-              Prof. Nicolò Carello
-            </a>
-          </p>
-        </header>
+        <Header />
         
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-4">
