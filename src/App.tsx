@@ -12,6 +12,8 @@ import Dashboard from "./pages/Dashboard";
 import DashboardPrograms from "./pages/DashboardPrograms";
 import DashboardClasses from "./pages/DashboardClasses";
 import DashboardExercises from "./pages/DashboardExercises";
+import DashboardAssignments from "./pages/DashboardAssignments";
+import AssignmentDetail from "./pages/AssignmentDetail";
 import ClassDetail from "./pages/ClassDetail";
 
 const queryClient = new QueryClient();
@@ -33,10 +35,12 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/programs" element={<DashboardPrograms />} />
-            <Route path="/dashboard/classes" element={<DashboardClasses />} />
-            <Route path="/dashboard/classes/:classId" element={<ClassDetail />} />
-            <Route path="/dashboard/exercises" element={<DashboardExercises />} />
+          <Route path="/dashboard/programs" element={<DashboardPrograms />} />
+          <Route path="/dashboard/classes" element={<DashboardClasses />} />
+          <Route path="/dashboard/classes/:classId" element={<ClassDetail />} />
+          <Route path="/dashboard/assignments" element={<DashboardAssignments />} />
+          <Route path="/dashboard/assignments/:assignmentId" element={<AssignmentDetail />} />
+          <Route path="/dashboard/exercises" element={<DashboardExercises />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
