@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useSavedPrograms } from '@/hooks/useSavedPrograms';
@@ -16,11 +17,14 @@ import {
   Plus, 
   Play,
   GraduationCap,
-  ClipboardList
+  ClipboardList,
+  UserCog
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { RoleBadge } from '@/components/shared/RoleBadge';
+import { PromoteToTeacherDialog } from '@/components/dialogs/PromoteToTeacherDialog';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -29,6 +33,7 @@ const Dashboard = () => {
   const { classes, loading: classesLoading } = useClasses();
   const { assignments, loading: assignmentsLoading } = useAssignments();
   const navigate = useNavigate();
+  const [promoteDialogOpen, setPromoteDialogOpen] = useState(false);
 
   if (roleLoading || programsLoading || classesLoading || assignmentsLoading) {
     return (
@@ -49,15 +54,20 @@ const Dashboard = () => {
     <DashboardLayout>
       <div className="p-6 space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold">
-            Benvenuto, {user?.user_metadata?.first_name || 'Utente'}
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {role === 'teacher' 
-              ? 'Gestisci le tue classi ed esercitazioni' 
-              : 'Continua il tuo percorso di apprendimento'}
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-3xl font-bold">
+                Benvenuto, {user?.user_metadata?.first_name || 'Utente'}
+              </h1>
+              {role && <RoleBadge role={role} />}
+            </div>
+            <p className="text-muted-foreground">
+              {role === 'teacher' 
+                ? 'Gestisci le tue classi ed esercitazioni' 
+                : 'Continua il tuo percorso di apprendimento'}
+            </p>
+          </div>
         </div>
 
         {/* Statistics */}
@@ -91,7 +101,7 @@ const Dashboard = () => {
         {/* Quick Actions */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Azioni Rapide</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <QuickActionCard
               title="Nuovo Programma"
               description="Inizia a scrivere codice assembly"
@@ -107,13 +117,23 @@ const Dashboard = () => {
               buttonText="Vedi Esercizi"
             />
             {role === 'teacher' ? (
-              <QuickActionCard
-                title="Crea Classe"
-                description="Aggiungi una nuova classe"
-                icon={GraduationCap}
-                href="/dashboard/classes"
-                buttonText="Crea Classe"
-              />
+              <>
+                <QuickActionCard
+                  title="Crea Classe"
+                  description="Aggiungi una nuova classe"
+                  icon={GraduationCap}
+                  href="/dashboard/classes"
+                  buttonText="Crea Classe"
+                />
+                <QuickActionCard
+                  title="Promuovi Studente"
+                  description="Promuovi uno studente a insegnante"
+                  icon={UserCog}
+                  onClick={() => setPromoteDialogOpen(true)}
+                  buttonText="Promuovi"
+                  variant="secondary"
+                />
+              </>
             ) : (
               <QuickActionCard
                 title="Assegnazioni"
@@ -236,6 +256,17 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Promote Dialog */}
+        {role === 'teacher' && (
+          <PromoteToTeacherDialog
+            open={promoteDialogOpen}
+            onOpenChange={setPromoteDialogOpen}
+            onStudentPromoted={() => {
+              // Optionally refresh something
+            }}
+          />
         )}
       </div>
     </DashboardLayout>

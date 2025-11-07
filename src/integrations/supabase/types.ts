@@ -134,6 +134,38 @@ export type Database = {
           },
         ]
       }
+      class_teachers: {
+        Row: {
+          added_at: string | null
+          added_by: string | null
+          class_id: string
+          id: string
+          teacher_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          added_by?: string | null
+          class_id: string
+          id?: string
+          teacher_id: string
+        }
+        Update: {
+          added_at?: string | null
+          added_by?: string | null
+          class_id?: string
+          id?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_teachers_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           academic_year: string

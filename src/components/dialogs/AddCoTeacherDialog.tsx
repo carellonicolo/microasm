@@ -6,24 +6,25 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Search, UserPlus } from 'lucide-react';
+import { RoleBadge } from '@/components/shared/RoleBadge';
 
-interface AddStudentDialogProps {
+interface AddCoTeacherDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   classId: string;
-  onStudentAdded: () => void;
+  onCoTeacherAdded: () => void;
 }
 
-interface StudentProfile {
+interface TeacherProfile {
   id: string;
   first_name: string;
   last_name: string;
   email: string;
 }
 
-export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }: AddStudentDialogProps) => {
+export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdded }: AddCoTeacherDialogProps) => {
   const [searchEmail, setSearchEmail] = useState('');
-  const [searchResults, setSearchResults] = useState<StudentProfile[]>([]);
+  const [searchResults, setSearchResults] = useState<TeacherProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
 
@@ -32,7 +33,7 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
 
     setLoading(true);
     try {
-      // Cerca studenti per email
+      // Cerca utenti per email
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, first_name, last_name, email')
@@ -42,37 +43,35 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
       if (profileError) throw profileError;
 
       if (!profiles || profiles.length === 0) {
-        toast.info('Nessuno studente trovato');
+        toast.info('Nessun utente trovato');
         setSearchResults([]);
         return;
       }
 
-      // Filtra solo gli studenti (controllando user_roles)
-      const studentIds = profiles.map(p => p.id);
+      // Filtra solo i teacher
+      const userIds = profiles.map(p => p.id);
       const { data: roles } = await supabase
         .from('user_roles')
         .select('user_id')
-        .in('user_id', studentIds)
-        .eq('role', 'student');
+        .in('user_id', userIds)
+        .eq('role', 'teacher');
 
-      const studentRoleIds = new Set(roles?.map(r => r.user_id) || []);
-      const students = profiles.filter(p => studentRoleIds.has(p.id));
+      const teacherIds = new Set(roles?.map(r => r.user_id) || []);
+      const teachers = profiles.filter(p => teacherIds.has(p.id));
 
-      // Escludi studenti già nella classe
-      const { data: existingStudents } = await supabase
-        .from('class_students')
-        .select('student_id')
+      // Escludi teacher già nella classe
+      const { data: existingTeachers } = await supabase
+        .from('class_teachers')
+        .select('teacher_id')
         .eq('class_id', classId);
 
-      const existingIds = new Set(existingStudents?.map(s => s.student_id) || []);
-      const availableStudents = students.filter(s => !existingIds.has(s.id));
+      const existingIds = new Set(existingTeachers?.map(t => t.teacher_id) || []);
+      const availableTeachers = teachers.filter(t => !existingIds.has(t.id));
 
-      setSearchResults(availableStudents);
+      setSearchResults(availableTeachers);
       
-      if (students.length === 0) {
-        toast.info('Nessuno studente registrato trovato con questa email');
-      } else if (availableStudents.length === 0) {
-        toast.info('Tutti gli studenti trovati sono già nella classe');
+      if (availableTeachers.length === 0) {
+        toast.info('Tutti gli insegnanti trovati sono già co-insegnanti di questa classe');
       }
     } catch (error: any) {
       toast.error('Errore nella ricerca: ' + error.message);
@@ -81,21 +80,24 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
     }
   };
 
-  const handleAddStudent = async (studentId: string) => {
+  const handleAddCoTeacher = async (teacherId: string) => {
     setAdding(true);
     try {
+      const { data: currentUser } = await supabase.auth.getUser();
+      
       const { error } = await supabase
-        .from('class_students')
+        .from('class_teachers')
         .insert({
           class_id: classId,
-          student_id: studentId,
+          teacher_id: teacherId,
+          added_by: currentUser.user?.id,
         });
 
       if (error) throw error;
 
-      toast.success('Studente aggiunto alla classe');
-      setSearchResults(prev => prev.filter(s => s.id !== studentId));
-      onStudentAdded();
+      toast.success('Co-insegnante aggiunto alla classe');
+      setSearchResults(prev => prev.filter(t => t.id !== teacherId));
+      onCoTeacherAdded();
     } catch (error: any) {
       toast.error('Errore: ' + error.message);
     } finally {
@@ -114,15 +116,15 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Aggiungi Studente</DialogTitle>
+          <DialogTitle>Aggiungi Co-Insegnante</DialogTitle>
           <DialogDescription>
-            Cerca studenti per email e aggiungili alla classe
+            Cerca insegnanti per email e aggiungili come co-insegnanti della classe
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex gap-2">
             <div className="flex-1">
-              <Label htmlFor="search">Email Studente</Label>
+              <Label htmlFor="search">Email Insegnante</Label>
               <Input
                 id="search"
                 value={searchEmail}
@@ -139,17 +141,20 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
 
           {searchResults.length > 0 && (
             <div className="space-y-2">
-              <Label>Risultati</Label>
+              <Label>Insegnanti Disponibili</Label>
               <div className="border rounded-lg divide-y max-h-64 overflow-y-auto">
-                {searchResults.map((student) => (
-                  <div key={student.id} className="p-3 flex items-center justify-between hover:bg-accent/50">
-                    <div>
-                      <p className="font-medium">{student.first_name} {student.last_name}</p>
-                      <p className="text-sm text-muted-foreground">{student.email}</p>
+                {searchResults.map((teacher) => (
+                  <div key={teacher.id} className="p-3 flex items-center justify-between hover:bg-accent/50">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <p className="font-medium">{teacher.first_name} {teacher.last_name}</p>
+                        <p className="text-sm text-muted-foreground">{teacher.email}</p>
+                      </div>
+                      <RoleBadge role="teacher" />
                     </div>
                     <Button
                       size="sm"
-                      onClick={() => handleAddStudent(student.id)}
+                      onClick={() => handleAddCoTeacher(teacher.id)}
                       disabled={adding}
                     >
                       <UserPlus className="w-4 h-4 mr-2" />

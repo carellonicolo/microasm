@@ -7,8 +7,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddStudentDialog } from '@/components/dialogs/AddStudentDialog';
-import { ArrowLeft, UserPlus, Trash2 } from 'lucide-react';
+import { AddCoTeacherDialog } from '@/components/dialogs/AddCoTeacherDialog';
+import { ArrowLeft, UserPlus, Trash2, Users, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -40,6 +42,17 @@ interface Student {
   };
 }
 
+interface CoTeacher {
+  id: string;
+  teacher_id: string;
+  added_at: string;
+  profiles: {
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+}
+
 const ClassDetail = () => {
   const { classId } = useParams();
   const navigate = useNavigate();
@@ -47,9 +60,12 @@ const ClassDetail = () => {
   const { isTeacher } = useUserRole();
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
+  const [coTeachers, setCoTeachers] = useState<CoTeacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addCoTeacherDialogOpen, setAddCoTeacherDialogOpen] = useState(false);
   const [studentToRemove, setStudentToRemove] = useState<string | null>(null);
+  const [coTeacherToRemove, setCoTeacherToRemove] = useState<string | null>(null);
 
   const fetchClassData = async () => {
     if (!classId || !user) return;
@@ -81,6 +97,33 @@ const ClassDetail = () => {
 
       if (studentError) throw studentError;
       setStudents(studentData || []);
+
+      // Fetch co-teachers - manual join approach
+      const { data: coTeacherRelations } = await supabase
+        .from('class_teachers')
+        .select('id, teacher_id, added_at')
+        .eq('class_id', classId)
+        .order('added_at', { ascending: false });
+
+      if (coTeacherRelations && coTeacherRelations.length > 0) {
+        const teacherIds = coTeacherRelations.map(ct => ct.teacher_id);
+        const { data: teacherProfiles } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email')
+          .in('id', teacherIds);
+
+        const profilesMap = new Map(teacherProfiles?.map(p => [p.id, p]) || []);
+        const coTeachersWithProfiles = coTeacherRelations
+          .map(ct => ({
+            ...ct,
+            profiles: profilesMap.get(ct.teacher_id)!
+          }))
+          .filter(ct => ct.profiles);
+
+        setCoTeachers(coTeachersWithProfiles);
+      } else {
+        setCoTeachers([]);
+      }
     } catch (error: any) {
       toast.error('Errore nel caricamento: ' + error.message);
     } finally {
@@ -105,6 +148,26 @@ const ClassDetail = () => {
       toast.error('Errore: ' + error.message);
     } finally {
       setStudentToRemove(null);
+    }
+  };
+
+  const handleRemoveCoTeacher = async () => {
+    if (!coTeacherToRemove) return;
+
+    try {
+      const { error } = await supabase
+        .from('class_teachers')
+        .delete()
+        .eq('id', coTeacherToRemove);
+
+      if (error) throw error;
+
+      toast.success('Co-insegnante rimosso dalla classe');
+      fetchClassData();
+    } catch (error: any) {
+      toast.error('Errore: ' + error.message);
+    } finally {
+      setCoTeacherToRemove(null);
     }
   };
 
@@ -150,61 +213,134 @@ const ClassDetail = () => {
           )}
         </div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Studenti ({students.length})</CardTitle>
-              {isOwner && (
-                <Button onClick={() => setAddDialogOpen(true)}>
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Aggiungi Studente
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            {students.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                Nessuno studente nella classe
-              </p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Data Iscrizione</TableHead>
-                    {isOwner && <TableHead className="text-right">Azioni</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {students.map((student) => (
-                    <TableRow key={student.id}>
-                      <TableCell className="font-medium">
-                        {student.profiles.first_name} {student.profiles.last_name}
-                      </TableCell>
-                      <TableCell>{student.profiles.email}</TableCell>
-                      <TableCell>
-                        {new Date(student.enrolled_at).toLocaleDateString('it-IT')}
-                      </TableCell>
-                      {isOwner && (
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setStudentToRemove(student.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="students" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="students">
+              <Users className="w-4 h-4 mr-2" />
+              Studenti ({students.length})
+            </TabsTrigger>
+            <TabsTrigger value="teachers">
+              <GraduationCap className="w-4 h-4 mr-2" />
+              Co-Insegnanti ({coTeachers.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="students">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Studenti Iscritti</CardTitle>
+                  {isOwner && (
+                    <Button onClick={() => setAddDialogOpen(true)}>
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Aggiungi Studente
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {students.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    Nessuno studente nella classe
+                  </p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Data Iscrizione</TableHead>
+                        {isOwner && <TableHead className="text-right">Azioni</TableHead>}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {students.map((student) => (
+                        <TableRow key={student.id}>
+                          <TableCell className="font-medium">
+                            {student.profiles.first_name} {student.profiles.last_name}
+                          </TableCell>
+                          <TableCell>{student.profiles.email}</TableCell>
+                          <TableCell>
+                            {new Date(student.enrolled_at).toLocaleDateString('it-IT')}
+                          </TableCell>
+                          {isOwner && (
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setStudentToRemove(student.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="teachers">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Co-Insegnanti</CardTitle>
+                  {isOwner && (
+                    <Button onClick={() => setAddCoTeacherDialogOpen(true)}>
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Aggiungi Co-Insegnante
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {coTeachers.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    Nessun co-insegnante nella classe
+                  </p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Aggiunto il</TableHead>
+                        {isOwner && <TableHead className="text-right">Azioni</TableHead>}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {coTeachers.map((coTeacher) => (
+                        <TableRow key={coTeacher.id}>
+                          <TableCell className="font-medium">
+                            {coTeacher.profiles.first_name} {coTeacher.profiles.last_name}
+                          </TableCell>
+                          <TableCell>{coTeacher.profiles.email}</TableCell>
+                          <TableCell>
+                            {new Date(coTeacher.added_at).toLocaleDateString('it-IT')}
+                          </TableCell>
+                          {isOwner && (
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setCoTeacherToRemove(coTeacher.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         {isOwner && (
           <>
@@ -213,6 +349,13 @@ const ClassDetail = () => {
               onOpenChange={setAddDialogOpen}
               classId={classId!}
               onStudentAdded={fetchClassData}
+            />
+
+            <AddCoTeacherDialog
+              open={addCoTeacherDialogOpen}
+              onOpenChange={setAddCoTeacherDialogOpen}
+              classId={classId!}
+              onCoTeacherAdded={fetchClassData}
             />
 
             <AlertDialog open={!!studentToRemove} onOpenChange={() => setStudentToRemove(null)}>
@@ -226,6 +369,23 @@ const ClassDetail = () => {
                 <AlertDialogFooter>
                   <AlertDialogCancel>Annulla</AlertDialogCancel>
                   <AlertDialogAction onClick={handleRemoveStudent}>
+                    Rimuovi
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={!!coTeacherToRemove} onOpenChange={() => setCoTeacherToRemove(null)}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Rimuovere co-insegnante?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Il co-insegnante verrà rimosso dalla classe. Questa azione non può essere annullata.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annulla</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleRemoveCoTeacher}>
                     Rimuovi
                   </AlertDialogAction>
                 </AlertDialogFooter>

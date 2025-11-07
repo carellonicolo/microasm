@@ -13,6 +13,8 @@ import { LogOut, User as UserIcon, LayoutDashboard } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { RoleBadge } from './RoleBadge';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface UserMenuProps {
   user: User;
@@ -20,6 +22,7 @@ interface UserMenuProps {
 
 export const UserMenu = ({ user }: UserMenuProps) => {
   const navigate = useNavigate();
+  const { role } = useUserRole();
   const [profile, setProfile] = useState<{ first_name: string; last_name: string } | null>(null);
 
   useEffect(() => {
@@ -61,7 +64,10 @@ export const UserMenu = ({ user }: UserMenuProps) => {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium">{displayName}</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-medium">{displayName}</p>
+              {role && <RoleBadge role={role} />}
+            </div>
             <p className="text-xs text-muted-foreground">{user.email}</p>
           </div>
         </DropdownMenuLabel>

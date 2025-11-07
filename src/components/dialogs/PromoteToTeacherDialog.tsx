@@ -5,13 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Search, UserPlus } from 'lucide-react';
+import { Search, UserCog } from 'lucide-react';
+import { RoleBadge } from '@/components/shared/RoleBadge';
 
-interface AddStudentDialogProps {
+interface PromoteToTeacherDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  classId: string;
-  onStudentAdded: () => void;
+  onStudentPromoted: () => void;
 }
 
 interface StudentProfile {
@@ -21,18 +21,18 @@ interface StudentProfile {
   email: string;
 }
 
-export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }: AddStudentDialogProps) => {
+export const PromoteToTeacherDialog = ({ open, onOpenChange, onStudentPromoted }: PromoteToTeacherDialogProps) => {
   const [searchEmail, setSearchEmail] = useState('');
   const [searchResults, setSearchResults] = useState<StudentProfile[]>([]);
   const [loading, setLoading] = useState(false);
-  const [adding, setAdding] = useState(false);
+  const [promoting, setPromoting] = useState(false);
 
   const handleSearch = async () => {
     if (!searchEmail.trim()) return;
 
     setLoading(true);
     try {
-      // Cerca studenti per email
+      // Cerca utenti per email
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, first_name, last_name, email')
@@ -42,37 +42,38 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
       if (profileError) throw profileError;
 
       if (!profiles || profiles.length === 0) {
-        toast.info('Nessuno studente trovato');
+        toast.info('Nessun utente trovato');
         setSearchResults([]);
         return;
       }
 
-      // Filtra solo gli studenti (controllando user_roles)
-      const studentIds = profiles.map(p => p.id);
+      // Filtra solo gli studenti che NON sono già teacher
+      const userIds = profiles.map(p => p.id);
+      
+      // Ottieni tutti i ruoli degli utenti trovati
       const { data: roles } = await supabase
         .from('user_roles')
-        .select('user_id')
-        .in('user_id', studentIds)
-        .eq('role', 'student');
+        .select('user_id, role')
+        .in('user_id', userIds);
 
-      const studentRoleIds = new Set(roles?.map(r => r.user_id) || []);
-      const students = profiles.filter(p => studentRoleIds.has(p.id));
+      const rolesMap = new Map<string, Set<string>>();
+      roles?.forEach(r => {
+        if (!rolesMap.has(r.user_id)) {
+          rolesMap.set(r.user_id, new Set());
+        }
+        rolesMap.get(r.user_id)?.add(r.role);
+      });
 
-      // Escludi studenti già nella classe
-      const { data: existingStudents } = await supabase
-        .from('class_students')
-        .select('student_id')
-        .eq('class_id', classId);
+      // Filtra: deve essere studente e NON essere già teacher
+      const eligibleStudents = profiles.filter(p => {
+        const userRoles = rolesMap.get(p.id);
+        return userRoles?.has('student') && !userRoles?.has('teacher');
+      });
 
-      const existingIds = new Set(existingStudents?.map(s => s.student_id) || []);
-      const availableStudents = students.filter(s => !existingIds.has(s.id));
-
-      setSearchResults(availableStudents);
+      setSearchResults(eligibleStudents);
       
-      if (students.length === 0) {
-        toast.info('Nessuno studente registrato trovato con questa email');
-      } else if (availableStudents.length === 0) {
-        toast.info('Tutti gli studenti trovati sono già nella classe');
+      if (eligibleStudents.length === 0) {
+        toast.info('Nessuno studente idoneo trovato');
       }
     } catch (error: any) {
       toast.error('Errore nella ricerca: ' + error.message);
@@ -81,25 +82,28 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
     }
   };
 
-  const handleAddStudent = async (studentId: string) => {
-    setAdding(true);
+  const handlePromote = async (studentId: string, studentName: string) => {
+    setPromoting(true);
     try {
+      const { data: currentUser } = await supabase.auth.getUser();
+      
       const { error } = await supabase
-        .from('class_students')
+        .from('user_roles')
         .insert({
-          class_id: classId,
-          student_id: studentId,
+          user_id: studentId,
+          role: 'teacher',
+          assigned_by: currentUser.user?.id,
         });
 
       if (error) throw error;
 
-      toast.success('Studente aggiunto alla classe');
+      toast.success(`${studentName} è stato promosso a insegnante!`);
       setSearchResults(prev => prev.filter(s => s.id !== studentId));
-      onStudentAdded();
+      onStudentPromoted();
     } catch (error: any) {
-      toast.error('Errore: ' + error.message);
+      toast.error('Errore nella promozione: ' + error.message);
     } finally {
-      setAdding(false);
+      setPromoting(false);
     }
   };
 
@@ -114,9 +118,9 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Aggiungi Studente</DialogTitle>
+          <DialogTitle>Promuovi Studente a Insegnante</DialogTitle>
           <DialogDescription>
-            Cerca studenti per email e aggiungili alla classe
+            Cerca uno studente e promuovilo a insegnante. Manterrà anche il ruolo di studente.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -139,21 +143,24 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
 
           {searchResults.length > 0 && (
             <div className="space-y-2">
-              <Label>Risultati</Label>
+              <Label>Studenti Idonei</Label>
               <div className="border rounded-lg divide-y max-h-64 overflow-y-auto">
                 {searchResults.map((student) => (
                   <div key={student.id} className="p-3 flex items-center justify-between hover:bg-accent/50">
-                    <div>
-                      <p className="font-medium">{student.first_name} {student.last_name}</p>
-                      <p className="text-sm text-muted-foreground">{student.email}</p>
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <p className="font-medium">{student.first_name} {student.last_name}</p>
+                        <p className="text-sm text-muted-foreground">{student.email}</p>
+                      </div>
+                      <RoleBadge role="student" />
                     </div>
                     <Button
                       size="sm"
-                      onClick={() => handleAddStudent(student.id)}
-                      disabled={adding}
+                      onClick={() => handlePromote(student.id, `${student.first_name} ${student.last_name}`)}
+                      disabled={promoting}
                     >
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Aggiungi
+                      <UserCog className="w-4 h-4 mr-2" />
+                      Promuovi
                     </Button>
                   </div>
                 ))}
