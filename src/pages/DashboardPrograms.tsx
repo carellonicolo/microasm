@@ -3,7 +3,7 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { ProgramCard } from '@/components/dashboard/ProgramCard';
 import { useSavedPrograms } from '@/hooks/useSavedPrograms';
 import { Button } from '@/components/ui/button';
-import { Plus, FileCode } from 'lucide-react';
+import { Plus, FileCode, Link as LinkIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   AlertDialog,
@@ -29,14 +29,24 @@ const DashboardPrograms = () => {
   };
 
   const handleEdit = (program: any) => {
-    toast.info('Feature edit in arrivo');
+    localStorage.setItem('microasm_loaded_code', program.code);
+    navigate('/');
+    toast.info('Programma caricato nell\'editor per la modifica');
   };
 
   const handleShare = async (id: string) => {
-    const link = await generatePublicLink(id);
-    if (link) {
+    const program = programs.find(p => p.id === id);
+    
+    if (program?.public_link_token) {
+      const link = `${window.location.origin}/p/${program.public_link_token}`;
       navigator.clipboard.writeText(link);
-      toast.success('Link copiato negli appunti!');
+      toast.success('Link pubblico copiato negli appunti!');
+    } else {
+      const link = await generatePublicLink(id);
+      if (link) {
+        navigator.clipboard.writeText(link);
+        toast.success('Link pubblico generato e copiato!');
+      }
     }
   };
 

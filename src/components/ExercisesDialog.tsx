@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { EXERCISES, generateExerciseTemplate, type Exercise } from "@/data/exercises";
+import { useExercises, generateExerciseTemplate, type Exercise } from "@/hooks/useExercises";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -58,11 +58,14 @@ const useExerciseProgress = () => {
 
 const getDifficultyVariant = (difficulty: string): "default" | "secondary" | "destructive" | "outline" => {
   switch (difficulty) {
-    case 'facile':
+    case 'principiante':
       return 'default';
-    case 'medio':
+    case 'intermedio':
       return 'secondary';
-    case 'difficile':
+    case 'avanzato':
+      return 'outline';
+    case 'esperto':
+    case 'impossibile':
       return 'destructive';
     default:
       return 'outline';
@@ -71,18 +74,23 @@ const getDifficultyVariant = (difficulty: string): "default" | "secondary" | "de
 
 const getDifficultyColor = (difficulty: string): string => {
   switch (difficulty) {
-    case 'facile':
+    case 'principiante':
       return 'text-green-500';
-    case 'medio':
+    case 'intermedio':
       return 'text-yellow-500';
-    case 'difficile':
+    case 'avanzato':
+      return 'text-orange-500';
+    case 'esperto':
       return 'text-red-500';
+    case 'impossibile':
+      return 'text-purple-500';
     default:
       return 'text-muted-foreground';
   }
 };
 
 export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
+  const { exercises: EXERCISES, loading } = useExercises();
   const [open, setOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(1);
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
@@ -98,7 +106,7 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
         ex.category.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesDifficulty && matchesSearch;
     });
-  }, [difficultyFilter, searchQuery]);
+  }, [EXERCISES, difficultyFilter, searchQuery]);
 
   const selectedExercise = EXERCISES.find(ex => ex.id === selectedId);
 
@@ -197,20 +205,26 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
           <ToggleGroup 
             type="single" 
             value={difficultyFilter} 
-            onValueChange={(value) => value && setDifficultyFilter(value)}
+            onValueChange={(value) => setDifficultyFilter(value || 'all')}
             className="justify-start flex-wrap"
           >
             <ToggleGroupItem value="all" className="text-xs">
-              Tutti <span className="ml-1 opacity-60">({EXERCISES.length})</span>
+              Tutte <span className="ml-1 opacity-60">({EXERCISES.length})</span>
             </ToggleGroupItem>
-            <ToggleGroupItem value="facile" className="text-xs">
-              ⭐ Facile <span className="ml-1 opacity-60">(5)</span>
+            <ToggleGroupItem value="principiante" className="text-xs">
+              ⭐ Principiante
             </ToggleGroupItem>
-            <ToggleGroupItem value="medio" className="text-xs">
-              ⭐⭐ Medio <span className="ml-1 opacity-60">(7)</span>
+            <ToggleGroupItem value="intermedio" className="text-xs">
+              ⭐⭐ Intermedio
             </ToggleGroupItem>
-            <ToggleGroupItem value="difficile" className="text-xs">
-              ⭐⭐⭐ Difficile <span className="ml-1 opacity-60">(8)</span>
+            <ToggleGroupItem value="avanzato" className="text-xs">
+              ⭐⭐⭐ Avanzato
+            </ToggleGroupItem>
+            <ToggleGroupItem value="esperto" className="text-xs">
+              ⭐⭐⭐⭐ Esperto
+            </ToggleGroupItem>
+            <ToggleGroupItem value="impossibile" className="text-xs">
+              ⭐⭐⭐⭐⭐ Impossibile
             </ToggleGroupItem>
           </ToggleGroup>
 
@@ -230,7 +244,12 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
           {/* Sidebar: Lista Esercizi */}
           <ScrollArea className="w-[320px] border-r">
             <div className="p-4 space-y-2">
-              {filteredExercises.length === 0 ? (
+              {loading ? (
+                <div className="text-center py-12 px-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+                  <p className="text-sm text-muted-foreground">Caricamento...</p>
+                </div>
+              ) : filteredExercises.length === 0 ? (
                 <div className="text-center py-12 px-4">
                   <Search className="w-12 h-12 mx-auto text-muted-foreground mb-3 opacity-50" />
                   <p className="text-sm text-muted-foreground">

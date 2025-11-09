@@ -15,6 +15,7 @@ import DashboardExercises from "./pages/DashboardExercises";
 import DashboardAssignments from "./pages/DashboardAssignments";
 import AssignmentDetail from "./pages/AssignmentDetail";
 import ClassDetail from "./pages/ClassDetail";
+import PublicProgram from "./pages/PublicProgram";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/p/:token" element={<PublicProgram />} />
             <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/programs" element={<DashboardPrograms />} />
           <Route path="/dashboard/classes" element={<DashboardClasses />} />
