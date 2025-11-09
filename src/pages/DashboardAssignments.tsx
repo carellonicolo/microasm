@@ -86,7 +86,9 @@ const DashboardAssignments = () => {
         setAssignments(assignmentsWithStatus);
       }
     } catch (error) {
-      console.error('Error fetching assignments:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error fetching assignments:', error);
+      }
     } finally {
       setLoading(false);
     }

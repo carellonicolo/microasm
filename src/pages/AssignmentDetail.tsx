@@ -74,7 +74,9 @@ const AssignmentDetail = () => {
         }
       }
     } catch (error) {
-      console.error('Error fetching assignment:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error fetching assignment:', error);
+      }
       toast.error('Errore nel caricamento dell\'esercitazione');
     } finally {
       setLoading(false);

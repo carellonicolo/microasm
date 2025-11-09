@@ -33,7 +33,9 @@ export const useClasses = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching classes:', error);
+        if (import.meta.env.DEV) {
+          console.error('Error fetching classes:', error);
+        }
       } else {
         setClasses(data || []);
       }

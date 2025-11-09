@@ -52,7 +52,9 @@ const PublicProgram = () => {
 
       setProgram(data as PublicProgram);
     } catch (error: any) {
-      console.error('Error fetching public program:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error fetching public program:', error);
+      }
       toast.error('Programma non trovato o non più pubblico');
     } finally {
       setLoading(false);

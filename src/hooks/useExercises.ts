@@ -46,7 +46,9 @@ export const useExercises = () => {
 
       setExercises(mappedExercises);
     } catch (error: any) {
-      console.error('Error fetching exercises:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error fetching exercises:', error);
+      }
       toast.error('Errore nel caricamento degli esercizi');
     } finally {
       setLoading(false);

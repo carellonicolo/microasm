@@ -34,8 +34,10 @@ export const useSavedPrograms = () => {
       .order('updated_at', { ascending: false });
 
     if (error) {
+      if (import.meta.env.DEV) {
+        console.error(error);
+      }
       toast.error('Errore nel caricamento dei programmi');
-      console.error(error);
     } else {
       setPrograms(data || []);
     }
@@ -66,8 +68,10 @@ export const useSavedPrograms = () => {
       .single();
 
     if (error) {
+      if (import.meta.env.DEV) {
+        console.error(error);
+      }
       toast.error('Errore nel salvataggio');
-      console.error(error);
       return null;
     }
 
@@ -86,8 +90,10 @@ export const useSavedPrograms = () => {
       .eq('id', id);
 
     if (error) {
+      if (import.meta.env.DEV) {
+        console.error(error);
+      }
       toast.error('Errore nell\'aggiornamento');
-      console.error(error);
       return false;
     }
 
@@ -103,8 +109,10 @@ export const useSavedPrograms = () => {
       .eq('id', id);
 
     if (error) {
+      if (import.meta.env.DEV) {
+        console.error(error);
+      }
       toast.error('Errore nell\'eliminazione');
-      console.error(error);
       return false;
     }
 

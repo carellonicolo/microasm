@@ -37,7 +37,9 @@ export const useAssignments = () => {
         .limit(10);
 
       if (error) {
-        console.error('Error fetching assignments:', error);
+        if (import.meta.env.DEV) {
+          console.error('Error fetching assignments:', error);
+        }
       } else {
         const formattedData = data?.map(a => ({
           ...a,
