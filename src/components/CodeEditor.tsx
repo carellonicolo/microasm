@@ -33,12 +33,17 @@ export function CodeEditor({
   // Auto-scroll to current line during execution
   useEffect(() => {
     if (currentLine && scrollRef.current) {
-      const lineHeight = 24; // leading-6 = 1.5rem = 24px
-      const scrollTop = (currentLine - 1) * lineHeight;
-      const containerHeight = scrollRef.current.clientHeight;
-      
-      // Center the current line in viewport
-      scrollRef.current.scrollTop = scrollTop - (containerHeight / 2) + (lineHeight / 2);
+      // Use requestAnimationFrame to avoid forced reflow
+      requestAnimationFrame(() => {
+        if (scrollRef.current) {
+          const lineHeight = 24; // leading-6 = 1.5rem = 24px
+          const scrollTop = (currentLine - 1) * lineHeight;
+          const containerHeight = scrollRef.current.clientHeight;
+          
+          // Center the current line in viewport
+          scrollRef.current.scrollTop = scrollTop - (containerHeight / 2) + (lineHeight / 2);
+        }
+      });
     }
   }, [currentLine]);
   
