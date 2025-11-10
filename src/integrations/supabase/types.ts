@@ -282,6 +282,7 @@ export type Database = {
           difficulty: Database["public"]["Enums"]["exercise_difficulty"]
           expected_output: string | null
           id: number
+          is_public: boolean
           requirements: Json
           solution_code: string
           tags: string[] | null
@@ -294,6 +295,7 @@ export type Database = {
           difficulty: Database["public"]["Enums"]["exercise_difficulty"]
           expected_output?: string | null
           id?: number
+          is_public?: boolean
           requirements: Json
           solution_code: string
           tags?: string[] | null
@@ -306,6 +308,7 @@ export type Database = {
           difficulty?: Database["public"]["Enums"]["exercise_difficulty"]
           expected_output?: string | null
           id?: number
+          is_public?: boolean
           requirements?: Json
           solution_code?: string
           tags?: string[] | null

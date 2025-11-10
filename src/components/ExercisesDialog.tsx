@@ -173,7 +173,7 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
             variant="secondary" 
             className="ml-2 relative font-mono text-xs"
           >
-            20
+            {EXERCISES.length}
           </Badge>
         </Button>
       </DialogTrigger>
@@ -188,11 +188,11 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
                 Esercizi MicroASM
               </DialogTitle>
               <DialogDescription className="flex items-center gap-4 text-base">
-                <span>20 esercizi progressivi dal livello base all'avanzato</span>
+                <span>{EXERCISES.length} esercizi progressivi dal livello base all'avanzato</span>
                 {progress.completed.length > 0 && (
                   <Badge variant="outline" className="font-mono gap-2">
                     <Trophy className="w-3 h-3 text-yellow-500" />
-                    Completati: {progress.completed.length}/20 ({completionRate}%)
+                    Completati: {progress.completed.length}/{EXERCISES.length} ({completionRate}%)
                   </Badge>
                 )}
               </DialogDescription>
