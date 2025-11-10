@@ -3,111 +3,15 @@ import { CodeEditor } from "@/components/CodeEditor";
 import { CPUStatus } from "@/components/CPUStatus";
 import { MemoryView } from "@/components/MemoryView";
 import { OutputLog } from "@/components/OutputLog";
-import { ExercisesDialog } from "@/components/ExercisesDialog";
 import { Header } from "@/components/shared/Header";
 import { SaveProgramDialog } from "@/components/dialogs/SaveProgramDialog";
-import { Button } from "@/components/ui/button";
 import { DisplayFormat, ExecutionState } from "@/types/microasm";
 import { parseProgram } from "@/utils/assembler";
 import { CPUExecutor } from "@/utils/executor";
 import { toast } from "sonner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAuth } from "@/hooks/useAuth";
-import { Save } from "lucide-react";
-
-const EXAMPLE_PROGRAMS = {
-  factorial: `; Esempio: Calcolo fattoriale
-MOV R0, 5          ; Numero per calcolare il fattoriale
-MOV R1, 1          ; Risultato (inizia con 1)
-
-LOOP:
-CMP R0, 0          ; Confronta R0 con 0
-JZ END             ; Se R0 = 0, salta a END
-MOL R1, R0         ; R1 = R1 * R0
-DEC R0             ; R0 = R0 - 1
-JMP LOOP           ; Ripeti il loop
-
-END:
-OUT R1             ; Stampa il risultato
-HLT                ; Termina il programma`,
-
-  stackDemo: `; Esempio: Uso dello Stack
-; Mostra come funzionano PUSH e POP
-
-MOV R0, 10         ; R0 = 10
-MOV R1, 20         ; R1 = 20
-MOV R2, 30         ; R2 = 30
-
-; Salva i valori nello stack
-PUSH R0            ; Stack: [10], SP: 256→255
-PUSH R1            ; Stack: [10, 20], SP: 255→254
-PUSH R2            ; Stack: [10, 20, 30], SP: 254→253
-
-; Ora modifica i registri
-MOV R0, 0
-MOV R1, 0
-MOV R2, 0
-
-; Recupera i valori dallo stack (ordine inverso!)
-POP R2             ; R2 = 30, Stack: [10, 20], SP: 253→254
-POP R1             ; R1 = 20, Stack: [10], SP: 254→255
-POP R0             ; R0 = 10, Stack: [], SP: 255→256
-
-; Stampa i risultati
-OUT R0             ; Dovrebbe stampare 10
-OUT R1             ; Dovrebbe stampare 20
-OUT R2             ; Dovrebbe stampare 30
-HLT`,
-
-  subroutine: `; Esempio: Chiamata a Subroutine
-; Dimostra l'uso di CALL e RET con lo stack
-
-MOV R0, 5          ; Argomento per la funzione
-CALL DOUBLE        ; Chiama la subroutine (pushia PC nello stack)
-OUT R0             ; Stampa il risultato (dovrebbe essere 10)
-HLT
-
-DOUBLE:
-; Subroutine che raddoppia R0
-PUSH R1            ; Salva R1 (lo useremo temporaneamente)
-MOV R1, R0         ; R1 = R0
-ADD R0, R1         ; R0 = R0 + R1 (raddoppia)
-POP R1             ; Ripristina R1
-RET                ; Torna al chiamante (poppa PC dallo stack)`,
-
-  signCheck: `; Esempio: Test del segno con JNS
-; Controlla se un numero è positivo, negativo o zero
-
-MOV R0, 10         ; Cambia questo valore per testare
-
-; Test se zero
-CMP R0, 0
-JZ IS_ZERO
-
-; Test se positivo (>= 0 e != 0, quindi > 0)
-CMP R0, 0
-JNS IS_POSITIVE
-
-; Se arriviamo qui, è negativo
-IS_NEGATIVE:
-MOV R1, -1         ; R1 = -1 (codice per negativo)
-JMP END
-
-IS_POSITIVE:
-MOV R1, 1          ; R1 = 1 (codice per positivo)
-JMP END
-
-IS_ZERO:
-MOV R1, 0          ; R1 = 0 (codice per zero)
-
-END:
-OUT R1             ; Stampa: -1, 0, o 1
-HLT`
-};
+import { EXAMPLE_PROGRAMS } from "@/data/examples";
 
 const Index = () => {
-  const { user } = useAuth();
-  const [selectedExample, setSelectedExample] = useState<keyof typeof EXAMPLE_PROGRAMS>('factorial');
   const [code, setCode] = useState(EXAMPLE_PROGRAMS.factorial);
   const [format, setFormat] = useState<DisplayFormat>('decimal');
   const [executionState, setExecutionState] = useState<ExecutionState>('idle');
@@ -273,47 +177,14 @@ const Index = () => {
       </div>
 
       <div className="max-w-[1800px] mx-auto space-y-6 relative z-0">
-        <Header />
+        <Header 
+          onLoadExample={setCode}
+          onLoadExercise={setCode}
+          onSaveProgram={() => setSaveDialogOpen(true)}
+        />
         
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex flex-wrap items-center gap-3 mb-2">
-              <ExercisesDialog onLoadExercise={setCode} />
-              {user && (
-                <>
-                  <div className="h-6 w-px bg-border hidden sm:block" />
-                  <Button 
-                    onClick={() => setSaveDialogOpen(true)} 
-                    variant="outline" 
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Save className="w-4 h-4" />
-                    Salva Programma
-                  </Button>
-                </>
-              )}
-              <div className="h-6 w-px bg-border hidden sm:block" />
-              <label className="text-sm font-medium">Esempi:</label>
-              <Select 
-                value={selectedExample} 
-                onValueChange={(value) => {
-                  const exampleKey = value as keyof typeof EXAMPLE_PROGRAMS;
-                  setSelectedExample(exampleKey);
-                  setCode(EXAMPLE_PROGRAMS[exampleKey]);
-                }}
-              >
-                <SelectTrigger className="w-[220px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="factorial">Fattoriale (base)</SelectItem>
-                  <SelectItem value="stackDemo">Demo Stack (PUSH/POP)</SelectItem>
-                  <SelectItem value="subroutine">Subroutine (CALL/RET)</SelectItem>
-                  <SelectItem value="signCheck">Test Segno (JNS)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             <div className="h-[500px]">
               <CodeEditor
                 code={code}

@@ -164,11 +164,11 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
         <Button 
           variant="outline" 
           size="sm"
-          className="group relative overflow-hidden hover:border-primary/50 transition-all"
+          className="group relative overflow-hidden hover:border-primary/50 transition-all gap-1 sm:gap-2"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <GraduationCap className="w-4 h-4 mr-2 relative group-hover:text-primary transition-colors" />
-          <span className="relative">Esercizi</span>
+          <GraduationCap className="w-4 h-4 relative group-hover:text-primary transition-colors" />
+          <span className="relative hidden sm:inline">Esercizi</span>
           <Badge 
             variant="secondary" 
             className="ml-2 relative font-mono text-xs"
