@@ -10,6 +10,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { z } from 'zod';
+
+const assignmentSchema = z.object({
+  title: z.string().trim().min(3, 'Il titolo deve contenere almeno 3 caratteri').max(200, 'Il titolo non può superare 200 caratteri'),
+  description: z.string().trim().max(2000, 'La descrizione non può superare 2000 caratteri').optional(),
+  class_id: z.string().uuid('Seleziona una classe valida'),
+  repository_exercise_id: z.string().regex(/^\d+$/, 'Seleziona un esercizio valido'),
+  due_date: z.string().optional(),
+});
 
 interface CreateAssignmentDialogProps {
   onSuccess?: () => void;
@@ -59,16 +68,32 @@ export const CreateAssignmentDialog = ({ onSuccess }: CreateAssignmentDialogProp
 
     setLoading(true);
     try {
+      // Validate input data
+      const validationResult = assignmentSchema.safeParse({
+        title: formData.title,
+        description: formData.description || '',
+        class_id: formData.class_id,
+        repository_exercise_id: formData.repository_exercise_id,
+        due_date: formData.due_date,
+      });
+
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(e => e.message).join(', ');
+        toast.error(errors);
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase
         .from('assignments')
         .insert({
-          title: formData.title,
-          description: formData.description,
+          title: validationResult.data.title,
+          description: validationResult.data.description || null,
           exercise_type: formData.exercise_type,
-          class_id: formData.class_id,
+          class_id: validationResult.data.class_id,
           teacher_id: user.id,
-          repository_exercise_id: formData.repository_exercise_id ? parseInt(formData.repository_exercise_id) : null,
-          due_date: formData.due_date || null,
+          repository_exercise_id: parseInt(validationResult.data.repository_exercise_id),
+          due_date: validationResult.data.due_date || null,
           allow_late_submission: formData.allow_late_submission,
           show_solution_after_deadline: formData.show_solution_after_deadline,
         });

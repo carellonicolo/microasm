@@ -6,6 +6,11 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Search, UserPlus } from 'lucide-react';
+import { z } from 'zod';
+
+const emailSearchSchema = z.object({
+  email: z.string().email('Inserisci un indirizzo email valido').min(3, 'Email troppo corta'),
+});
 
 interface AddStudentDialogProps {
   open: boolean;
@@ -29,6 +34,13 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
 
   const handleSearch = async () => {
     if (!searchEmail.trim()) return;
+
+    // Validate email format
+    const validationResult = emailSearchSchema.safeParse({ email: searchEmail.trim() });
+    if (!validationResult.success) {
+      toast.error(validationResult.error.errors[0].message);
+      return;
+    }
 
     setLoading(true);
     try {

@@ -7,6 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { z } from 'zod';
+
+const classSchema = z.object({
+  name: z.string().trim().min(3, 'Il nome deve contenere almeno 3 caratteri').max(100, 'Il nome non può superare 100 caratteri'),
+  description: z.string().trim().max(1000, 'La descrizione non può superare 1000 caratteri').optional(),
+  academicYear: z.string().trim().min(4, 'Anno accademico non valido').max(20, 'Anno accademico non valido'),
+});
 
 interface CreateClassDialogProps {
   open: boolean;
@@ -27,12 +34,26 @@ export const CreateClassDialog = ({ open, onOpenChange, onClassCreated }: Create
 
     setLoading(true);
     try {
+      // Validate input data
+      const validationResult = classSchema.safeParse({
+        name,
+        description: description || '',
+        academicYear,
+      });
+
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(e => e.message).join(', ');
+        toast.error(errors);
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase
         .from('classes')
         .insert({
-          name,
-          description: description || null,
-          academic_year: academicYear,
+          name: validationResult.data.name,
+          description: validationResult.data.description || null,
+          academic_year: validationResult.data.academicYear,
           teacher_id: user.id,
         });
 

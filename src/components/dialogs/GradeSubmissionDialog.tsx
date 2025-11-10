@@ -7,6 +7,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { z } from 'zod';
+
+const gradeSchema = z.object({
+  grade: z.number()
+    .min(0, 'Il voto non può essere negativo')
+    .max(100, 'Il voto non può superare 100'),
+  feedback: z.string().trim().max(2000, 'Il feedback non può superare 2000 caratteri').optional(),
+});
 
 interface GradeSubmissionDialogProps {
   submission: any;
@@ -27,11 +35,33 @@ export const GradeSubmissionDialog = ({ submission, open, onOpenChange, onSucces
 
     setLoading(true);
     try {
+      // Validate input data
+      const gradeNum = parseFloat(grade);
+      const maxGrade = submission.max_grade || 100;
+      
+      const validationResult = gradeSchema.safeParse({
+        grade: gradeNum,
+        feedback: feedback || '',
+      });
+
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(e => e.message).join(', ');
+        toast.error(errors);
+        setLoading(false);
+        return;
+      }
+
+      if (gradeNum > maxGrade) {
+        toast.error(`Il voto non può superare ${maxGrade}`);
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase
         .from('submissions')
         .update({
-          grade: parseFloat(grade),
-          feedback,
+          grade: validationResult.data.grade,
+          feedback: validationResult.data.feedback || null,
           status: 'graded',
           graded_by: user.id,
           graded_at: new Date().toISOString(),
