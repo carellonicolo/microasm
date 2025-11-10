@@ -20,7 +20,10 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
           <h2 className="text-xl font-bold font-heading">Memoria e Stack</h2>
           <Popover>
             <PopoverTrigger asChild>
-              <button className="text-muted-foreground hover:text-foreground transition-colors">
+              <button 
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Informazioni su memoria e stack"
+              >
                 <HelpCircle className="h-4 w-4" />
               </button>
             </PopoverTrigger>

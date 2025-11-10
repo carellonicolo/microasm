@@ -107,7 +107,7 @@ export function ExamplesDialog({ onLoadExample }: ExamplesDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1 sm:gap-2">
+        <Button variant="outline" size="sm" className="gap-1 sm:gap-2" aria-label="Apri esempi di codice">
           <Code className="w-4 h-4" />
           <span className="hidden sm:inline">Esempi</span>
         </Button>
