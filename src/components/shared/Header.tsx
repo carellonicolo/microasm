@@ -3,16 +3,16 @@ import { UserMenu } from './UserMenu';
 import { ThemeToggle } from '../ThemeToggle';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-
 export const Header = () => {
-  const { user, loading } = useAuth();
-
-  return (
-    <header className="relative py-4">
+  const {
+    user,
+    loading
+  } = useAuth();
+  return <header className="relative py-4">
       <div className="flex items-center justify-between">
         {/* Logo/Title (sinistra) */}
         <Link to="/">
-          <h1 className="text-4xl md:text-5xl font-bold font-heading bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+          <h1 className="text-4xl font-bold font-heading bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent hover:opacity-80 transition-opacity md:text-7xl">
             MicroASM
           </h1>
         </Link>
@@ -21,12 +21,7 @@ export const Header = () => {
         <div className="flex items-center gap-3">
           <ThemeToggle />
           
-          {loading ? (
-            <div className="w-20 h-9 animate-pulse bg-muted rounded-md" />
-          ) : user ? (
-            <UserMenu user={user} />
-          ) : (
-            <>
+          {loading ? <div className="w-20 h-9 animate-pulse bg-muted rounded-md" /> : user ? <UserMenu user={user} /> : <>
               <Link to="/auth?mode=login">
                 <Button variant="outline" size="sm">
                   Accedi
@@ -37,10 +32,8 @@ export const Header = () => {
                   Registrati
                 </Button>
               </Link>
-            </>
-          )}
+            </>}
         </div>
       </div>
-    </header>
-  );
+    </header>;
 };
