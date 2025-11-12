@@ -214,8 +214,8 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
               </div>
 
               {/* Lista studenti con checkbox */}
-              <ScrollArea className="flex-1 -mx-6 px-6">
-                <div className="space-y-2">
+              <ScrollArea className="h-[400px] -mx-6 px-6">
+                <div className="space-y-2 pr-4">
                   {availableStudents.map((student) => (
                     <div 
                       key={student.id}
