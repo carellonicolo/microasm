@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { CodeEditor } from "@/components/CodeEditor";
 import { CPUStatus } from "@/components/CPUStatus";
 import { MemoryView } from "@/components/MemoryView";
@@ -12,6 +13,7 @@ import { toast } from "sonner";
 import { EXAMPLE_PROGRAMS } from "@/data/examples";
 
 const Index = () => {
+  const location = useLocation();
   const [code, setCode] = useState(EXAMPLE_PROGRAMS.factorial);
   const [format, setFormat] = useState<DisplayFormat>('decimal');
   const [executionState, setExecutionState] = useState<ExecutionState>('idle');
@@ -37,7 +39,7 @@ const Index = () => {
       localStorage.removeItem('microasm_loaded_code');
       toast.success('Programma caricato');
     }
-  }, []);
+  }, [location]);
 
   const updateState = () => {
     if (executorRef.current) {
@@ -52,6 +54,20 @@ const Index = () => {
   };
 
   const handleLoad = () => {
+    // Se c'è un'esecuzione in corso, chiedi conferma prima di fermarla
+    if (executionState === 'running' || executionState === 'paused') {
+      const confirmed = window.confirm(
+        'Esecuzione in corso. Vuoi fermarla e caricare un nuovo programma?'
+      );
+      if (!confirmed) return;
+      
+      // Ferma esecuzione in corso
+      if (runIntervalRef.current) {
+        clearInterval(runIntervalRef.current);
+        runIntervalRef.current = null;
+      }
+    }
+
     const { instructions, labels, error } = parseProgram(code);
     
     if (error) {
@@ -91,6 +107,12 @@ const Index = () => {
   const handleRun = () => {
     if (!executorRef.current) {
       toast.error('Carica prima un programma');
+      return;
+    }
+
+    // Previeni avvio multiplo
+    if (executionState === 'running' && runIntervalRef.current) {
+      toast.warning('Esecuzione già in corso');
       return;
     }
     

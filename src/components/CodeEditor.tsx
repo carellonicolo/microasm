@@ -53,7 +53,13 @@ export function CodeEditor({
         <h2 className="text-xl font-bold font-heading">Codice Sorgente</h2>
         <div className="flex gap-2">
           <DocumentationDialog />
-          <Button onClick={onLoad} variant="secondary" size="sm" className="hover:glow-primary transition-all">
+          <Button 
+            onClick={onLoad} 
+            variant="secondary" 
+            size="sm" 
+            disabled={executionState === 'running'}
+            className="hover:glow-primary transition-all"
+          >
             Carica
           </Button>
           <Button 

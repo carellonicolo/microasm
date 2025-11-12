@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from './useAuth';
@@ -19,6 +19,7 @@ export const useSavedPrograms = () => {
   const { user } = useAuth();
   const [programs, setPrograms] = useState<SavedProgram[]>([]);
   const [loading, setLoading] = useState(true);
+  const fetchControllerRef = useRef<AbortController | null>(null);
 
   const fetchPrograms = async () => {
     if (!user) {
@@ -27,21 +28,30 @@ export const useSavedPrograms = () => {
       return;
     }
 
+    // Cancella fetch precedente se ancora in corso
+    if (fetchControllerRef.current) {
+      fetchControllerRef.current.abort();
+    }
+
+    fetchControllerRef.current = new AbortController();
     setLoading(true);
+    
     const { data, error } = await supabase
       .from('saved_programs')
       .select('*')
-      .order('updated_at', { ascending: false });
+      .order('updated_at', { ascending: false })
+      .abortSignal(fetchControllerRef.current.signal);
 
-    if (error) {
+    if (error && error.name !== 'AbortError') {
       if (import.meta.env.DEV) {
         console.error(error);
       }
       toast.error('Errore nel caricamento dei programmi');
-    } else {
-      setPrograms(data || []);
+    } else if (data) {
+      setPrograms(data);
     }
     setLoading(false);
+    fetchControllerRef.current = null;
   };
 
   const saveProgram = async (
@@ -103,21 +113,31 @@ export const useSavedPrograms = () => {
   };
 
   const deleteProgram = async (id: string) => {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('saved_programs')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .select();
 
     if (error) {
       if (import.meta.env.DEV) {
-        console.error(error);
+        console.error('Delete error:', error);
       }
-      toast.error('Errore nell\'eliminazione');
+      toast.error('Errore nell\'eliminazione del programma');
       return false;
     }
 
-    toast.success('Programma eliminato');
-    fetchPrograms();
+    // Verificare se effettivamente è stato eliminato qualcosa
+    if (!data || data.length === 0) {
+      if (import.meta.env.DEV) {
+        console.error('No rows deleted for id:', id);
+      }
+      toast.error('Programma non trovato o già eliminato');
+      return false;
+    }
+
+    toast.success('Programma eliminato con successo');
+    await fetchPrograms();
     return true;
   };
 
@@ -137,9 +157,9 @@ export const useSavedPrograms = () => {
       return null;
     }
 
-    const link = `${window.location.origin}/program/${token}`;
+    const link = `${window.location.origin}/p/${token}`;
     toast.success('Link pubblico generato!');
-    fetchPrograms();
+    await fetchPrograms();
     return link;
   };
 
