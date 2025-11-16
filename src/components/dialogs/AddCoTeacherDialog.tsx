@@ -27,6 +27,9 @@ interface TeacherProfile {
   email: string;
 }
 
+// Helper function to escape SQL wildcards in ILIKE queries
+const escapeILike = (str: string) => str.replace(/[%_]/g, '\\$&');
+
 export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdded }: AddCoTeacherDialogProps) => {
   const [searchEmail, setSearchEmail] = useState('');
   const [searchResults, setSearchResults] = useState<TeacherProfile[]>([]);
@@ -45,11 +48,14 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
 
     setLoading(true);
     try {
+      // Escape SQL wildcards to prevent wildcard injection
+      const escapedEmail = escapeILike(searchEmail.trim());
+      
       // Cerca utenti per email
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, first_name, last_name, email')
-        .ilike('email', `%${searchEmail}%`)
+        .ilike('email', `%${escapedEmail}%`)
         .limit(10);
 
       if (profileError) throw profileError;
