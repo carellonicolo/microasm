@@ -8,19 +8,47 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // FASE 3: Set up auth state listener FIRST con logging eventi
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (import.meta.env.DEV) {
+          console.log('🔐 Auth event:', event, session ? 'Session valida' : 'Session null');
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Log eventi specifici
+        if (event === 'TOKEN_REFRESHED' && import.meta.env.DEV) {
+          console.log('🔄 Token refreshed successfully');
+        }
+        if (event === 'SIGNED_OUT' && import.meta.env.DEV) {
+          console.log('👋 User signed out');
+        }
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // FASE 3: THEN check for existing session con gestione errore refresh token
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        if (import.meta.env.DEV) {
+          console.error('❌ Errore getSession:', error);
+        }
+        
+        // Gestione errore refresh token
+        if (error.message?.includes('Refresh Token') || error.message?.includes('Invalid')) {
+          if (import.meta.env.DEV) {
+            console.warn('⚠️ Refresh token invalido, forzando logout');
+          }
+          supabase.auth.signOut();
+          setSession(null);
+          setUser(null);
+        }
+      } else {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
       setLoading(false);
     });
 
