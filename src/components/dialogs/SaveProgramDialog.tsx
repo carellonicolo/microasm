@@ -12,6 +12,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useSavedPrograms } from '@/hooks/useSavedPrograms';
+import { z } from 'zod';
+import { toast } from 'sonner';
+
+const saveProgramSchema = z.object({
+  name: z.string().trim().min(1, 'Nome richiesto').max(100, 'Nome troppo lungo (max 100 caratteri)'),
+  description: z.string().trim().max(500, 'Descrizione troppo lunga (max 500 caratteri)').optional(),
+  code: z.string().trim().min(1, 'Codice richiesto').max(50000, 'Codice troppo lungo (max 50000 caratteri)')
+});
 
 interface SaveProgramDialogProps {
   open: boolean;
@@ -26,12 +34,25 @@ export const SaveProgramDialog = ({ open, onOpenChange, code }: SaveProgramDialo
   const { saveProgram } = useSavedPrograms();
 
   const handleSave = async () => {
-    if (!name.trim()) {
+    // Validate input
+    const validation = saveProgramSchema.safeParse({
+      name: name.trim(),
+      description: description.trim() || undefined,
+      code
+    });
+
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 
     setLoading(true);
-    const result = await saveProgram(name, code, description || undefined);
+    const result = await saveProgram(
+      validation.data.name,
+      validation.data.code,
+      validation.data.description
+    );
     setLoading(false);
 
     if (result) {
