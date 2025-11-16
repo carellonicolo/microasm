@@ -11,6 +11,7 @@ interface SavedProgram {
   folder_path: string;
   is_public: boolean;
   public_link_token: string | null;
+  user_id: string;
   created_at: string;
   updated_at: string;
 }
@@ -113,6 +114,51 @@ export const useSavedPrograms = () => {
   };
 
   const deleteProgram = async (id: string) => {
+    // FASE 1: Controllo sessione utente
+    if (!user) {
+      toast.error('Sessione scaduta. Effettua nuovamente il login.');
+      return false;
+    }
+
+    if (import.meta.env.DEV) {
+      console.log('🗑️ Tentativo eliminazione programma:', { programId: id, userId: user.id });
+    }
+
+    // FASE 2: Verifica pre-delete - controllo esistenza e ownership
+    const { data: existingProgram, error: fetchError } = await supabase
+      .from('saved_programs')
+      .select('id, name, user_id')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (fetchError) {
+      if (import.meta.env.DEV) {
+        console.error('❌ Errore verifica programma:', fetchError);
+      }
+      toast.error('Errore nella verifica del programma');
+      return false;
+    }
+
+    if (!existingProgram) {
+      if (import.meta.env.DEV) {
+        console.warn('⚠️ Programma non trovato:', id);
+      }
+      toast.error('Programma non trovato o già eliminato');
+      return false;
+    }
+
+    if (existingProgram.user_id !== user.id) {
+      if (import.meta.env.DEV) {
+        console.error('🚫 Tentativo eliminazione programma di altro utente:', {
+          programUserId: existingProgram.user_id,
+          currentUserId: user.id
+        });
+      }
+      toast.error('Non sei autorizzato a eliminare questo programma');
+      return false;
+    }
+
+    // Procedi con l'eliminazione
     const { data, error } = await supabase
       .from('saved_programs')
       .delete()
@@ -121,19 +167,40 @@ export const useSavedPrograms = () => {
 
     if (error) {
       if (import.meta.env.DEV) {
-        console.error('Delete error:', error);
+        console.error('❌ Errore eliminazione:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
       }
-      toast.error('Errore nell\'eliminazione del programma');
+
+      // FASE 1: Gestione errori specifici
+      if (error.code === 'PGRST301') {
+        toast.error('Permesso negato. Verifica di essere autenticato.');
+        return false;
+      }
+      
+      if (error.message?.includes('JWT') || error.message?.includes('token')) {
+        toast.error('Sessione scaduta. Effettua nuovamente il login.');
+        return false;
+      }
+
+      toast.error(`Errore nell'eliminazione: ${error.message}`);
       return false;
     }
 
-    // Verificare se effettivamente è stato eliminato qualcosa
     if (!data || data.length === 0) {
       if (import.meta.env.DEV) {
-        console.error('No rows deleted for id:', id);
+        console.error('⚠️ Nessuna riga eliminata per id:', id);
+        console.log('Programmi correnti:', programs.map(p => ({ id: p.id, name: p.name })));
       }
       toast.error('Programma non trovato o già eliminato');
       return false;
+    }
+
+    if (import.meta.env.DEV) {
+      console.log('✅ Programma eliminato con successo:', data[0]);
     }
 
     toast.success('Programma eliminato con successo');

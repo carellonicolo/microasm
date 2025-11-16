@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { ProgramCard } from '@/components/dashboard/ProgramCard';
 import { useSavedPrograms } from '@/hooks/useSavedPrograms';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Plus, FileCode, Link as LinkIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -19,8 +20,16 @@ import { toast } from 'sonner';
 
 const DashboardPrograms = () => {
   const { programs, loading, deleteProgram, generatePublicLink } = useSavedPrograms();
+  const { user } = useAuth();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
+
+  // FASE 4: Filtra solo programmi dell'utente corrente
+  const userPrograms = useMemo(() => 
+    programs.filter(p => p.user_id === user?.id),
+    [programs, user]
+  );
 
   const handleOpen = (code: string) => {
     localStorage.setItem('microasm_loaded_code', code);
@@ -50,10 +59,15 @@ const DashboardPrograms = () => {
     }
   };
 
+  // FASE 1: Prevenzione click multipli durante eliminazione
   const confirmDelete = async () => {
-    if (deleteId) {
-      await deleteProgram(deleteId);
-      setDeleteId(null);
+    if (deleteId && !isDeleting) {
+      setIsDeleting(true);
+      const success = await deleteProgram(deleteId);
+      setIsDeleting(false);
+      if (success) {
+        setDeleteId(null);
+      }
     }
   };
 
@@ -77,7 +91,7 @@ const DashboardPrograms = () => {
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
-        ) : programs.length === 0 ? (
+        ) : userPrograms.length === 0 ? (
           <div className="text-center py-12 glass-card rounded-xl">
             <FileCode className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Nessun programma salvato</h3>
@@ -90,7 +104,7 @@ const DashboardPrograms = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {programs.map(program => (
+            {userPrograms.map(program => (
               <ProgramCard
                 key={program.id}
                 program={program}
@@ -112,9 +126,13 @@ const DashboardPrograms = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Annulla</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
-                Elimina
+              <AlertDialogCancel disabled={isDeleting}>Annulla</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={confirmDelete} 
+                disabled={isDeleting}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                {isDeleting ? 'Eliminazione...' : 'Elimina'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
