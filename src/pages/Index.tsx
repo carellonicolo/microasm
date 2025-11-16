@@ -184,7 +184,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 relative overflow-hidden">
       {/* Animated background pattern */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         {/* Gradient mesh */}

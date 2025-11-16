@@ -97,7 +97,7 @@ export function OutputLog({ output, errors, onClear }: OutputLogProps) {
             {errors.map((error, idx) => (
               <div 
                 key={`err-${idx}`}
-                className="flex items-start gap-3 p-3 rounded-md bg-destructive/10 border border-destructive/20 animate-in slide-in-from-left-5"
+                className="flex items-start gap-3 p-3 rounded-md bg-destructive/10 border-2 border-destructive/30 dark:border-destructive/20 animate-in slide-in-from-left-5"
               >
                 <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">

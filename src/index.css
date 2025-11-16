@@ -42,11 +42,11 @@ All colors MUST be HSL.
 
     --radius: 1rem;
 
-    --code-bg: 230 30% 10%;
-    --code-text: 210 40% 95%;
-    --code-highlight: 210 100% 60%;
-    --code-comment: 210 30% 50%;
-    --code-keyword: 280 90% 70%;
+    --code-bg: 230 25% 98%;
+    --code-text: 215 25% 20%;
+    --code-highlight: 210 100% 45%;
+    --code-comment: 210 20% 55%;
+    --code-keyword: 280 65% 45%;
     
     --success: 145 85% 50%;
     --warning: 330 100% 65%;
@@ -74,6 +74,22 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Design Tokens */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    
+    --duration-fast: 150ms;
+    --duration-base: 300ms;
+    --duration-slow: 500ms;
+    
+    --z-dropdown: 10;
+    --z-sticky: 20;
+    --z-modal: 50;
+    --z-tooltip: 60;
   }
 
   .dark {
