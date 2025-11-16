@@ -116,14 +116,14 @@ export function CodeEditor({
         
         <ScrollArea className="h-full" ref={scrollRef}>
           <div className="flex font-mono text-sm min-h-full relative z-20 p-4">
-            <div className="bg-gradient-to-r from-primary/5 to-transparent mr-4 pr-3 select-none text-right flex-shrink-0 border-r border-primary/20">
+            <div className="bg-gradient-to-r from-code-bg to-transparent mr-4 pr-3 select-none text-right flex-shrink-0 border-r border-code-text/20">
               {lines.map((_, idx) => (
                 <div 
                   key={idx}
                   className={`leading-6 px-2 transition-all ${
                     currentLine === idx + 1 
-                      ? 'bg-primary/20 border-l-4 border-primary text-primary font-bold scale-105 glow-primary' 
-                      : 'text-muted-foreground/60'
+                      ? 'bg-code-highlight/20 border-l-4 border-code-highlight text-code-highlight font-bold scale-105 glow-primary' 
+                      : 'text-code-text/50'
                   }`}
                 >
                   {idx + 1}

@@ -22,7 +22,7 @@ export const Header = ({ onLoadExample, onLoadExercise, onSaveProgram }: HeaderP
       <div className="flex items-center justify-between">
         {/* Logo/Title (sinistra) */}
         <Link to="/">
-          <h1 className="text-4xl font-bold font-heading bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent hover:opacity-80 transition-opacity md:text-7xl">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-heading bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent hover:opacity-80 transition-opacity">
             MicroASM
           </h1>
         </Link>
