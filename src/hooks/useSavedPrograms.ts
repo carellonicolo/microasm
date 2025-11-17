@@ -45,11 +45,15 @@ export const useSavedPrograms = () => {
 
     if (error && error.name !== 'AbortError') {
       if (import.meta.env.DEV) {
-        console.error(error);
+        console.error('Errore fetchPrograms:', error);
       }
-      toast.error('Errore nel caricamento dei programmi');
-    } else if (data) {
-      setPrograms(data);
+      // Mostra toast solo per errori reali, non per "nessuna riga trovata"
+      if (error.code !== 'PGRST116') {
+        toast.error('Errore nel caricamento dei programmi');
+      }
+      setPrograms([]);
+    } else {
+      setPrograms(data || []);
     }
     setLoading(false);
     fetchControllerRef.current = null;
