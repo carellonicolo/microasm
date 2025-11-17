@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Eye, EyeOff } from 'lucide-react';
+import { GoogleAuthButton } from './GoogleAuthButton';
 
 const loginSchema = z.object({
   email: z.string().email('Email non valida'),
@@ -55,7 +56,21 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+    <div className="space-y-4 mt-6">
+      <GoogleAuthButton mode="login" />
+      
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            oppure continua con email
+          </span>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Label htmlFor="email">Email</Label>
         <Input
@@ -91,9 +106,10 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
         </div>
       </div>
 
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? 'Accesso in corso...' : 'Accedi'}
-      </Button>
-    </form>
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Accesso in corso...' : 'Accedi'}
+        </Button>
+      </form>
+    </div>
   );
 };
