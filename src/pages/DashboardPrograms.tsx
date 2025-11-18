@@ -19,17 +19,19 @@ import {
 import { toast } from 'sonner';
 
 const DashboardPrograms = () => {
-  const { programs, loading, deleteProgram, generatePublicLink } = useSavedPrograms();
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const { programs, loading: programsLoading, deleteProgram, generatePublicLink } = useSavedPrograms();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const navigate = useNavigate();
 
   // FASE 4: Filtra solo programmi dell'utente corrente
   const userPrograms = useMemo(() => 
     programs.filter(p => p.user_id === user?.id),
     [programs, user]
   );
+
+  const isInitializing = authLoading || (programsLoading && programs.length === 0);
 
   const handleOpen = (code: string) => {
     localStorage.setItem('microasm_loaded_code', code);
@@ -87,7 +89,14 @@ const DashboardPrograms = () => {
           </Button>
         </div>
 
-        {loading ? (
+        {isInitializing ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+              <p className="text-sm text-muted-foreground">Caricamento in corso...</p>
+            </div>
+          </div>
+        ) : programsLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
