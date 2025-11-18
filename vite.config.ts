@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    sourcemap: true, // Genera source maps per il debugging in produzione
     rollupOptions: {
       output: {
         // Nome file stabili per migliore caching
