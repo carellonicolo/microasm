@@ -42,6 +42,7 @@ export const Header = ({ onLoadExample, onLoadExercise, onSaveProgram }: HeaderP
               variant="outline" 
               size="sm"
               className="gap-1 sm:gap-2"
+              aria-label="Salva programma"
             >
               <Save className="w-4 h-4" />
               <span className="hidden sm:inline">Salva</span>
