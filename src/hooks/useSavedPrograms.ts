@@ -87,7 +87,7 @@ export const useSavedPrograms = () => {
         setRetryCount(prev => prev + 1);
         setTimeout(() => {
           fetchPrograms();
-        }, 500);
+        }, 1000);
         return;
       }
 
@@ -116,17 +116,27 @@ export const useSavedPrograms = () => {
       }
 
       // Altri errori: mostra toast generico
+      if (import.meta.env.DEV) {
+        console.error('⚠️ Errore non gestito:', error);
+      }
       toast.error('Errore nel caricamento dei programmi');
       setPrograms([]);
+      setLoading(false);
+      return;
     } else {
       // Success: reset retry count e salva dati
       setRetryCount(0);
-      setPrograms(data || []);
+      const programs = data || [];
+      setPrograms(programs);
       if (import.meta.env.DEV) {
-        console.log('✅ Programmi caricati con successo:', data?.length || 0);
+        console.log('✅ Programmi caricati con successo:', {
+          count: programs.length,
+          userId: user.id,
+          programs: programs.map(p => ({ id: p.id, name: p.name }))
+        });
       }
+      setLoading(false);
     }
-    setLoading(false);
     fetchControllerRef.current = null;
   };
 
@@ -306,8 +316,27 @@ export const useSavedPrograms = () => {
   };
 
   useEffect(() => {
-    fetchPrograms();
-  }, [session, authLoading]); // Reagisce a cambi di sessione, non solo user
+    if (import.meta.env.DEV) {
+      console.log('📊 useEffect triggered:', {
+        authLoading,
+        hasSession: !!session,
+        hasUser: !!session?.user,
+        userId: session?.user?.id
+      });
+    }
+
+    // Fetch SOLO quando auth è pronta e c'è un user
+    if (!authLoading && session?.user) {
+      fetchPrograms();
+    } else if (!authLoading && !session) {
+      // Auth completata ma nessun utente: reset
+      if (import.meta.env.DEV) {
+        console.log('🔓 Auth completata, nessun utente - reset programmi');
+      }
+      setPrograms([]);
+      setLoading(false);
+    }
+  }, [session?.user?.id, authLoading]); // ✅ Usa solo l'ID dell'utente, non l'intero oggetto session
 
   return {
     programs,
