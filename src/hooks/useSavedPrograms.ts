@@ -17,13 +17,26 @@ interface SavedProgram {
 }
 
 export const useSavedPrograms = () => {
-  const { user } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
   const [programs, setPrograms] = useState<SavedProgram[]>([]);
   const [loading, setLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
   const fetchControllerRef = useRef<AbortController | null>(null);
 
   const fetchPrograms = async () => {
-    if (!user) {
+    // GUARDIA: Non procedere se auth sta ancora caricando
+    if (authLoading) {
+      if (import.meta.env.DEV) {
+        console.log('⏳ fetchPrograms: Auth ancora in caricamento, attendo...');
+      }
+      return;
+    }
+
+    // GUARDIA: Nessuna sessione valida
+    if (!session || !user) {
+      if (import.meta.env.DEV) {
+        console.log('🔓 fetchPrograms: Nessuna sessione valida, reset programmi');
+      }
       setPrograms([]);
       setLoading(false);
       return;
@@ -37,6 +50,15 @@ export const useSavedPrograms = () => {
     fetchControllerRef.current = new AbortController();
     setLoading(true);
     
+    if (import.meta.env.DEV) {
+      console.log('📦 fetchPrograms avviato:', { 
+        hasUser: !!user, 
+        hasSession: !!session,
+        userId: user.id,
+        retryCount
+      });
+    }
+    
     const { data, error } = await supabase
       .from('saved_programs')
       .select('*')
@@ -45,15 +67,64 @@ export const useSavedPrograms = () => {
 
     if (error && error.name !== 'AbortError') {
       if (import.meta.env.DEV) {
-        console.error('Errore fetchPrograms:', error);
+        console.error('❌ Errore fetchPrograms:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          hasSession: !!session,
+          userId: user?.id,
+          retryCount
+        });
       }
-      // Mostra toast solo per errori reali, non per "nessuna riga trovata"
-      if (error.code !== 'PGRST116') {
-        toast.error('Errore nel caricamento dei programmi');
+
+      // PGRST301: Permission denied - potrebbe essere session non ancora propagata
+      // Retry automatico fino a 2 tentativi
+      if (error.code === 'PGRST301' && retryCount < 2) {
+        if (import.meta.env.DEV) {
+          console.log(`🔄 Retry ${retryCount + 1}/2 per PGRST301 (session non ancora propagata)`);
+        }
+        setRetryCount(prev => prev + 1);
+        setTimeout(() => {
+          fetchPrograms();
+        }, 500);
+        return;
       }
+
+      // Reset retry count
+      setRetryCount(0);
+
+      // PGRST116: Nessuna riga trovata (normale per nuovi utenti)
+      if (error.code === 'PGRST116') {
+        if (import.meta.env.DEV) {
+          console.log('ℹ️ Nessun programma salvato trovato (normale per nuovi utenti)');
+        }
+        setPrograms([]);
+        setLoading(false);
+        return;
+      }
+
+      // PGRST301: Permission denied anche dopo retry
+      if (error.code === 'PGRST301') {
+        if (import.meta.env.DEV) {
+          console.error('🚫 Permesso negato dopo retry - possibile problema RLS');
+        }
+        toast.error('Errore di autenticazione. Prova a effettuare nuovamente il login.');
+        setPrograms([]);
+        setLoading(false);
+        return;
+      }
+
+      // Altri errori: mostra toast generico
+      toast.error('Errore nel caricamento dei programmi');
       setPrograms([]);
     } else {
+      // Success: reset retry count e salva dati
+      setRetryCount(0);
       setPrograms(data || []);
+      if (import.meta.env.DEV) {
+        console.log('✅ Programmi caricati con successo:', data?.length || 0);
+      }
     }
     setLoading(false);
     fetchControllerRef.current = null;
@@ -236,7 +307,7 @@ export const useSavedPrograms = () => {
 
   useEffect(() => {
     fetchPrograms();
-  }, [user]);
+  }, [session, authLoading]); // Reagisce a cambi di sessione, non solo user
 
   return {
     programs,
