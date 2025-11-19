@@ -2,15 +2,26 @@ import { useState, useMemo } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { UserRolesBadges } from '@/components/shared/UserRolesBadges';
+import { UserDetailsDialog } from '@/components/dialogs/UserDetailsDialog';
 import { useAllUsers } from '@/hooks/useAllUsers';
-import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, GraduationCap, BookOpen, UserCog } from 'lucide-react';
+import { Users, GraduationCap, BookOpen, UserCog, Eye, Trash2, UserX } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -20,11 +31,14 @@ type SortBy = 'name' | 'email' | 'date';
 
 export default function DashboardUsers() {
   const { users, loading } = useAllUsers();
-  const { session } = useAuth();
+  const { isSuperAdmin } = useUserRole();
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
   const [sortBy, setSortBy] = useState<SortBy>('name');
-  const [promoting, setPromoting] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<typeof users[0] | null>(null);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<typeof users[0] | null>(null);
 
   // Statistiche
   const stats = useMemo(() => {
@@ -81,37 +95,82 @@ export default function DashboardUsers() {
     return filtered;
   }, [users, searchQuery, roleFilter, sortBy]);
 
-  const handlePromoteUser = async (userId: string, firstName: string, lastName: string) => {
-    if (!session?.user?.id) {
-      toast.error('Sessione non valida');
-      return;
-    }
-
-    setPromoting(userId);
-
+  const callAdminOperation = async (
+    operation: 'promote' | 'revoke_teacher' | 'delete_user',
+    targetUserId: string,
+    forceDelete = false
+  ) => {
     try {
-      const { error } = await supabase.from('user_roles').insert({
-        user_id: userId,
-        role: 'teacher',
-        assigned_by: session.user.id,
+      const { data, error } = await supabase.functions.invoke('admin-operations', {
+        body: { operation, target_user_id: targetUserId, force_delete: forceDelete },
       });
 
-      if (error) {
-        console.error('Error promoting user:', error);
-        toast.error('Errore durante la promozione');
+      if (error) throw error;
+      return data;
+    } catch (error: any) {
+      console.error('Admin operation error:', error);
+      throw error;
+    }
+  };
+
+  const handlePromoteUser = async (userId: string, firstName: string, lastName: string) => {
+    try {
+      await callAdminOperation('promote', userId);
+      toast.success(`${firstName} ${lastName} promosso a insegnante!`);
+      window.location.reload();
+    } catch (error: any) {
+      toast.error(error.message || 'Errore durante la promozione');
+    }
+  };
+
+  const handleRevokeTeacher = async (userId: string, firstName: string, lastName: string) => {
+    try {
+      await callAdminOperation('revoke_teacher', userId);
+      toast.success(`Ruolo insegnante revocato per ${firstName} ${lastName}`);
+      window.location.reload();
+    } catch (error: any) {
+      toast.error(error.message || 'Errore durante la revoca del ruolo');
+    }
+  };
+
+  const handleDeleteUser = async (forceDelete = false) => {
+    if (!userToDelete) return;
+
+    try {
+      const result = await callAdminOperation('delete_user', userToDelete.id, forceDelete);
+      
+      if (result.requires_force) {
+        const confirmForce = window.confirm(
+          `L'utente ${userToDelete.first_name} ${userToDelete.last_name} ha dati critici:\n` +
+          `- Classi create: ${result.dependencies.classes_owned}\n` +
+          `- Assegnazioni create: ${result.dependencies.assignments_created}\n` +
+          `- Iscrizioni a classi: ${result.dependencies.students_enrolled}\n\n` +
+          `Eliminare comunque? Tutti i dati correlati verranno persi.`
+        );
+
+        if (confirmForce) {
+          await handleDeleteUser(true);
+        }
         return;
       }
 
-      toast.success(`${firstName} ${lastName} promosso a insegnante!`);
-      
-      // Refresh immediato (l'hook si aggiornerà automaticamente)
+      toast.success(`Utente ${userToDelete.first_name} ${userToDelete.last_name} eliminato`);
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
       window.location.reload();
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      toast.error('Errore imprevisto');
-    } finally {
-      setPromoting(null);
+    } catch (error: any) {
+      toast.error(error.message || 'Errore durante l\'eliminazione');
     }
+  };
+
+  const openDetailsDialog = (user: typeof users[0]) => {
+    setSelectedUser(user);
+    setDetailsDialogOpen(true);
+  };
+
+  const openDeleteDialog = (user: typeof users[0]) => {
+    setUserToDelete(user);
+    setDeleteDialogOpen(true);
   };
 
   if (loading) {
@@ -217,40 +276,54 @@ export default function DashboardUsers() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredUsers.map((user) => {
-                    const isOnlyStudent = user.roles.includes('student') && !user.roles.includes('teacher');
-                    const canPromote = isOnlyStudent;
+                  filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">
+                        {user.first_name} {user.last_name}
+                      </TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <UserRolesBadges roles={user.roles} />
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {formatDistanceToNow(new Date(user.created_at), {
+                          addSuffix: true,
+                          locale: it,
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2 justify-end">
+                          <Button size="sm" variant="outline" onClick={() => openDetailsDialog(user)}>
+                            <Eye className="w-4 h-4" />
+                          </Button>
 
-                    return (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">
-                          {user.first_name} {user.last_name}
-                        </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <UserRolesBadges roles={user.roles} />
-                        </TableCell>
-                        <TableCell className="text-muted-foreground text-sm">
-                          {formatDistanceToNow(new Date(user.created_at), {
-                            addSuffix: true,
-                            locale: it,
-                          })}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {canPromote && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handlePromoteUser(user.id, user.first_name, user.last_name)}
-                              disabled={promoting === user.id}
-                            >
-                              {promoting === user.id ? 'Promozione...' : 'Promuovi'}
-                            </Button>
+                          {isSuperAdmin && (
+                            <>
+                              {!user.roles.includes('teacher') && (
+                                <Button size="sm" onClick={() => handlePromoteUser(user.id, user.first_name, user.last_name)}>
+                                  <UserCog className="w-4 h-4 mr-2" />
+                                  Promuovi
+                                </Button>
+                              )}
+
+                              {user.roles.includes('teacher') && !user.is_super_admin && (
+                                <Button size="sm" variant="outline" onClick={() => handleRevokeTeacher(user.id, user.first_name, user.last_name)}>
+                                  <UserX className="w-4 h-4 mr-2" />
+                                  Revoca
+                                </Button>
+                              )}
+
+                              {!user.is_super_admin && (
+                                <Button size="sm" variant="destructive" onClick={() => openDeleteDialog(user)}>
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </>
                           )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
               </TableBody>
             </Table>
