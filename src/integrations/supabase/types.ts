@@ -472,6 +472,7 @@ export type Database = {
           assigned_at: string
           assigned_by: string | null
           id: string
+          is_super_admin: boolean
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
@@ -479,6 +480,7 @@ export type Database = {
           assigned_at?: string
           assigned_by?: string | null
           id?: string
+          is_super_admin?: boolean
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
@@ -486,6 +488,7 @@ export type Database = {
           assigned_at?: string
           assigned_by?: string | null
           id?: string
+          is_super_admin?: boolean
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
@@ -569,6 +572,7 @@ export type Database = {
         Args: { _class_id: string; _user_id: string }
         Returns: boolean
       }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "student" | "teacher"

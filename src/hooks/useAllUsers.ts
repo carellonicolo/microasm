@@ -9,6 +9,7 @@ export interface UserWithRoles {
   email: string;
   created_at: string;
   roles: ('student' | 'teacher')[];
+  is_super_admin: boolean;
 }
 
 export const useAllUsers = () => {
@@ -51,10 +52,10 @@ export const useAllUsers = () => {
           console.log('📥 useAllUsers: Fetching all users and roles...');
         }
 
-        // Fetch tutti i ruoli
+        // Fetch tutti i ruoli con is_super_admin
         const { data: rolesData, error: rolesError } = await supabase
           .from('user_roles')
-          .select('user_id, role');
+          .select('user_id, role, is_super_admin');
 
         if (rolesError) {
           // Gestione errori specifici
@@ -108,19 +109,23 @@ export const useAllUsers = () => {
           return;
         }
 
-        // Raggruppa ruoli per user_id
-        const rolesMap = new Map<string, ('student' | 'teacher')[]>();
-        rolesData?.forEach(({ user_id, role }) => {
+        // Raggruppa ruoli per user_id e traccia is_super_admin
+        const rolesMap = new Map<string, { roles: ('student' | 'teacher')[]; is_super_admin: boolean }>();
+        rolesData?.forEach(({ user_id, role, is_super_admin }) => {
           if (!rolesMap.has(user_id)) {
-            rolesMap.set(user_id, []);
+            rolesMap.set(user_id, { roles: [], is_super_admin: false });
           }
-          rolesMap.get(user_id)!.push(role as 'student' | 'teacher');
+          rolesMap.get(user_id)!.roles.push(role as 'student' | 'teacher');
+          if (is_super_admin) {
+            rolesMap.get(user_id)!.is_super_admin = true;
+          }
         });
 
-        // Combina profili + ruoli
+        // Combina profili + ruoli + is_super_admin
         const usersWithRoles: UserWithRoles[] = (profilesData || []).map(profile => ({
           ...profile,
-          roles: rolesMap.get(profile.id) || [],
+          roles: rolesMap.get(profile.id)?.roles || [],
+          is_super_admin: rolesMap.get(profile.id)?.is_super_admin || false,
         }));
 
         if (import.meta.env.DEV) {
