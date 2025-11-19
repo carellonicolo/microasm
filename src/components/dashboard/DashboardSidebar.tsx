@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Code, Users, BookOpen, FileText } from 'lucide-react';
+import { Home, Code, Users, BookOpen, FileText, UserCog } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RoleBadge } from '@/components/shared/RoleBadge';
 
@@ -16,6 +16,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Le Mie Classi', href: '/dashboard/classes', icon: Users, roles: ['student', 'teacher'] },
   { label: 'Esercitazioni', href: '/dashboard/assignments', icon: FileText, roles: ['student', 'teacher'] },
   { label: 'Repository Esercizi', href: '/dashboard/exercises', icon: BookOpen, roles: ['teacher'] },
+  { label: 'Gestione Utenti', href: '/dashboard/users', icon: UserCog, roles: ['teacher'] },
 ];
 
 interface DashboardSidebarProps {
