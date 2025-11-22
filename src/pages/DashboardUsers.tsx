@@ -10,6 +10,7 @@ import { Users, GraduationCap, BookOpen, UserCog, Eye, Trash2, UserX } from 'luc
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
@@ -39,6 +40,9 @@ export default function DashboardUsers() {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<typeof users[0] | null>(null);
+  const [forceDeleteDialogOpen, setForceDeleteDialogOpen] = useState(false);
+  const [dependencies, setDependencies] = useState<any>(null);
+  const [operatingUserId, setOperatingUserId] = useState<string | null>(null);
 
   // Statistiche
   const stats = useMemo(() => {
@@ -114,53 +118,64 @@ export default function DashboardUsers() {
   };
 
   const handlePromoteUser = async (userId: string, firstName: string, lastName: string) => {
+    setOperatingUserId(userId);
     try {
       await callAdminOperation('promote', userId);
       toast.success(`${firstName} ${lastName} promosso a insegnante!`);
       window.location.reload();
     } catch (error: any) {
       toast.error(error.message || 'Errore durante la promozione');
+    } finally {
+      setOperatingUserId(null);
     }
   };
 
   const handleRevokeTeacher = async (userId: string, firstName: string, lastName: string) => {
+    setOperatingUserId(userId);
     try {
       await callAdminOperation('revoke_teacher', userId);
       toast.success(`Ruolo insegnante revocato per ${firstName} ${lastName}`);
       window.location.reload();
     } catch (error: any) {
       toast.error(error.message || 'Errore durante la revoca del ruolo');
+    } finally {
+      setOperatingUserId(null);
     }
   };
 
   const handleDeleteUser = async (forceDelete = false) => {
     if (!userToDelete) return;
 
+    setOperatingUserId(userToDelete.id);
     try {
       const result = await callAdminOperation('delete_user', userToDelete.id, forceDelete);
       
       if (result.requires_force) {
-        const confirmForce = window.confirm(
-          `L'utente ${userToDelete.first_name} ${userToDelete.last_name} ha dati critici:\n` +
-          `- Classi create: ${result.dependencies.classes_owned}\n` +
-          `- Assegnazioni create: ${result.dependencies.assignments_created}\n` +
-          `- Iscrizioni a classi: ${result.dependencies.students_enrolled}\n\n` +
-          `Eliminare comunque? Tutti i dati correlati verranno persi.`
-        );
-
-        if (confirmForce) {
-          await handleDeleteUser(true);
-        }
+        setDeleteDialogOpen(false);
+        setDependencies(result.dependencies);
+        setForceDeleteDialogOpen(true);
+        setOperatingUserId(null);
         return;
       }
 
-      toast.success(`Utente ${userToDelete.first_name} ${userToDelete.last_name} eliminato`);
+      toast.success(`Utente ${userToDelete.first_name} ${userToDelete.last_name} eliminato con successo`);
       setDeleteDialogOpen(false);
+      setForceDeleteDialogOpen(false);
       setUserToDelete(null);
+      setDependencies(null);
       window.location.reload();
     } catch (error: any) {
       toast.error(error.message || 'Errore durante l\'eliminazione');
+      setDeleteDialogOpen(false);
+      setForceDeleteDialogOpen(false);
+      setUserToDelete(null);
+    } finally {
+      setOperatingUserId(null);
     }
+  };
+
+  const handleForceDelete = async () => {
+    await handleDeleteUser(true);
   };
 
   const openDetailsDialog = (user: typeof users[0]) => {
@@ -282,8 +297,16 @@ export default function DashboardUsers() {
                         {user.first_name} {user.last_name}
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        <UserRolesBadges roles={user.roles} />
+                       <TableCell>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <UserRolesBadges roles={user.roles} />
+                          {user.is_super_admin && (
+                            <Badge variant="destructive" className="gap-1.5 text-xs">
+                              <UserCog className="w-3 h-3" />
+                              SA
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {formatDistanceToNow(new Date(user.created_at), {
@@ -293,29 +316,60 @@ export default function DashboardUsers() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2 justify-end">
-                          <Button size="sm" variant="outline" onClick={() => openDetailsDialog(user)}>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => openDetailsDialog(user)}
+                            disabled={operatingUserId !== null}
+                          >
                             <Eye className="w-4 h-4" />
                           </Button>
 
                           {isSuperAdmin && (
                             <>
                               {!user.roles.includes('teacher') && (
-                                <Button size="sm" onClick={() => handlePromoteUser(user.id, user.first_name, user.last_name)}>
-                                  <UserCog className="w-4 h-4 mr-2" />
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => handlePromoteUser(user.id, user.first_name, user.last_name)}
+                                  disabled={operatingUserId !== null}
+                                >
+                                  {operatingUserId === user.id ? (
+                                    <UserCog className="w-4 h-4 mr-2 animate-spin" />
+                                  ) : (
+                                    <UserCog className="w-4 h-4 mr-2" />
+                                  )}
                                   Promuovi
                                 </Button>
                               )}
 
                               {user.roles.includes('teacher') && !user.is_super_admin && (
-                                <Button size="sm" variant="outline" onClick={() => handleRevokeTeacher(user.id, user.first_name, user.last_name)}>
-                                  <UserX className="w-4 h-4 mr-2" />
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleRevokeTeacher(user.id, user.first_name, user.last_name)}
+                                  disabled={operatingUserId !== null}
+                                >
+                                  {operatingUserId === user.id ? (
+                                    <UserX className="w-4 h-4 mr-2 animate-spin" />
+                                  ) : (
+                                    <UserX className="w-4 h-4 mr-2" />
+                                  )}
                                   Revoca
                                 </Button>
                               )}
 
                               {!user.is_super_admin && (
-                                <Button size="sm" variant="destructive" onClick={() => openDeleteDialog(user)}>
-                                  <Trash2 className="w-4 h-4" />
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive" 
+                                  onClick={() => openDeleteDialog(user)}
+                                  disabled={operatingUserId !== null}
+                                >
+                                  {operatingUserId === user.id ? (
+                                    <Trash2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="w-4 h-4" />
+                                  )}
                                 </Button>
                               )}
                             </>
@@ -330,6 +384,89 @@ export default function DashboardUsers() {
           </ScrollArea>
         </div>
       </div>
+
+      <UserDetailsDialog 
+        user={selectedUser} 
+        open={detailsDialogOpen} 
+        onOpenChange={setDetailsDialogOpen} 
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Conferma Eliminazione Utente</AlertDialogTitle>
+            <AlertDialogDescription>
+              Sei sicuro di voler eliminare <strong>{userToDelete?.first_name} {userToDelete?.last_name}</strong>?
+              <br /><br />
+              Questa azione è irreversibile e potrebbe comportare la perdita di dati.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => handleDeleteUser(false)} 
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Elimina Utente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={forceDeleteDialogOpen} onOpenChange={setForceDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">
+              ⚠️ Attenzione: Dati Critici Rilevati
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                L'utente <strong>{userToDelete?.first_name} {userToDelete?.last_name}</strong> ha i seguenti dati nel sistema:
+              </p>
+              {dependencies && (
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  {dependencies.classes_owned > 0 && (
+                    <li>Classi create: <strong>{dependencies.classes_owned}</strong></li>
+                  )}
+                  {dependencies.assignments_created > 0 && (
+                    <li>Assegnazioni create: <strong>{dependencies.assignments_created}</strong></li>
+                  )}
+                  {dependencies.students_enrolled > 0 && (
+                    <li>Iscrizioni a classi: <strong>{dependencies.students_enrolled}</strong></li>
+                  )}
+                  {dependencies.submissions_made > 0 && (
+                    <li>Consegne effettuate: <strong>{dependencies.submissions_made}</strong></li>
+                  )}
+                  {dependencies.custom_exercises > 0 && (
+                    <li>Esercizi personalizzati: <strong>{dependencies.custom_exercises}</strong></li>
+                  )}
+                  {dependencies.saved_programs > 0 && (
+                    <li>Programmi salvati: <strong>{dependencies.saved_programs}</strong></li>
+                  )}
+                </ul>
+              )}
+              <p className="text-destructive font-semibold">
+                Eliminando questo utente, tutti i dati correlati verranno persi definitivamente.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setForceDeleteDialogOpen(false);
+              setUserToDelete(null);
+              setDependencies(null);
+            }}>
+              Annulla
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleForceDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Conferma Eliminazione Forzata
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }
