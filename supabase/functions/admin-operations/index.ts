@@ -70,7 +70,46 @@ Deno.serve(async (req) => {
 
     const { operation, target_user_id, force_delete }: AdminOperationRequest = await req.json();
 
-    console.log(`Super Admin ${user.id} performing operation: ${operation} on user ${target_user_id}`);
+    // Validate UUID format
+    if (!target_user_id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(target_user_id)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid user ID format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate operation
+    const validOperations: AdminOperationRequest['operation'][] = ['promote', 'revoke_teacher', 'delete_user'];
+    if (!operation || !validOperations.includes(operation)) {
+      return new Response(
+        JSON.stringify({ error: `Invalid operation. Must be one of: ${validOperations.join(', ')}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Prevent self-operations
+    if (target_user_id === user.id) {
+      return new Response(
+        JSON.stringify({ error: 'Cannot perform admin operations on yourself' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify target user exists
+    const { data: targetUser, error: targetError } = await supabaseAdmin
+      .from('profiles')
+      .select('id, first_name, last_name')
+      .eq('id', target_user_id)
+      .single();
+
+    if (targetError || !targetUser) {
+      return new Response(
+        JSON.stringify({ error: 'Target user not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`Super Admin ${user.id} performing operation: ${operation} on user ${target_user_id} (${targetUser.first_name} ${targetUser.last_name})`);
 
     // PROMOTE: Add teacher role to student
     if (operation === 'promote') {
@@ -121,6 +160,31 @@ Deno.serve(async (req) => {
 
     // DELETE USER: Check dependencies first
     if (operation === 'delete_user') {
+      // Check if deleting a super admin
+      const { data: targetRoles } = await supabaseAdmin
+        .from('user_roles')
+        .select('is_super_admin')
+        .eq('user_id', target_user_id);
+
+      const isTargetSuperAdmin = targetRoles?.some(r => r.is_super_admin);
+
+      if (isTargetSuperAdmin) {
+        // Count total super admins
+        const { count } = await supabaseAdmin
+          .from('user_roles')
+          .select('user_id', { count: 'exact', head: true })
+          .eq('is_super_admin', true);
+
+        if (count && count <= 1) {
+          return new Response(
+            JSON.stringify({ 
+              error: 'Cannot delete the last Super Admin. Promote another user to Super Admin first.' 
+            }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
       // Check user dependencies
       const dependencies = await checkUserDependencies(supabaseAdmin, target_user_id);
 

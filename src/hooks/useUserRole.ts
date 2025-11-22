@@ -6,42 +6,48 @@ type UserRole = 'student' | 'teacher' | null;
 
 export const useUserRole = () => {
   const { user } = useAuth();
-  const [role, setRole] = useState<UserRole>(null);
+  const [roles, setRoles] = useState<('student' | 'teacher')[]>([]);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchRole = async () => {
+    const fetchRoles = async () => {
       if (!user) {
-        setRole(null);
+        setRoles([]);
         setIsSuperAdmin(false);
         setLoading(false);
         return;
       }
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('user_roles')
         .select('role, is_super_admin')
-        .eq('user_id', user.id)
-        .order('role', { ascending: true })
-        .limit(1)
-        .single();
+        .eq('user_id', user.id);
 
-      if (data) {
-        setRole(data.role as UserRole);
-        setIsSuperAdmin(data.is_super_admin || false);
+      if (error) {
+        console.error('Error fetching user roles:', error);
+        setRoles([]);
+        setIsSuperAdmin(false);
+      } else if (data && data.length > 0) {
+        const userRoles = data.map(r => r.role as 'student' | 'teacher');
+        const isSuper = data.some(r => r.is_super_admin);
+        
+        setRoles(userRoles);
+        setIsSuperAdmin(isSuper);
       }
       setLoading(false);
     };
 
-    fetchRole();
+    fetchRoles();
   }, [user]);
 
   return { 
-    role, 
+    roles,
+    primaryRole: roles.includes('teacher') ? 'teacher' as UserRole : roles.includes('student') ? 'student' as UserRole : null,
+    role: roles.includes('teacher') ? 'teacher' as UserRole : roles.includes('student') ? 'student' as UserRole : null,
     loading, 
-    isTeacher: role === 'teacher', 
-    isStudent: role === 'student',
+    isTeacher: roles.includes('teacher'), 
+    isStudent: roles.includes('student'),
     isSuperAdmin,
   };
 };
