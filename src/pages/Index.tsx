@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { CodeEditor } from "@/components/CodeEditor";
 import { CPUStatus } from "@/components/CPUStatus";
@@ -30,6 +30,8 @@ const Index = () => {
   const [output, setOutput] = useState<string[]>([]);
   const [currentLine, setCurrentLine] = useState<number | undefined>();
   const runIntervalRef = useRef<number | null>(null);
+  const stepCountRef = useRef(0);
+  const MAX_STEPS_PER_RUN = 100000;
 
   // Load code from localStorage if coming from dashboard
   useEffect(() => {
@@ -40,6 +42,46 @@ const Index = () => {
       toast.success('Programma caricato');
     }
   }, [location]);
+
+  // Autosave code every 5 seconds
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      localStorage.setItem('microasm_autosave', code);
+      localStorage.setItem('microasm_autosave_timestamp', Date.now().toString());
+    }, 5000);
+    
+    return () => clearTimeout(timeoutId);
+  }, [code]);
+
+  // Check for autosaved code on mount
+  useEffect(() => {
+    const autosaved = localStorage.getItem('microasm_autosave');
+    const timestamp = localStorage.getItem('microasm_autosave_timestamp');
+    
+    if (autosaved && timestamp) {
+      const savedDate = new Date(parseInt(timestamp));
+      const age = Date.now() - savedDate.getTime();
+      
+      // If the save is recent (< 24 hours) and different from current code
+      if (age < 24 * 60 * 60 * 1000 && autosaved !== code && autosaved !== EXAMPLE_PROGRAMS.factorial) {
+        const restore = window.confirm(
+          `È stato trovato un programma non salvato dal ${savedDate.toLocaleString()}. Vuoi ripristinarlo?`
+        );
+        if (restore) {
+          setCode(autosaved);
+          toast.success('Programma ripristinato');
+        }
+      }
+    }
+  }, []);
+
+  // Helper function to safely stop execution
+  const stopExecution = useCallback(() => {
+    if (runIntervalRef.current) {
+      clearInterval(runIntervalRef.current);
+      runIntervalRef.current = null;
+    }
+  }, []);
 
   const updateState = () => {
     if (executorRef.current) {
@@ -62,10 +104,7 @@ const Index = () => {
       if (!confirmed) return;
       
       // Ferma esecuzione in corso
-      if (runIntervalRef.current) {
-        clearInterval(runIntervalRef.current);
-        runIntervalRef.current = null;
-      }
+      stopExecution();
     }
 
     const { instructions, labels, error } = parseProgram(code);
@@ -80,6 +119,7 @@ const Index = () => {
     executorRef.current = new CPUExecutor(instructions, labels);
     setErrors([]);
     setExecutionState('idle');
+    stepCountRef.current = 0;
     updateState();
     setCurrentLine(instructions.length > 0 ? instructions[0].line : undefined);
     toast.success('Programma caricato con successo');
@@ -109,37 +149,45 @@ const Index = () => {
       toast.error('Carica prima un programma');
       return;
     }
-
-    // Previeni avvio multiplo
-    if (executionState === 'running' && runIntervalRef.current) {
-      toast.warning('Esecuzione già in corso');
-      return;
-    }
     
     if (executionState === 'running') {
-      // Stop
-      if (runIntervalRef.current) {
-        clearInterval(runIntervalRef.current);
-        runIntervalRef.current = null;
-      }
+      // PAUSA: Ferma l'esecuzione
+      stopExecution();
       setExecutionState('paused');
       toast.info('Esecuzione in pausa');
     } else {
-      // Start
+      // PLAY: Avvia l'esecuzione
+      // Protezione doppio avvio (solo nel branch di avvio!)
+      if (runIntervalRef.current) {
+        console.warn('Tentativo di doppio avvio prevenuto');
+        return;
+      }
+      
       setExecutionState('running');
       runIntervalRef.current = window.setInterval(() => {
         if (executorRef.current) {
+          stepCountRef.current++;
+          
+          // Protezione ciclo infinito
+          if (stepCountRef.current > MAX_STEPS_PER_RUN) {
+            stopExecution();
+            setExecutionState('error');
+            setErrors([`Possibile ciclo infinito rilevato. Esecuzione fermata dopo ${MAX_STEPS_PER_RUN.toLocaleString()} istruzioni.`]);
+            toast.error('Ciclo infinito rilevato!');
+            return;
+          }
+          
           const error = executorRef.current.step();
           updateState();
           
           if (error) {
             setErrors([`Riga ${error.line || '?'}: ${error.message}`]);
             setExecutionState('error');
-            if (runIntervalRef.current) clearInterval(runIntervalRef.current);
+            stopExecution();
             toast.error('Errore di runtime');
           } else if (executorRef.current.halted) {
             setExecutionState('idle');
-            if (runIntervalRef.current) clearInterval(runIntervalRef.current);
+            stopExecution();
             toast.success('Programma terminato');
           }
         }
@@ -149,10 +197,7 @@ const Index = () => {
   };
 
   const handleReset = () => {
-    if (runIntervalRef.current) {
-      clearInterval(runIntervalRef.current);
-      runIntervalRef.current = null;
-    }
+    stopExecution();
     
     if (executorRef.current) {
       executorRef.current.reset();
@@ -166,6 +211,7 @@ const Index = () => {
     
     setErrors([]);
     setExecutionState('idle');
+    stepCountRef.current = 0;
     toast.info('Reset completato');
   };
 
@@ -177,11 +223,9 @@ const Index = () => {
 
   useEffect(() => {
     return () => {
-      if (runIntervalRef.current) {
-        clearInterval(runIntervalRef.current);
-      }
+      stopExecution();
     };
-  }, []);
+  }, [stopExecution]);
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 relative overflow-hidden">

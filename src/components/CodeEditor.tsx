@@ -71,11 +71,15 @@ export function CodeEditor({
             className={executionState === 'running' ? '' : 'relative overflow-hidden group'}
           >
             {executionState === 'running' ? (
-              <Pause className="w-4 h-4" />
+              <>
+                <Pause className="w-4 h-4 mr-1" />
+                <span className="hidden sm:inline">Pausa</span>
+              </>
             ) : (
               <>
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-light to-accent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Play className="relative w-4 h-4 group-hover:scale-110 transition-transform" />
+                <Play className="relative w-4 h-4 mr-1 group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline relative">Esegui</span>
               </>
             )}
           </Button>
