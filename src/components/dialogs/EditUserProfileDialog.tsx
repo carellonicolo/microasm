@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -52,13 +52,15 @@ export const EditUserProfileDialog = ({
     },
   });
 
-  // Reset form quando cambia l'utente
-  if (user && open) {
-    form.reset({
-      firstName: user.first_name,
-      lastName: user.last_name,
-    });
-  }
+  // Reset form quando cambia l'utente o si apre il dialog
+  useEffect(() => {
+    if (user && open) {
+      form.reset({
+        firstName: user.first_name,
+        lastName: user.last_name,
+      });
+    }
+  }, [user?.id, open, form]);
 
   const onSubmit = async (data: ProfileFormData) => {
     if (!user?.id) {

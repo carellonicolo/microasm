@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -39,12 +40,14 @@ const DashboardProfile = () => {
   });
 
   // Aggiorna i valori del form quando il profilo viene caricato
-  if (profile && !form.formState.isDirty) {
-    form.reset({
-      firstName: profile.first_name,
-      lastName: profile.last_name,
-    });
-  }
+  useEffect(() => {
+    if (profile) {
+      form.reset({
+        firstName: profile.first_name,
+        lastName: profile.last_name,
+      });
+    }
+  }, [profile?.id, form]);
 
   const onSubmit = async (data: ProfileFormData) => {
     const success = await updateProfile(data.firstName, data.lastName);
