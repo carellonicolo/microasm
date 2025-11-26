@@ -5,20 +5,19 @@ import { CPUStatus } from "@/components/CPUStatus";
 import { MemoryView } from "@/components/MemoryView";
 import { OutputLog } from "@/components/OutputLog";
 import { Header } from "@/components/shared/Header";
-import { SaveProgramDialog } from "@/components/dialogs/SaveProgramDialog";
 import { DisplayFormat, ExecutionState } from "@/types/microasm";
 import { parseProgram } from "@/utils/assembler";
 import { CPUExecutor } from "@/utils/executor";
 import { toast } from "sonner";
 import { EXAMPLE_PROGRAMS } from "@/data/examples";
+import { useEditor } from "@/contexts/EditorContext";
 
 const Index = () => {
   const location = useLocation();
-  const [code, setCode] = useState(EXAMPLE_PROGRAMS.factorial);
+  const { code, setCode, currentProgram } = useEditor();
   const [format, setFormat] = useState<DisplayFormat>('decimal');
   const [executionState, setExecutionState] = useState<ExecutionState>('idle');
   const [errors, setErrors] = useState<string[]>([]);
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   
   const executorRef = useRef<CPUExecutor | null>(null);
   const [cpu, setCpu] = useState({
@@ -41,7 +40,14 @@ const Index = () => {
       localStorage.removeItem('microasm_loaded_code');
       toast.success('Programma caricato');
     }
-  }, [location]);
+  }, [location, setCode]);
+
+  // Initialize with example if no current program
+  useEffect(() => {
+    if (!currentProgram && !code) {
+      setCode(EXAMPLE_PROGRAMS.factorial);
+    }
+  }, [currentProgram, code, setCode]);
 
   // Autosave code every 5 seconds
   useEffect(() => {
@@ -246,7 +252,6 @@ const Index = () => {
         <Header 
           onLoadExample={setCode}
           onLoadExercise={setCode}
-          onSaveProgram={() => setSaveDialogOpen(true)}
         />
         
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -305,12 +310,6 @@ const Index = () => {
           </div>
         </footer>
       </div>
-
-      <SaveProgramDialog 
-        open={saveDialogOpen} 
-        onOpenChange={setSaveDialogOpen} 
-        code={code} 
-      />
     </div>
   );
 };
