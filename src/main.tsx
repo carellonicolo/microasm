@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { EditorProvider } from "./contexts/EditorContext";
 
 // Registra Service Worker per caching avanzato (solo in produzione)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
@@ -21,4 +22,8 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   });
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <EditorProvider>
+    <App />
+  </EditorProvider>
+);

@@ -1,31 +1,20 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
-import { ProgramCard } from '@/components/dashboard/ProgramCard';
 import { useSavedPrograms } from '@/hooks/useSavedPrograms';
 import { useAuth } from '@/hooks/useAuth';
+import { useEditor } from '@/contexts/EditorContext';
 import { Button } from '@/components/ui/button';
-import { Plus, FileCode, Link as LinkIcon } from 'lucide-react';
+import { Plus, FileCode } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { FileExplorer } from '@/components/file-explorer/FileExplorer';
 import { toast } from 'sonner';
 
 const DashboardPrograms = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { programs, loading: programsLoading, deleteProgram, generatePublicLink } = useSavedPrograms();
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const { programs, loading: programsLoading } = useSavedPrograms();
+  const { openProgram } = useEditor();
 
-  // FASE 4: Filtra solo programmi dell'utente corrente
   const userPrograms = useMemo(() => 
     programs.filter(p => p.user_id === user?.id),
     [programs, user]
@@ -33,44 +22,14 @@ const DashboardPrograms = () => {
 
   const isInitializing = authLoading || (programsLoading && programs.length === 0);
 
-  const handleOpen = (code: string) => {
+  const handleOpenProgram = (code: string, programId: string) => {
+    const program = programs.find(p => p.id === programId);
+    if (program) {
+      openProgram(program);
+    }
     localStorage.setItem('microasm_loaded_code', code);
     navigate('/');
-    toast.success('Programma caricato nell\'editor');
-  };
-
-  const handleEdit = (program: any) => {
-    localStorage.setItem('microasm_loaded_code', program.code);
-    navigate('/');
-    toast.info('Programma caricato nell\'editor per la modifica');
-  };
-
-  const handleShare = async (id: string) => {
-    const program = programs.find(p => p.id === id);
-    
-    if (program?.public_link_token) {
-      const link = `${window.location.origin}/p/${program.public_link_token}`;
-      navigator.clipboard.writeText(link);
-      toast.success('Link pubblico copiato negli appunti!');
-    } else {
-      const link = await generatePublicLink(id);
-      if (link) {
-        navigator.clipboard.writeText(link);
-        toast.success('Link pubblico generato e copiato!');
-      }
-    }
-  };
-
-  // FASE 1: Prevenzione click multipli durante eliminazione
-  const confirmDelete = async () => {
-    if (deleteId && !isDeleting) {
-      setIsDeleting(true);
-      const success = await deleteProgram(deleteId);
-      setIsDeleting(false);
-      if (success) {
-        setDeleteId(null);
-      }
-    }
+    toast.success('Programma aperto nell\'editor');
   };
 
   return (
@@ -112,40 +71,8 @@ const DashboardPrograms = () => {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {userPrograms.map(program => (
-              <ProgramCard
-                key={program.id}
-                program={program}
-                onOpen={() => handleOpen(program.code)}
-                onEdit={() => handleEdit(program)}
-                onDelete={() => setDeleteId(program.id)}
-                onShare={() => handleShare(program.id)}
-              />
-            ))}
-          </div>
+          <FileExplorer onOpenProgram={handleOpenProgram} />
         )}
-
-        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Conferma Eliminazione</AlertDialogTitle>
-              <AlertDialogDescription>
-                Sei sicuro di voler eliminare questo programma? Questa azione non può essere annullata.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={isDeleting}>Annulla</AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={confirmDelete} 
-                disabled={isDeleting}
-                className="bg-destructive hover:bg-destructive/90"
-              >
-                {isDeleting ? 'Eliminazione...' : 'Elimina'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     </DashboardLayout>
   );
