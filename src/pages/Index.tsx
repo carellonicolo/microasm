@@ -234,7 +234,7 @@ const Index = () => {
   }, [stopExecution]);
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+    <div className="min-h-screen bg-background p-2 sm:p-3 lg:p-4 relative overflow-hidden">
       {/* Animated background pattern */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         {/* Gradient mesh */}
@@ -248,7 +248,7 @@ const Index = () => {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 dark:bg-accent/8 bg-accent/4 rounded-full blur-3xl animate-float transition-all duration-500" style={{animationDelay: '1s'}} />
       </div>
 
-      <div className="max-w-[1800px] mx-auto space-y-6 relative z-0">
+      <div className="max-w-[1800px] mx-auto space-y-2 relative z-0">
         <Header 
           onLoadExample={setCode}
           onLoadExercise={setCode}

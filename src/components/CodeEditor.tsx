@@ -48,7 +48,7 @@ export function CodeEditor({
   }, [currentLine]);
   
   return (
-    <Card className="flex flex-col h-full card-hover rounded-2xl border-2 border-primary/10 overflow-hidden bg-gradient-to-br from-card via-card to-card/80">
+    <Card className={`flex flex-col h-full card-hover rounded-2xl border-2 border-primary/10 overflow-hidden bg-gradient-to-br from-card via-card to-card/80 ${executionState === 'running' ? 'apple-intelligence-editor' : ''}`}>
       <div className="flex items-center justify-between p-4 border-b border-primary/10 bg-gradient-to-r from-primary/5 via-accent/5 to-transparent">
         <h2 className="text-xl font-bold font-heading">Codice Sorgente</h2>
         <div className="flex gap-2">

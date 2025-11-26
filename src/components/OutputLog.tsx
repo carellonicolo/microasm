@@ -34,7 +34,7 @@ export function OutputLog({ output, errors, onClear }: OutputLogProps) {
   };
 
   return (
-    <Card className="p-4 flex flex-col h-full">
+    <Card className="p-4 flex flex-col h-full card-hover rounded-2xl border-2 border-primary/10">
       {/* Header con counter e azioni */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">

@@ -47,13 +47,16 @@ export const Header = ({ onLoadExample, onLoadExercise }: HeaderProps) => {
 
   return (
     <>
-      <header className="relative py-4">
+      <header className="relative py-2">
         <div className="flex items-center justify-between">
           {/* Logo/Title (sinistra) */}
           <Link to="/">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-heading bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent hover:opacity-80 transition-opacity">
-              MicroASM
-            </h1>
+            <div className="flex flex-col">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-heading bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+                MicroASM
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Powered by Prof. Carello</p>
+            </div>
           </Link>
 
           {/* Auth Controls (destra) */}
