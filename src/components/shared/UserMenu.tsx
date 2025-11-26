@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User as UserIcon, LayoutDashboard } from 'lucide-react';
+import { LogOut, User as UserIcon, LayoutDashboard, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -75,6 +75,10 @@ export const UserMenu = ({ user }: UserMenuProps) => {
         <DropdownMenuItem onClick={() => navigate('/dashboard')} className="cursor-pointer">
           <LayoutDashboard className="w-4 h-4 mr-2" />
           Dashboard
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/dashboard/profile')} className="cursor-pointer">
+          <Settings className="w-4 h-4 mr-2" />
+          Il Mio Profilo
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">

@@ -6,9 +6,13 @@ const corsHeaders = {
 };
 
 interface AdminOperationRequest {
-  operation: 'promote' | 'revoke_teacher' | 'delete_user';
+  operation: 'promote' | 'revoke_teacher' | 'delete_user' | 'update_profile';
   target_user_id: string;
   force_delete?: boolean;
+  profile_data?: {
+    first_name?: string;
+    last_name?: string;
+  };
 }
 
 interface UserDependencies {
@@ -79,7 +83,7 @@ Deno.serve(async (req) => {
     }
 
     // Validate operation
-    const validOperations: AdminOperationRequest['operation'][] = ['promote', 'revoke_teacher', 'delete_user'];
+    const validOperations: AdminOperationRequest['operation'][] = ['promote', 'revoke_teacher', 'delete_user', 'update_profile'];
     if (!operation || !validOperations.includes(operation)) {
       return new Response(
         JSON.stringify({ error: `Invalid operation. Must be one of: ${validOperations.join(', ')}` }),
@@ -154,6 +158,68 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, message: 'Teacher role revoked' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // UPDATE PROFILE: Update user first_name and last_name
+    if (operation === 'update_profile') {
+      const { profile_data } = await req.json();
+      const { first_name, last_name } = profile_data || {};
+
+      // Validazione input
+      if (!first_name && !last_name) {
+        return new Response(
+          JSON.stringify({ error: 'Nessun dato da aggiornare' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      if (first_name) {
+        const trimmed = first_name.trim();
+        if (trimmed.length < 2 || trimmed.length > 100) {
+          return new Response(
+            JSON.stringify({ error: 'Il nome deve contenere tra 2 e 100 caratteri' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
+      if (last_name) {
+        const trimmed = last_name.trim();
+        if (trimmed.length < 2 || trimmed.length > 100) {
+          return new Response(
+            JSON.stringify({ error: 'Il cognome deve contenere tra 2 e 100 caratteri' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
+      // Costruisci l'oggetto di update
+      const updateData: Record<string, string> = {};
+      if (first_name) updateData.first_name = first_name.trim();
+      if (last_name) updateData.last_name = last_name.trim();
+
+      // Aggiorna il profilo usando service role (bypassa RLS)
+      const { error: updateError } = await supabaseAdmin
+        .from('profiles')
+        .update(updateData)
+        .eq('id', target_user_id);
+
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+        return new Response(
+          JSON.stringify({ error: 'Errore durante l\'aggiornamento del profilo' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`✅ Profile updated for user ${target_user_id}`);
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Profilo aggiornato con successo' 
+        }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

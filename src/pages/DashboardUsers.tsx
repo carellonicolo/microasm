@@ -3,10 +3,11 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { UserRolesBadges } from '@/components/shared/UserRolesBadges';
 import { UserDetailsDialog } from '@/components/dialogs/UserDetailsDialog';
+import { EditUserProfileDialog } from '@/components/dialogs/EditUserProfileDialog';
 import { useAllUsers } from '@/hooks/useAllUsers';
 import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, GraduationCap, BookOpen, UserCog, Eye, Trash2, UserX } from 'lucide-react';
+import { Users, GraduationCap, BookOpen, UserCog, Eye, Trash2, UserX, Pencil } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ export default function DashboardUsers() {
   const [sortBy, setSortBy] = useState<SortBy>('name');
   const [selectedUser, setSelectedUser] = useState<typeof users[0] | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<typeof users[0] | null>(null);
   const [forceDeleteDialogOpen, setForceDeleteDialogOpen] = useState(false);
@@ -183,6 +185,11 @@ export default function DashboardUsers() {
     setDetailsDialogOpen(true);
   };
 
+  const openEditDialog = (user: typeof users[0]) => {
+    setSelectedUser(user);
+    setEditDialogOpen(true);
+  };
+
   const openDeleteDialog = (user: typeof users[0]) => {
     setUserToDelete(user);
     setDeleteDialogOpen(true);
@@ -326,6 +333,17 @@ export default function DashboardUsers() {
                           </Button>
 
                           {isSuperAdmin && (
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => openEditDialog(user)}
+                              disabled={operatingUserId !== null}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                          )}
+
+                          {isSuperAdmin && (
                             <>
                               {!user.roles.includes('teacher') && (
                                 <Button 
@@ -389,6 +407,20 @@ export default function DashboardUsers() {
         user={selectedUser} 
         open={detailsDialogOpen} 
         onOpenChange={setDetailsDialogOpen} 
+      />
+
+      <EditUserProfileDialog
+        user={selectedUser ? {
+          id: selectedUser.id,
+          first_name: selectedUser.first_name,
+          last_name: selectedUser.last_name,
+          email: selectedUser.email,
+        } : null}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={() => {
+          window.location.reload();
+        }}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
