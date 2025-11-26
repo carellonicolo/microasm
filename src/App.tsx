@@ -17,6 +17,7 @@ const DashboardClasses = lazy(() => import("./pages/DashboardClasses"));
 const DashboardExercises = lazy(() => import("./pages/DashboardExercises"));
 const DashboardAssignments = lazy(() => import("./pages/DashboardAssignments"));
 const DashboardUsers = lazy(() => import("./pages/DashboardUsers"));
+const DashboardProfile = lazy(() => import("./pages/DashboardProfile"));
 const AssignmentDetail = lazy(() => import("./pages/AssignmentDetail"));
 const ClassDetail = lazy(() => import("./pages/ClassDetail"));
 const PublicProgram = lazy(() => import("./pages/PublicProgram"));
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/dashboard/assignments/:assignmentId" element={<AssignmentDetail />} />
             <Route path="/dashboard/exercises" element={<DashboardExercises />} />
             <Route path="/dashboard/users" element={<DashboardUsers />} />
+            <Route path="/dashboard/profile" element={<DashboardProfile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
