@@ -59,6 +59,7 @@ export function CodeEditor({
             size="sm" 
             disabled={executionState === 'running'}
             className="hover:glow-primary transition-all"
+            aria-label="Carica programma"
           >
             Carica
           </Button>
