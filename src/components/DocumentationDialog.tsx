@@ -20,7 +20,7 @@ export function DocumentationDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" aria-label="Apri documentazione MicroASM">
           <BookOpen className="w-4 h-4" />
         </Button>
       </DialogTrigger>
