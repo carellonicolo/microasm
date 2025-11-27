@@ -398,11 +398,13 @@ export type Database = {
           graded_at: string | null
           graded_by: string | null
           id: string
+          is_final: boolean | null
           last_updated_at: string
           max_grade: number | null
           saved_program_id: string | null
           status: Database["public"]["Enums"]["submission_status"]
           student_id: string
+          submission_number: number | null
           submitted_at: string
           submitted_code: string
         }
@@ -413,11 +415,13 @@ export type Database = {
           graded_at?: string | null
           graded_by?: string | null
           id?: string
+          is_final?: boolean | null
           last_updated_at?: string
           max_grade?: number | null
           saved_program_id?: string | null
           status?: Database["public"]["Enums"]["submission_status"]
           student_id: string
+          submission_number?: number | null
           submitted_at?: string
           submitted_code: string
         }
@@ -428,11 +432,13 @@ export type Database = {
           graded_at?: string | null
           graded_by?: string | null
           id?: string
+          is_final?: boolean | null
           last_updated_at?: string
           max_grade?: number | null
           saved_program_id?: string | null
           status?: Database["public"]["Enums"]["submission_status"]
           student_id?: string
+          submission_number?: number | null
           submitted_at?: string
           submitted_code?: string
         }

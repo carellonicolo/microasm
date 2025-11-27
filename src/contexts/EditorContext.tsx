@@ -27,6 +27,7 @@ interface EditorContextType {
   markAsModified: () => void;
   resetModified: () => void;
   checkUnsavedChanges: () => boolean;
+  loadSubmissionCode: (code: string) => void;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
@@ -116,6 +117,20 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
     return isModified;
   }, [isModified]);
 
+  const loadSubmissionCode = useCallback((code: string) => {
+    if (isModified) {
+      const confirm = window.confirm(
+        'Ci sono modifiche non salvate. Vuoi continuare senza salvare?'
+      );
+      if (!confirm) return;
+    }
+
+    setCurrentProgram(null);
+    setCodeState(code);
+    setIsModified(false);
+    toast.success('Codice della consegna caricato');
+  }, [isModified]);
+
   // Shortcut Ctrl+S per salvare
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -144,7 +159,8 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
         saveAsNewProgram,
         markAsModified,
         resetModified,
-        checkUnsavedChanges
+        checkUnsavedChanges,
+        loadSubmissionCode
       }}
     >
       {children}
