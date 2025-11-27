@@ -63,7 +63,7 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
             variant={format === 'decimal' ? 'default' : 'outline'}
             onClick={() => onFormatChange('decimal')}
             className={format === 'decimal' ? 'glow-primary' : ''}
-            aria-label="Visualizza in formato decimale"
+            aria-label="DEC - Visualizza in formato decimale"
           >
             DEC
           </Button>
@@ -72,7 +72,7 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
             variant={format === 'hexadecimal' ? 'default' : 'outline'}
             onClick={() => onFormatChange('hexadecimal')}
             className={format === 'hexadecimal' ? 'glow-primary' : ''}
-            aria-label="Visualizza in formato esadecimale"
+            aria-label="HEX - Visualizza in formato esadecimale"
           >
             HEX
           </Button>
@@ -81,7 +81,7 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
             variant={format === 'binary' ? 'default' : 'outline'}
             onClick={() => onFormatChange('binary')}
             className={format === 'binary' ? 'glow-primary' : ''}
-            aria-label="Visualizza in formato binario"
+            aria-label="BIN - Visualizza in formato binario"
           >
             BIN
           </Button>

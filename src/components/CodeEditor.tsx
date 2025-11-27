@@ -67,7 +67,7 @@ export function CodeEditor({
             variant={executionState === 'running' ? 'destructive' : 'default'}
             size="sm"
             disabled={executionState === 'error'}
-            aria-label={executionState === 'running' ? 'Pause execution' : 'Run program'}
+            aria-label={executionState === 'running' ? 'Pausa esecuzione programma' : 'Esegui programma'}
             className={executionState === 'running' ? '' : 'relative overflow-hidden group'}
           >
             {executionState === 'running' ? (
