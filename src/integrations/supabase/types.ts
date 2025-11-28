@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      assignment_exercises: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          custom_exercise_id: string | null
+          display_order: number
+          id: string
+          is_required: boolean
+          max_points: number
+          repository_exercise_id: number | null
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          custom_exercise_id?: string | null
+          display_order?: number
+          id?: string
+          is_required?: boolean
+          max_points?: number
+          repository_exercise_id?: number | null
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          custom_exercise_id?: string | null
+          display_order?: number
+          id?: string
+          is_required?: boolean
+          max_points?: number
+          repository_exercise_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_exercises_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignment_exercises_custom_exercise_id_fkey"
+            columns: ["custom_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "custom_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignment_exercises_repository_exercise_id_fkey"
+            columns: ["repository_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_repository"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignment_exercises_repository_exercise_id_fkey"
+            columns: ["repository_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_repository_with_solutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assignments: {
         Row: {
           allow_late_submission: boolean
@@ -390,6 +452,67 @@ export type Database = {
           },
         ]
       }
+      submission_answers: {
+        Row: {
+          assignment_exercise_id: string
+          created_at: string
+          feedback: string | null
+          grade: number | null
+          graded_at: string | null
+          graded_by: string | null
+          id: string
+          submission_id: string
+          submitted_code: string
+          updated_at: string
+        }
+        Insert: {
+          assignment_exercise_id: string
+          created_at?: string
+          feedback?: string | null
+          grade?: number | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          submission_id: string
+          submitted_code?: string
+          updated_at?: string
+        }
+        Update: {
+          assignment_exercise_id?: string
+          created_at?: string
+          feedback?: string | null
+          grade?: number | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          submission_id?: string
+          submitted_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submission_answers_assignment_exercise_id_fkey"
+            columns: ["assignment_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "assignment_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "submission_answers_graded_by_fkey"
+            columns: ["graded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "submission_answers_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       submissions: {
         Row: {
           assignment_id: string
@@ -406,7 +529,8 @@ export type Database = {
           student_id: string
           submission_number: number | null
           submitted_at: string
-          submitted_code: string
+          submitted_code: string | null
+          total_grade: number | null
         }
         Insert: {
           assignment_id: string
@@ -423,7 +547,8 @@ export type Database = {
           student_id: string
           submission_number?: number | null
           submitted_at?: string
-          submitted_code: string
+          submitted_code?: string | null
+          total_grade?: number | null
         }
         Update: {
           assignment_id?: string
@@ -440,7 +565,8 @@ export type Database = {
           student_id?: string
           submission_number?: number | null
           submitted_at?: string
-          submitted_code?: string
+          submitted_code?: string | null
+          total_grade?: number | null
         }
         Relationships: [
           {
