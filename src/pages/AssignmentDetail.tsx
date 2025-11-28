@@ -3,12 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Clock, Target } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Target, BookOpen } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { useAssignmentDetail } from '@/hooks/useAssignmentDetail';
-import { StudentSubmissionView } from '@/components/assignments/StudentSubmissionView';
-import { TeacherSubmissionView } from '@/components/assignments/TeacherSubmissionView';
+import { StudentSubmissionViewMulti } from '@/components/assignments/StudentSubmissionViewMulti';
+import { TeacherSubmissionViewMulti } from '@/components/assignments/TeacherSubmissionViewMulti';
 
 const AssignmentDetail = () => {
   const { assignmentId } = useParams();
@@ -16,15 +16,18 @@ const AssignmentDetail = () => {
   
   const {
     assignment,
+    assignmentExercises,
     submissions,
     mySubmissions,
     loading,
     isTeacher,
     createSubmission,
-    updateSubmission,
+    updateSubmissionAnswer,
     markAsFinal,
     refetch
   } = useAssignmentDetail(assignmentId);
+
+  const totalMaxPoints = assignmentExercises.reduce((sum, ex) => sum + ex.max_points, 0);
 
   const isDueDatePassed = assignment?.due_date 
     ? new Date(assignment.due_date) < new Date() 
@@ -83,11 +86,9 @@ const AssignmentDetail = () => {
                 </p>
               </div>
               <div className="flex gap-2">
-                {assignment.exercise_repository && (
-                  <Badge variant="outline" className="text-base px-3 py-1">
-                    {assignment.exercise_repository.difficulty}
-                  </Badge>
-                )}
+                <Badge variant="outline" className="text-base px-3 py-1">
+                  {assignmentExercises.length} Esercizi - {totalMaxPoints} punti
+                </Badge>
                 {isDueDatePassed && (
                   <Badge variant="destructive">Scaduta</Badge>
                 )}
@@ -124,78 +125,33 @@ const AssignmentDetail = () => {
                 </div>
               )}
 
-              {assignment.exercise_repository && (
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <Target className="w-5 h-5 text-primary" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Tipologia</p>
-                    <p className="font-medium">{assignment.exercise_repository.category}</p>
-                  </div>
+              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <BookOpen className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Esercizi</p>
+                  <p className="font-medium">{assignmentExercises.length} Esercizi</p>
+                  <p className="text-xs text-muted-foreground">{totalMaxPoints} punti totali</p>
                 </div>
-              )}
-            </div>
-
-            {assignment.exercise_repository && (
-              <div className="p-4 bg-gradient-to-br from-primary/5 to-accent/5 rounded-lg border border-primary/10">
-                <h3 className="font-semibold mb-3 flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  {assignment.exercise_repository.title}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  {assignment.exercise_repository.description}
-                </p>
-                
-                {assignment.exercise_repository.requirements && (
-                  <div>
-                    <strong className="text-sm">Requisiti:</strong>
-                    <ul className="list-disc list-inside space-y-1 mt-2 text-sm">
-                      {Array.isArray(assignment.exercise_repository.requirements)
-                        ? assignment.exercise_repository.requirements.map((req: string, i: number) => (
-                            <li key={i}>{req}</li>
-                          ))
-                        : typeof assignment.exercise_repository.requirements === 'object'
-                        ? Object.entries(assignment.exercise_repository.requirements).map(([key, value]) => (
-                            <li key={key}>{String(value)}</li>
-                          ))
-                        : null}
-                    </ul>
-                  </div>
-                )}
-
-                {assignment.exercise_repository.expected_output && (
-                  <div className="mt-3 p-2 bg-muted/50 rounded font-mono text-xs">
-                    <strong className="block mb-1">Output atteso:</strong>
-                    {assignment.exercise_repository.expected_output}
-                  </div>
-                )}
-
-                {canShowSolution && assignment.exercise_repository.solution_code && (
-                  <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                    <strong className="text-sm text-green-600 dark:text-green-400 block mb-2">
-                      Soluzione disponibile (scadenza superata)
-                    </strong>
-                    <pre className="text-xs bg-code-bg p-3 rounded overflow-x-auto">
-                      {assignment.exercise_repository.solution_code}
-                    </pre>
-                  </div>
-                )}
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
 
         {/* Submissions Section */}
         {isTeacher ? (
-          <TeacherSubmissionView 
-            submissions={submissions} 
+          <TeacherSubmissionViewMulti 
+            assignmentExercises={assignmentExercises}
+            submissions={submissions}
+            totalMaxPoints={totalMaxPoints}
             onRefetch={refetch}
           />
         ) : (
-          <StudentSubmissionView
+          <StudentSubmissionViewMulti
+            assignmentExercises={assignmentExercises}
             mySubmissions={mySubmissions}
-            isGraded={isGraded}
+            totalMaxPoints={totalMaxPoints}
             onCreateSubmission={createSubmission}
-            onUpdateSubmission={updateSubmission}
+            onUpdateAnswer={updateSubmissionAnswer}
             onMarkAsFinal={markAsFinal}
           />
         )}
