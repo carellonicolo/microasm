@@ -205,186 +205,186 @@ export const CreateAssignmentDialog = ({ onSuccess }: CreateAssignmentDialogProp
           Nuova Esercitazione
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
           <DialogTitle>Crea Nuova Esercitazione Multi-Esercizio</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col gap-4">
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="title">Titolo</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="description">Descrizione</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={2}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
+          <ScrollArea className="flex-1 px-6">
+            <div className="space-y-4 pb-4">
               <div>
-                <Label htmlFor="class">Classe</Label>
-                <Select value={formData.class_id} onValueChange={(value) => setFormData({ ...formData, class_id: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleziona classe" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classes.map((cls) => (
-                      <SelectItem key={cls.id} value={cls.id}>
-                        {cls.name} - {cls.academic_year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="due_date">Scadenza (opzionale)</Label>
+                <Label htmlFor="title">Titolo</Label>
                 <Input
-                  id="due_date"
-                  type="datetime-local"
-                  value={formData.due_date}
-                  onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="allow_late">Consegne in ritardo</Label>
-                <Switch
-                  id="allow_late"
-                  checked={formData.allow_late_submission}
-                  onCheckedChange={(checked) => setFormData({ ...formData, allow_late_submission: checked })}
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  required
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="show_solution">Soluzione dopo scadenza</Label>
-                <Switch
-                  id="show_solution"
-                  checked={formData.show_solution_after_deadline}
-                  onCheckedChange={(checked) => setFormData({ ...formData, show_solution_after_deadline: checked })}
+              <div>
+                <Label htmlFor="description">Descrizione</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={2}
                 />
               </div>
-            </div>
-          </div>
 
-          {/* Esercizi Selezionati */}
-          <div className="border-t pt-4 flex-1 overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between mb-3">
-              <Label className="text-lg font-semibold">Esercizi Assegnati</Label>
-              <Badge variant="outline" className="text-base px-3 py-1">
-                Totale: {totalPoints} punti
-              </Badge>
-            </div>
-
-            {selectedExercises.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-                <p>Nessun esercizio selezionato</p>
-                <p className="text-sm mt-1">Cerca e aggiungi esercizi dalla lista sotto</p>
-              </div>
-            ) : (
-              <ScrollArea className="h-32 border rounded-lg p-2">
-                <div className="space-y-2">
-                  {selectedExercises.map((exercise, index) => (
-                    <div key={exercise.id} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                      <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">{index + 1}. {exercise.title}</span>
-                          <Badge variant="outline" className="text-xs">{exercise.difficulty}</Badge>
-                        </div>
-                        <span className="text-xs text-muted-foreground">{exercise.category}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="number"
-                          min="1"
-                          max="1000"
-                          value={exercise.max_points}
-                          onChange={(e) => updateExercisePoints(exercise.id, parseInt(e.target.value) || 1)}
-                          className="w-20 h-8 text-sm"
-                        />
-                        <span className="text-sm text-muted-foreground">pt</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeExercise(exercise.id)}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="class">Classe</Label>
+                  <Select value={formData.class_id} onValueChange={(value) => setFormData({ ...formData, class_id: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleziona classe" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classes.map((cls) => (
+                        <SelectItem key={cls.id} value={cls.id}>
+                          {cls.name} - {cls.academic_year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </ScrollArea>
-            )}
 
-            {/* Ricerca e Aggiunta Esercizi */}
-            <div className="mt-4 flex-1 overflow-hidden flex flex-col">
-              <Label className="mb-2">Cerca ed Aggiungi Esercizi</Label>
-              <div className="relative mb-2">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Cerca per titolo, categoria o difficoltà..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+                <div>
+                  <Label htmlFor="due_date">Scadenza (opzionale)</Label>
+                  <Input
+                    id="due_date"
+                    type="datetime-local"
+                    value={formData.due_date}
+                    onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                  />
+                </div>
               </div>
-              <ScrollArea className="flex-1 border rounded-lg">
-                <div className="p-2 space-y-1">
-                  {filteredExercises.length === 0 ? (
-                    <div className="text-center py-4 text-muted-foreground text-sm">
-                      Nessun esercizio trovato
-                    </div>
-                  ) : (
-                    filteredExercises.map((ex) => {
-                      const isSelected = selectedExercises.some(e => e.id === ex.id);
-                      return (
-                        <button
-                          key={ex.id}
-                          type="button"
-                          onClick={() => addExercise(ex)}
-                          disabled={isSelected}
-                          className={`w-full text-left p-2 rounded-lg hover:bg-muted transition-colors ${
-                            isSelected ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-sm">#{ex.id} {ex.title}</span>
-                                <Badge variant="outline" className="text-xs">{ex.difficulty}</Badge>
-                              </div>
-                              <span className="text-xs text-muted-foreground">{ex.category}</span>
-                            </div>
-                            {!isSelected && (
-                              <Plus className="w-4 h-4 text-primary" />
-                            )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="allow_late">Consegne in ritardo</Label>
+                  <Switch
+                    id="allow_late"
+                    checked={formData.allow_late_submission}
+                    onCheckedChange={(checked) => setFormData({ ...formData, allow_late_submission: checked })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="show_solution">Soluzione dopo scadenza</Label>
+                  <Switch
+                    id="show_solution"
+                    checked={formData.show_solution_after_deadline}
+                    onCheckedChange={(checked) => setFormData({ ...formData, show_solution_after_deadline: checked })}
+                  />
+                </div>
+              </div>
+
+              {/* Esercizi Selezionati */}
+              <div className="border-t pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <Label className="text-lg font-semibold">Esercizi Assegnati</Label>
+                  <Badge variant="outline" className="text-base px-3 py-1">
+                    Totale: {totalPoints} punti
+                  </Badge>
+                </div>
+
+                {selectedExercises.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                    <p>Nessun esercizio selezionato</p>
+                    <p className="text-sm mt-1">Cerca e aggiungi esercizi dalla lista sotto</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 mb-4">
+                    {selectedExercises.map((exercise, index) => (
+                      <div key={exercise.id} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                        <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm">{index + 1}. {exercise.title}</span>
+                            <Badge variant="outline" className="text-xs">{exercise.difficulty}</Badge>
                           </div>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
-          </div>
+                          <span className="text-xs text-muted-foreground">{exercise.category}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="1"
+                            max="1000"
+                            value={exercise.max_points}
+                            onChange={(e) => updateExercisePoints(exercise.id, parseInt(e.target.value) || 1)}
+                            className="w-20 h-8 text-sm"
+                          />
+                          <span className="text-sm text-muted-foreground">pt</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeExercise(exercise.id)}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-          <div className="flex justify-end gap-2 pt-4 border-t">
+                {/* Ricerca e Aggiunta Esercizi */}
+                <div className="mt-4">
+                  <Label className="mb-2">Cerca ed Aggiungi Esercizi</Label>
+                  <div className="relative mb-2">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Cerca per titolo, categoria o difficoltà..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <ScrollArea className="h-[200px] border rounded-lg">
+                    <div className="p-2 space-y-1">
+                      {filteredExercises.length === 0 ? (
+                        <div className="text-center py-4 text-muted-foreground text-sm">
+                          Nessun esercizio trovato
+                        </div>
+                      ) : (
+                        filteredExercises.map((ex) => {
+                          const isSelected = selectedExercises.some(e => e.id === ex.id);
+                          return (
+                            <button
+                              key={ex.id}
+                              type="button"
+                              onClick={() => addExercise(ex)}
+                              disabled={isSelected}
+                              className={`w-full text-left p-2 rounded-lg hover:bg-muted transition-colors ${
+                                isSelected ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium text-sm">#{ex.id} {ex.title}</span>
+                                    <Badge variant="outline" className="text-xs">{ex.difficulty}</Badge>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">{ex.category}</span>
+                                </div>
+                                {!isSelected && (
+                                  <Plus className="w-4 h-4 text-primary" />
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+
+          <div className="flex justify-end gap-2 px-6 py-4 border-t shrink-0 bg-background">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annulla
             </Button>

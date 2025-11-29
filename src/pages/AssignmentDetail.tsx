@@ -3,16 +3,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, Clock, Target, BookOpen } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Target, BookOpen, Pencil } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { useAssignmentDetail } from '@/hooks/useAssignmentDetail';
 import { StudentSubmissionViewMulti } from '@/components/assignments/StudentSubmissionViewMulti';
 import { TeacherSubmissionViewMulti } from '@/components/assignments/TeacherSubmissionViewMulti';
+import { EditAssignmentDialog } from '@/components/dialogs/EditAssignmentDialog';
+import { useState } from 'react';
 
 const AssignmentDetail = () => {
   const { assignmentId } = useParams();
   const navigate = useNavigate();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
   const {
     assignment,
@@ -86,6 +89,12 @@ const AssignmentDetail = () => {
                 </p>
               </div>
               <div className="flex gap-2">
+                {isTeacher && (
+                  <Button onClick={() => setEditDialogOpen(true)} variant="outline" size="sm">
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Modifica
+                  </Button>
+                )}
                 <Badge variant="outline" className="text-base px-3 py-1">
                   {assignmentExercises.length} Esercizi - {totalMaxPoints} punti
                 </Badge>
@@ -156,6 +165,19 @@ const AssignmentDetail = () => {
           />
         )}
       </div>
+
+      {/* Edit Dialog */}
+      {editDialogOpen && (
+        <EditAssignmentDialog
+          assignmentId={assignmentId!}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSuccess={() => {
+            refetch();
+            setEditDialogOpen(false);
+          }}
+        />
+      )}
     </DashboardLayout>
   );
 };
