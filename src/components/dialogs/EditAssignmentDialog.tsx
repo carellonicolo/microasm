@@ -282,8 +282,8 @@ export const EditAssignmentDialog = ({ assignmentId, open, onOpenChange, onSucce
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+        <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b">
           <DialogTitle>Modifica Esercitazione</DialogTitle>
           <DialogDescription>
             Aggiorna gli esercizi e le impostazioni dell'esercitazione
@@ -295,9 +295,9 @@ export const EditAssignmentDialog = ({ assignmentId, open, onOpenChange, onSucce
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <>
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
             {submissionsCount > 0 && (
-              <Alert className="mx-6">
+              <Alert className="mx-6 mt-4 shrink-0">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   Questa esercitazione ha {submissionsCount} consegne. Modificandola potresti invalidare le risposte esistenti.
@@ -305,8 +305,8 @@ export const EditAssignmentDialog = ({ assignmentId, open, onOpenChange, onSucce
               </Alert>
             )}
 
-            <ScrollArea className="flex-1 px-6">
-              <div className="space-y-6 pb-4">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4">
+              <div className="space-y-6 max-w-full">
                 {/* Titolo */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Titolo Esercitazione *</label>
@@ -523,9 +523,9 @@ export const EditAssignmentDialog = ({ assignmentId, open, onOpenChange, onSucce
                   </ScrollArea>
                 </div>
               </div>
-            </ScrollArea>
+            </div>
 
-            <div className="flex items-center justify-between px-6 py-4 border-t shrink-0 bg-background">
+            <div className="shrink-0 flex items-center justify-between px-6 py-4 border-t bg-background">
               <div className="text-sm font-semibold">
                 TOTALE PUNTI: {selectedExercises.reduce((sum, ex) => sum + ex.points, 0)}
               </div>
@@ -538,7 +538,7 @@ export const EditAssignmentDialog = ({ assignmentId, open, onOpenChange, onSucce
                 </Button>
               </div>
             </div>
-          </>
+          </div>
         )}
       </DialogContent>
     </Dialog>
