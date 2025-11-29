@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Users, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Calendar, Clock, Users, CheckCircle2, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
 
@@ -8,9 +10,12 @@ interface AssignmentCardProps {
   assignment: any;
   onClick?: () => void;
   submissionStatus?: 'submitted' | 'graded' | 'pending' | null;
+  isTeacher?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export const AssignmentCard = ({ assignment, onClick, submissionStatus }: AssignmentCardProps) => {
+export const AssignmentCard = ({ assignment, onClick, submissionStatus, isTeacher, onEdit, onDelete }: AssignmentCardProps) => {
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'principiante': return 'bg-green-500/10 text-green-500';
@@ -41,10 +46,40 @@ export const AssignmentCard = ({ assignment, onClick, submissionStatus }: Assign
     >
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg group-hover:text-primary transition-colors">
+          <CardTitle className="text-lg group-hover:text-primary transition-colors flex-1">
             {assignment.title}
           </CardTitle>
-          {submissionStatus && getStatusBadge()}
+          <div className="flex items-center gap-2">
+            {submissionStatus && getStatusBadge()}
+            {isTeacher && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit?.();
+                  }}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Modifica esercitazione
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete?.();
+                    }}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Elimina esercitazione
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

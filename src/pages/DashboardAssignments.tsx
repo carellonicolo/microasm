@@ -4,9 +4,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CreateAssignmentDialog } from '@/components/dialogs/CreateAssignmentDialog';
+import { EditAssignmentDialog } from '@/components/dialogs/EditAssignmentDialog';
 import { AssignmentCard } from '@/components/dashboard/AssignmentCard';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 const DashboardAssignments = () => {
   const { isTeacher, loading: roleLoading } = useUserRole();
@@ -14,6 +17,8 @@ const DashboardAssignments = () => {
   const navigate = useNavigate();
   const [assignments, setAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingAssignment, setEditingAssignment] = useState<string | null>(null);
+  const [deletingAssignment, setDeletingAssignment] = useState<{ id: string; title: string; submissionsCount: number } | null>(null);
 
   const fetchAssignments = async () => {
     if (!user) return;
@@ -100,6 +105,26 @@ const DashboardAssignments = () => {
     }
   }, [user, isTeacher, roleLoading]);
 
+  const handleDelete = async () => {
+    if (!deletingAssignment) return;
+
+    try {
+      const { error } = await supabase
+        .from('assignments')
+        .delete()
+        .eq('id', deletingAssignment.id);
+
+      if (error) throw error;
+
+      toast.success('Esercitazione eliminata con successo');
+      setDeletingAssignment(null);
+      fetchAssignments();
+    } catch (error: any) {
+      toast.error('Errore nell\'eliminazione dell\'esercitazione');
+      if (import.meta.env.DEV) console.error(error);
+    }
+  };
+
   if (roleLoading || loading) {
     return (
       <DashboardLayout>
@@ -146,12 +171,64 @@ const DashboardAssignments = () => {
                 key={assignment.id}
                 assignment={assignment}
                 submissionStatus={assignment.submissionStatus}
+                isTeacher={isTeacher}
                 onClick={() => navigate(`/dashboard/assignments/${assignment.id}`)}
+                onEdit={() => setEditingAssignment(assignment.id)}
+                onDelete={async () => {
+                  // Conta submissions prima di eliminare
+                  const { count } = await supabase
+                    .from('submissions')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('assignment_id', assignment.id);
+                  
+                  setDeletingAssignment({
+                    id: assignment.id,
+                    title: assignment.title,
+                    submissionsCount: count || 0
+                  });
+                }}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* Edit Dialog */}
+      {editingAssignment && (
+        <EditAssignmentDialog
+          assignmentId={editingAssignment}
+          open={!!editingAssignment}
+          onOpenChange={(open) => !open && setEditingAssignment(null)}
+          onSuccess={fetchAssignments}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingAssignment} onOpenChange={(open) => !open && setDeletingAssignment(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Conferma Eliminazione</AlertDialogTitle>
+            <AlertDialogDescription>
+              Sei sicuro di voler eliminare l'esercitazione "{deletingAssignment?.title}"?
+              {deletingAssignment && deletingAssignment.submissionsCount > 0 && (
+                <>
+                  <br /><br />
+                  <strong className="text-destructive">
+                    Attenzione: Questa esercitazione ha {deletingAssignment.submissionsCount} consegne. 
+                    Eliminandola perderai tutti i dati delle consegne.
+                  </strong>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };
