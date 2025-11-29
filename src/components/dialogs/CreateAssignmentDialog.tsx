@@ -206,12 +206,12 @@ export const CreateAssignmentDialog = ({ onSuccess }: CreateAssignmentDialogProp
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
+        <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b">
           <DialogTitle>Crea Nuova Esercitazione Multi-Esercizio</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col">
-          <ScrollArea className="h-full max-h-[calc(90vh-180px)] px-6">
-            <div className="space-y-4 pb-4 pr-4">
+        <form onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-4">
+            <div className="space-y-4 max-w-full">
               <div>
                 <Label htmlFor="title">Titolo</Label>
                 <Input
@@ -382,9 +382,9 @@ export const CreateAssignmentDialog = ({ onSuccess }: CreateAssignmentDialogProp
                 </div>
               </div>
             </div>
-          </ScrollArea>
+          </div>
 
-          <div className="flex justify-end gap-2 px-6 py-4 border-t shrink-0 bg-background">
+          <div className="shrink-0 flex justify-end gap-2 px-6 py-4 border-t bg-background">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annulla
             </Button>
