@@ -205,13 +205,13 @@ export const CreateAssignmentDialog = ({ onSuccess }: CreateAssignmentDialogProp
           Nuova Esercitazione
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
           <DialogTitle>Crea Nuova Esercitazione Multi-Esercizio</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
-          <ScrollArea className="flex-1 px-6">
-            <div className="space-y-4 pb-4">
+        <form onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col">
+          <ScrollArea className="h-full max-h-[calc(90vh-180px)] px-6">
+            <div className="space-y-4 pb-4 pr-4">
               <div>
                 <Label htmlFor="title">Titolo</Label>
                 <Input
