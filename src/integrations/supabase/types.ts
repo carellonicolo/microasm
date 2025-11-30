@@ -79,6 +79,9 @@ export type Database = {
       assignments: {
         Row: {
           allow_late_submission: boolean
+          auto_grade_enabled: boolean
+          auto_graded: boolean
+          auto_graded_at: string | null
           class_id: string
           created_at: string
           custom_exercise_id: string | null
@@ -94,6 +97,9 @@ export type Database = {
         }
         Insert: {
           allow_late_submission?: boolean
+          auto_grade_enabled?: boolean
+          auto_graded?: boolean
+          auto_graded_at?: string | null
           class_id: string
           created_at?: string
           custom_exercise_id?: string | null
@@ -109,6 +115,9 @@ export type Database = {
         }
         Update: {
           allow_late_submission?: boolean
+          auto_grade_enabled?: boolean
+          auto_graded?: boolean
+          auto_graded_at?: string | null
           class_id?: string
           created_at?: string
           custom_exercise_id?: string | null
@@ -156,6 +165,73 @@ export type Database = {
             columns: ["teacher_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auto_grading_logs: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          error_message: string | null
+          execution_time_ms: number | null
+          expected_output: string | null
+          grade_assigned: number | null
+          id: string
+          max_grade: number | null
+          status: string
+          student_output: string | null
+          submission_answer_id: string | null
+          submission_id: string | null
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          expected_output?: string | null
+          grade_assigned?: number | null
+          id?: string
+          max_grade?: number | null
+          status: string
+          student_output?: string | null
+          submission_answer_id?: string | null
+          submission_id?: string | null
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          expected_output?: string | null
+          grade_assigned?: number | null
+          id?: string
+          max_grade?: number | null
+          status?: string
+          student_output?: string | null
+          submission_answer_id?: string | null
+          submission_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_grading_logs_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auto_grading_logs_submission_answer_id_fkey"
+            columns: ["submission_answer_id"]
+            isOneToOne: false
+            referencedRelation: "submission_answers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auto_grading_logs_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "submissions"
             referencedColumns: ["id"]
           },
         ]
@@ -461,6 +537,7 @@ export type Database = {
           graded_at: string | null
           graded_by: string | null
           id: string
+          is_auto_graded: boolean
           submission_id: string
           submitted_code: string
           updated_at: string
@@ -473,6 +550,7 @@ export type Database = {
           graded_at?: string | null
           graded_by?: string | null
           id?: string
+          is_auto_graded?: boolean
           submission_id: string
           submitted_code?: string
           updated_at?: string
@@ -485,6 +563,7 @@ export type Database = {
           graded_at?: string | null
           graded_by?: string | null
           id?: string
+          is_auto_graded?: boolean
           submission_id?: string
           submitted_code?: string
           updated_at?: string
