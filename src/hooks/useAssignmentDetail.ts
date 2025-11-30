@@ -49,6 +49,7 @@ interface SubmissionAnswer {
   graded_by: string | null;
   created_at: string;
   updated_at: string;
+  is_auto_graded: boolean;
 }
 
 interface Submission {

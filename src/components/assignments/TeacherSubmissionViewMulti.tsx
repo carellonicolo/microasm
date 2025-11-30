@@ -11,9 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Eye, Download, TrendingUp, Edit2 } from 'lucide-react';
+import { Eye, Download, TrendingUp, Edit2, Bot } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { AutoGradeResultBadge } from '@/components/assignments/AutoGradeResultBadge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -36,6 +37,7 @@ interface SubmissionAnswer {
   submitted_code: string;
   grade: number | null;
   feedback: string | null;
+  is_auto_graded: boolean;
 }
 
 interface Submission {
@@ -302,9 +304,11 @@ export const TeacherSubmissionViewMulti = ({
                             ) : (
                               <div className="flex items-center justify-center gap-1">
                                 {isGraded ? (
-                                  <Badge className="bg-green-500/10 text-green-500">
-                                    {answer.grade}/{ex.max_points}
-                                  </Badge>
+                                  <AutoGradeResultBadge
+                                    isAutoGraded={answer.is_auto_graded || false}
+                                    grade={answer.grade!}
+                                    maxPoints={ex.max_points}
+                                  />
                                 ) : (
                                   <Badge className="bg-orange-500/10 text-orange-500">
                                     Attesa
@@ -389,6 +393,18 @@ export const TeacherSubmissionViewMulti = ({
                   {gradeDialog.answer.submitted_code}
                 </pre>
               </div>
+
+              {gradeDialog.answer.is_auto_graded && (
+                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-start gap-2">
+                  <Bot className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-blue-600 dark:text-blue-400">Voto Automatico</p>
+                    <p className="text-muted-foreground">
+                      Questo esercizio è stato corretto automaticamente. Puoi sovrascrivere il voto e il feedback.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="grade">Voto (max {gradeDialog.maxPoints})</Label>

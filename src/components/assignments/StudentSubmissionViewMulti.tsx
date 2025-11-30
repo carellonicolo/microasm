@@ -5,9 +5,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Send, CheckCircle2, Edit, XCircle, Clock } from 'lucide-react';
+import { Send, CheckCircle2, Edit, XCircle, Clock, Bot } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { AutoGradeResultBadge } from '@/components/assignments/AutoGradeResultBadge';
 
 interface AssignmentExercise {
   id: string;
@@ -32,6 +33,7 @@ interface SubmissionAnswer {
   grade: number | null;
   feedback: string | null;
   graded_at: string | null;
+  is_auto_graded: boolean;
 }
 
 interface Submission {
@@ -253,22 +255,36 @@ export const StudentSubmissionViewMulti = ({
                   {answer && answer.grade !== null && (
                     <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
                       <div className="flex items-center justify-between mb-3">
-                        <span className="font-semibold text-green-600 dark:text-green-400">Esercizio Corretto</span>
                         <div className="flex items-center gap-2">
-                          <Badge className="bg-green-500/10 text-green-500 text-base">
-                            {answer.grade}/{ex.max_points} punti
-                          </Badge>
+                          <span className="font-semibold text-green-600 dark:text-green-400">Esercizio Corretto</span>
+                          {answer.is_auto_graded && (
+                            <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
+                              <Bot className="w-3 h-3 mr-1" />
+                              Auto
+                            </Badge>
+                          )}
                         </div>
+                        <AutoGradeResultBadge
+                          isAutoGraded={answer.is_auto_graded}
+                          grade={answer.grade}
+                          maxPoints={ex.max_points}
+                          className="text-base"
+                        />
                       </div>
                       {answer.feedback && (
                         <div className="p-3 bg-muted/50 rounded-lg mb-3">
-                          <strong className="text-sm block mb-1">Feedback:</strong>
-                          <p className="text-sm">{answer.feedback}</p>
+                          <strong className="text-sm block mb-1">
+                            {answer.is_auto_graded ? '🤖 Feedback Automatico:' : '👤 Feedback Insegnante:'}
+                          </strong>
+                          <p className="text-sm whitespace-pre-wrap">{answer.feedback}</p>
                         </div>
                       )}
-                      <pre className="text-xs bg-code-bg p-3 rounded overflow-x-auto">
-                        {answer.submitted_code}
-                      </pre>
+                      <details className="cursor-pointer">
+                        <summary className="text-sm font-medium mb-2">Il Tuo Codice</summary>
+                        <pre className="text-xs bg-code-bg p-3 rounded overflow-x-auto">
+                          {answer.submitted_code}
+                        </pre>
+                      </details>
                     </div>
                   )}
 
