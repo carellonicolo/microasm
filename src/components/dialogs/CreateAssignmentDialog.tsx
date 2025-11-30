@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Plus, X, GripVertical, Search } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { z } from 'zod';
+import { AutoGradeToggle } from '@/components/assignments/AutoGradeToggle';
 
 const assignmentSchema = z.object({
   title: z.string().trim().min(3, 'Il titolo deve contenere almeno 3 caratteri').max(200, 'Il titolo non può superare 200 caratteri'),
@@ -55,6 +56,7 @@ export const CreateAssignmentDialog = ({ onSuccess }: CreateAssignmentDialogProp
     due_date: '',
     allow_late_submission: true,
     show_solution_after_deadline: false,
+    auto_grade_enabled: false,
   });
 
   const handleOpen = async () => {
@@ -112,6 +114,12 @@ export const CreateAssignmentDialog = ({ onSuccess }: CreateAssignmentDialogProp
 
   const totalPoints = selectedExercises.reduce((sum, e) => sum + e.max_points, 0);
 
+  // Count exercises without expected output
+  const exercisesWithoutOutput = selectedExercises.filter(ex => {
+    const exercise = exercises.find(e => e.id === ex.id);
+    return !exercise?.expected_output;
+  }).length;
+
   const filteredExercises = exercises.filter(ex => 
     ex.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     ex.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -156,6 +164,7 @@ export const CreateAssignmentDialog = ({ onSuccess }: CreateAssignmentDialogProp
           due_date: validationResult.data.due_date || null,
           allow_late_submission: formData.allow_late_submission,
           show_solution_after_deadline: formData.show_solution_after_deadline,
+          auto_grade_enabled: formData.auto_grade_enabled && exercisesWithoutOutput === 0,
         })
         .select()
         .single();
@@ -186,6 +195,7 @@ export const CreateAssignmentDialog = ({ onSuccess }: CreateAssignmentDialogProp
         due_date: '',
         allow_late_submission: true,
         show_solution_after_deadline: false,
+        auto_grade_enabled: false,
       });
       setSelectedExercises([]);
       setSearchTerm('');
@@ -279,6 +289,14 @@ export const CreateAssignmentDialog = ({ onSuccess }: CreateAssignmentDialogProp
                   />
                 </div>
               </div>
+
+              {/* Auto-Grade Toggle */}
+              <AutoGradeToggle
+                enabled={formData.auto_grade_enabled}
+                onToggle={(enabled) => setFormData({ ...formData, auto_grade_enabled: enabled })}
+                exerciseCount={selectedExercises.length}
+                exercisesWithoutOutput={exercisesWithoutOutput}
+              />
 
               {/* Esercizi Selezionati */}
               <div className="border-t pt-4">
