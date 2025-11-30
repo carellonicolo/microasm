@@ -4,7 +4,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search } from 'lucide-react';
 import { ProgramCard } from '../dashboard/ProgramCard';
 import { getAllFolderPaths } from '@/utils/folderTree';
-import { useSavedPrograms } from '@/hooks/useSavedPrograms';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -24,12 +23,13 @@ interface SavedProgram {
 interface FileGridViewProps {
   programs: SavedProgram[];
   onOpenProgram: (code: string, programId: string) => void;
+  onDeleteProgram: (id: string) => Promise<boolean>;
+  onGeneratePublicLink: (id: string) => Promise<string | null>;
 }
 
-export const FileGridView = ({ programs, onOpenProgram }: FileGridViewProps) => {
+export const FileGridView = ({ programs, onOpenProgram, onDeleteProgram, onGeneratePublicLink }: FileGridViewProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFolder, setSelectedFolder] = useState<string>('all');
-  const { deleteProgram, generatePublicLink } = useSavedPrograms();
   const navigate = useNavigate();
 
   const folderPaths = ['all', ...getAllFolderPaths(programs)];
@@ -63,7 +63,7 @@ export const FileGridView = ({ programs, onOpenProgram }: FileGridViewProps) => 
       navigator.clipboard.writeText(link);
       toast.success('Link pubblico copiato negli appunti!');
     } else {
-      const link = await generatePublicLink(id);
+      const link = await onGeneratePublicLink(id);
       if (link) {
         navigator.clipboard.writeText(link);
         toast.success('Link pubblico generato e copiato!');
@@ -110,7 +110,7 @@ export const FileGridView = ({ programs, onOpenProgram }: FileGridViewProps) => 
               program={program}
               onOpen={() => handleOpen(program.code, program.id)}
               onEdit={() => handleEdit(program)}
-              onDelete={() => deleteProgram(program.id)}
+              onDelete={() => onDeleteProgram(program.id)}
               onShare={() => handleShare(program.id)}
             />
           ))}

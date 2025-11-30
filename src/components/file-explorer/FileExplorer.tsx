@@ -3,17 +3,31 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FolderPlus, LayoutGrid, LayoutList } from 'lucide-react';
 import { buildFolderTree } from '@/utils/folderTree';
-import { useSavedPrograms } from '@/hooks/useSavedPrograms';
 import { FolderTreeView } from './FolderTreeView';
 import { FileGridView } from './FileGridView';
 import { CreateFolderDialog } from '../dialogs/CreateFolderDialog';
 
-interface FileExplorerProps {
-  onOpenProgram: (code: string, programId: string) => void;
+interface SavedProgram {
+  id: string;
+  name: string;
+  description: string | null;
+  code: string;
+  folder_path: string;
+  is_public: boolean;
+  public_link_token: string | null;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export const FileExplorer = ({ onOpenProgram }: FileExplorerProps) => {
-  const { programs } = useSavedPrograms();
+interface FileExplorerProps {
+  programs: SavedProgram[];
+  onOpenProgram: (code: string, programId: string) => void;
+  onDeleteProgram: (id: string) => Promise<boolean>;
+  onGeneratePublicLink: (id: string) => Promise<string | null>;
+}
+
+export const FileExplorer = ({ programs, onOpenProgram, onDeleteProgram, onGeneratePublicLink }: FileExplorerProps) => {
   const [viewMode, setViewMode] = useState<'tree' | 'grid'>('grid');
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
 
@@ -55,9 +69,18 @@ export const FileExplorer = ({ onOpenProgram }: FileExplorerProps) => {
         </div>
 
         {viewMode === 'tree' ? (
-          <FolderTreeView tree={tree} onOpenProgram={onOpenProgram} />
+          <FolderTreeView 
+            tree={tree} 
+            onOpenProgram={onOpenProgram}
+            onDeleteProgram={onDeleteProgram}
+          />
         ) : (
-          <FileGridView programs={programs} onOpenProgram={onOpenProgram} />
+          <FileGridView 
+            programs={programs} 
+            onOpenProgram={onOpenProgram}
+            onDeleteProgram={onDeleteProgram}
+            onGeneratePublicLink={onGeneratePublicLink}
+          />
         )}
       </Card>
 

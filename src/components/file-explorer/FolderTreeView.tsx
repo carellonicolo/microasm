@@ -11,8 +11,6 @@ import {
 import { FolderNode, FileNode } from '@/utils/folderTree';
 import { RenameProgramDialog } from '../dialogs/RenameProgramDialog';
 import { MoveProgramDialog } from '../dialogs/MoveProgramDialog';
-import { useSavedPrograms } from '@/hooks/useSavedPrograms';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,13 +25,14 @@ import {
 interface FolderTreeViewProps {
   tree: FolderNode;
   onOpenProgram: (code: string, programId: string) => void;
+  onDeleteProgram: (id: string) => Promise<boolean>;
 }
 
-export const FolderTreeView = ({ tree, onOpenProgram }: FolderTreeViewProps) => {
+export const FolderTreeView = ({ tree, onOpenProgram, onDeleteProgram }: FolderTreeViewProps) => {
   return (
     <div className="space-y-1">
       {tree.children.map((node, idx) => (
-        <TreeNode key={idx} node={node} onOpenProgram={onOpenProgram} level={0} />
+        <TreeNode key={idx} node={node} onOpenProgram={onOpenProgram} onDeleteProgram={onDeleteProgram} level={0} />
       ))}
     </div>
   );
@@ -42,15 +41,15 @@ export const FolderTreeView = ({ tree, onOpenProgram }: FolderTreeViewProps) => 
 interface TreeNodeProps {
   node: FolderNode | FileNode;
   onOpenProgram: (code: string, programId: string) => void;
+  onDeleteProgram: (id: string) => Promise<boolean>;
   level: number;
 }
 
-const TreeNode = ({ node, onOpenProgram, level }: TreeNodeProps) => {
+const TreeNode = ({ node, onOpenProgram, onDeleteProgram, level }: TreeNodeProps) => {
   const [expanded, setExpanded] = useState(level === 0);
   const [renameOpen, setRenameOpen] = useState(false);
   const [moveOpen, setMoveOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const { deleteProgram } = useSavedPrograms();
 
   if (node.type === 'folder') {
     return (
@@ -73,7 +72,7 @@ const TreeNode = ({ node, onOpenProgram, level }: TreeNodeProps) => {
         {expanded && (
           <div>
             {node.children.map((child, idx) => (
-              <TreeNode key={idx} node={child} onOpenProgram={onOpenProgram} level={level + 1} />
+              <TreeNode key={idx} node={child} onOpenProgram={onOpenProgram} onDeleteProgram={onDeleteProgram} level={level + 1} />
             ))}
           </div>
         )}
@@ -84,7 +83,7 @@ const TreeNode = ({ node, onOpenProgram, level }: TreeNodeProps) => {
   const program = node.program;
 
   const handleDelete = async () => {
-    const success = await deleteProgram(program.id);
+    const success = await onDeleteProgram(program.id);
     if (success) {
       setDeleteOpen(false);
     }
