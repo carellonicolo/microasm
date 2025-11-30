@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 const DashboardPrograms = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { programs, loading: programsLoading } = useSavedPrograms();
+  const { programs, loading: programsLoading, deleteProgram, generatePublicLink } = useSavedPrograms();
   const { openProgram } = useEditor();
 
   const userPrograms = useMemo(() => 
@@ -71,7 +71,12 @@ const DashboardPrograms = () => {
             </Button>
           </div>
         ) : (
-          <FileExplorer onOpenProgram={handleOpenProgram} />
+          <FileExplorer 
+            programs={userPrograms} 
+            onOpenProgram={handleOpenProgram}
+            onDeleteProgram={deleteProgram}
+            onGeneratePublicLink={generatePublicLink}
+          />
         )}
       </div>
     </DashboardLayout>
