@@ -115,8 +115,16 @@ Deno.serve(async (req) => {
 
     console.log(`Super Admin ${user.id} performing operation: ${operation} on user ${target_user_id} (${targetUser.first_name} ${targetUser.last_name})`);
 
-    // PROMOTE: Add teacher role to student
+    // PROMOTE: Replace student role with teacher role
     if (operation === 'promote') {
+      // First, remove student role if exists
+      await supabaseAdmin
+        .from('user_roles')
+        .delete()
+        .eq('user_id', target_user_id)
+        .eq('role', 'student');
+
+      // Then add teacher role
       const { error: promoteError } = await supabaseAdmin
         .from('user_roles')
         .insert({
@@ -140,8 +148,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // REVOKE TEACHER: Remove teacher role (keep student if exists)
+    // REVOKE TEACHER: Remove teacher role and restore student role
     if (operation === 'revoke_teacher') {
+      // Remove teacher role
       const { error: revokeError } = await supabaseAdmin
         .from('user_roles')
         .delete()
@@ -156,8 +165,18 @@ Deno.serve(async (req) => {
         );
       }
 
+      // Restore student role
+      await supabaseAdmin
+        .from('user_roles')
+        .insert({
+          user_id: target_user_id,
+          role: 'student',
+          assigned_by: user.id,
+          is_super_admin: false,
+        });
+
       return new Response(
-        JSON.stringify({ success: true, message: 'Teacher role revoked' }),
+        JSON.stringify({ success: true, message: 'Teacher role revoked, user is now a student' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
