@@ -115,16 +115,45 @@ Deno.serve(async (req) => {
 
     console.log(`Super Admin ${user.id} performing operation: ${operation} on user ${target_user_id} (${targetUser.first_name} ${targetUser.last_name})`);
 
-    // PROMOTE: Replace student role with teacher role
+    // PROMOTE: Replace student role with teacher role and remove from all classes as student
     if (operation === 'promote') {
-      // First, remove student role if exists
-      await supabaseAdmin
+      // 1. Remove student role if exists
+      const { error: removeRoleError } = await supabaseAdmin
         .from('user_roles')
         .delete()
         .eq('user_id', target_user_id)
         .eq('role', 'student');
 
-      // Then add teacher role
+      if (removeRoleError) {
+        console.log('Note: No student role to remove or error:', removeRoleError.message);
+      }
+
+      // 2. Remove from ALL classes where enrolled as student
+      const { data: enrolledClasses, error: enrolledError } = await supabaseAdmin
+        .from('class_students')
+        .select('class_id')
+        .eq('student_id', target_user_id);
+
+      let removedFromClasses = 0;
+      if (enrolledError) {
+        console.error('Error checking class enrollment:', enrolledError);
+      } else if (enrolledClasses && enrolledClasses.length > 0) {
+        console.log(`Removing user ${target_user_id} from ${enrolledClasses.length} class(es) as student`);
+        
+        const { error: removeStudentError } = await supabaseAdmin
+          .from('class_students')
+          .delete()
+          .eq('student_id', target_user_id);
+        
+        if (removeStudentError) {
+          console.error('Error removing from class_students:', removeStudentError);
+        } else {
+          removedFromClasses = enrolledClasses.length;
+          console.log(`✅ Successfully removed from ${removedFromClasses} class(es)`);
+        }
+      }
+
+      // 3. Add teacher role
       const { error: promoteError } = await supabaseAdmin
         .from('user_roles')
         .insert({
@@ -142,8 +171,13 @@ Deno.serve(async (req) => {
         );
       }
 
+      console.log(`✅ User ${target_user_id} promoted to teacher successfully`);
       return new Response(
-        JSON.stringify({ success: true, message: 'User promoted to teacher' }),
+        JSON.stringify({ 
+          success: true, 
+          message: 'User promoted to teacher',
+          removed_from_classes: removedFromClasses
+        }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
