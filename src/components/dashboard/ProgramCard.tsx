@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Code, Calendar, Trash2, Edit, Share2, Eye } from 'lucide-react';
+import { Code, Calendar, Trash2, Edit, Share2, Eye, Download } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ interface ProgramCardProps {
   onEdit: () => void;
   onDelete: () => void;
   onShare: () => void;
+  onDownload: () => void;
 }
 
 export const ProgramCard = ({
@@ -25,7 +26,8 @@ export const ProgramCard = ({
   onOpen,
   onEdit,
   onDelete,
-  onShare
+  onShare,
+  onDownload
 }: ProgramCardProps) => {
   const lineCount = program.code.split('\n').length;
   const lastUpdated = formatDistanceToNow(new Date(program.updated_at), {
@@ -66,13 +68,16 @@ export const ProgramCard = ({
         <Button onClick={onOpen} size="sm" className="flex-1">
           Apri
         </Button>
-        <Button onClick={onEdit} size="sm" variant="outline">
+        <Button onClick={onEdit} size="sm" variant="outline" aria-label="Modifica">
           <Edit className="w-4 h-4" />
         </Button>
-        <Button onClick={onShare} size="sm" variant="outline">
+        <Button onClick={onDownload} size="sm" variant="outline" aria-label="Scarica">
+          <Download className="w-4 h-4" />
+        </Button>
+        <Button onClick={onShare} size="sm" variant="outline" aria-label="Condividi">
           <Share2 className="w-4 h-4" />
         </Button>
-        <Button onClick={onDelete} size="sm" variant="destructive">
+        <Button onClick={onDelete} size="sm" variant="destructive" aria-label="Elimina">
           <Trash2 className="w-4 h-4" />
         </Button>
       </div>

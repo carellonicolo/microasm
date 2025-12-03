@@ -71,6 +71,19 @@ export const FileGridView = ({ programs, onOpenProgram, onDeleteProgram, onGener
     }
   };
 
+  const handleDownload = (program: SavedProgram) => {
+    const blob = new Blob([program.code], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${program.name}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success('Programma scaricato!');
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
@@ -112,6 +125,7 @@ export const FileGridView = ({ programs, onOpenProgram, onDeleteProgram, onGener
               onEdit={() => handleEdit(program)}
               onDelete={() => onDeleteProgram(program.id)}
               onShare={() => handleShare(program.id)}
+              onDownload={() => handleDownload(program)}
             />
           ))}
         </div>
