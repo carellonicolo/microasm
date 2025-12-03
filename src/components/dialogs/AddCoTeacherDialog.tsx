@@ -5,10 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Search, UserPlus } from 'lucide-react';
 import { RoleBadge } from '@/components/shared/RoleBadge';
+import { cn } from '@/lib/utils';
 
 interface AddCoTeacherDialogProps {
   open: boolean;
@@ -100,13 +102,16 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
     );
   }, [allTeachers, searchQuery]);
 
-  // Insegnanti disponibili = non già nella classe
+  // Insegnanti disponibili = non già nella classe (per il conteggio e select all)
   const availableTeachers = useMemo(() => 
     filteredTeachers.filter(t => !existingTeacherIds.has(t.id)),
     [filteredTeachers, existingTeacherIds]
   );
 
   const handleToggleTeacher = (teacherId: string) => {
+    // Non permettere selezione di insegnanti già presenti
+    if (existingTeacherIds.has(teacherId)) return;
+    
     setSelectedTeacherIds(prev => {
       const newSet = new Set(prev);
       if (newSet.has(teacherId)) {
@@ -195,59 +200,79 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
             <div className="flex items-center justify-center py-8">
               <p className="text-muted-foreground">Caricamento insegnanti...</p>
             </div>
-          ) : availableTeachers.length === 0 ? (
+          ) : filteredTeachers.length === 0 ? (
             <div className="flex items-center justify-center py-8 text-muted-foreground">
               {searchQuery ? 
                 'Nessun insegnante trovato con questa ricerca' : 
-                'Tutti gli insegnanti sono già nella classe'}
+                'Nessun insegnante registrato nel sistema'}
             </div>
           ) : (
             <>
-              {/* Seleziona tutti */}
-              <div className="flex items-center gap-2 pb-2 border-b">
-                <Checkbox
-                  id="select-all-teachers"
-                  checked={selectedTeacherIds.size === availableTeachers.length && availableTeachers.length > 0}
-                  onCheckedChange={handleSelectAll}
-                />
-                <Label htmlFor="select-all-teachers" className="cursor-pointer">
-                  {selectedTeacherIds.size === availableTeachers.length && availableTeachers.length > 0
-                    ? 'Deseleziona tutti'
-                    : `Seleziona tutti (${availableTeachers.length} disponibili)`}
-                </Label>
-              </div>
+              {/* Seleziona tutti (solo disponibili) */}
+              {availableTeachers.length > 0 && (
+                <div className="flex items-center gap-2 pb-2 border-b">
+                  <Checkbox
+                    id="select-all-teachers"
+                    checked={selectedTeacherIds.size === availableTeachers.length && availableTeachers.length > 0}
+                    onCheckedChange={handleSelectAll}
+                  />
+                  <Label htmlFor="select-all-teachers" className="cursor-pointer">
+                    {selectedTeacherIds.size === availableTeachers.length && availableTeachers.length > 0
+                      ? 'Deseleziona tutti'
+                      : `Seleziona tutti (${availableTeachers.length} disponibili)`}
+                  </Label>
+                </div>
+              )}
 
               {/* Lista insegnanti con checkbox */}
               <ScrollArea className="h-[400px] -mx-6 px-6">
                 <div className="space-y-2 pr-4">
-                  {availableTeachers.map((teacher) => (
-                    <div 
-                      key={teacher.id}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
-                      onClick={() => handleToggleTeacher(teacher.id)}
-                    >
-                      <Checkbox
-                        id={`teacher-${teacher.id}`}
-                        checked={selectedTeacherIds.has(teacher.id)}
-                        onCheckedChange={() => handleToggleTeacher(teacher.id)}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <Label 
-                            htmlFor={`teacher-${teacher.id}`}
-                            className="font-medium cursor-pointer"
-                          >
-                            {teacher.last_name} {teacher.first_name}
-                          </Label>
-                          <RoleBadge role="teacher" />
+                  {filteredTeachers.map((teacher) => {
+                    const isAlreadyInClass = existingTeacherIds.has(teacher.id);
+                    
+                    return (
+                      <div 
+                        key={teacher.id}
+                        className={cn(
+                          "flex items-center gap-3 p-3 rounded-lg transition-colors",
+                          isAlreadyInClass 
+                            ? "opacity-50 cursor-not-allowed bg-muted" 
+                            : "hover:bg-accent/50 cursor-pointer"
+                        )}
+                        onClick={() => !isAlreadyInClass && handleToggleTeacher(teacher.id)}
+                      >
+                        <Checkbox
+                          id={`teacher-${teacher.id}`}
+                          checked={isAlreadyInClass || selectedTeacherIds.has(teacher.id)}
+                          disabled={isAlreadyInClass}
+                          onCheckedChange={() => !isAlreadyInClass && handleToggleTeacher(teacher.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <Label 
+                              htmlFor={`teacher-${teacher.id}`}
+                              className={cn(
+                                "font-medium",
+                                isAlreadyInClass ? "cursor-not-allowed" : "cursor-pointer"
+                              )}
+                            >
+                              {teacher.last_name} {teacher.first_name}
+                            </Label>
+                            <RoleBadge role="teacher" />
+                            {isAlreadyInClass && (
+                              <Badge variant="secondary" className="text-xs">
+                                Già nella classe
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {teacher.email}
+                          </p>
                         </div>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {teacher.email}
-                        </p>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </ScrollArea>
             </>

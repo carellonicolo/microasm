@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AddStudentDialog } from '@/components/dialogs/AddStudentDialog';
 import { AddCoTeacherDialog } from '@/components/dialogs/AddCoTeacherDialog';
-import { ArrowLeft, UserPlus, Trash2, Users, GraduationCap } from 'lucide-react';
+import { EditClassDialog } from '@/components/dialogs/EditClassDialog';
+import { ArrowLeft, UserPlus, Trash2, Users, GraduationCap, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -64,6 +65,7 @@ const ClassDetail = () => {
   const [loading, setLoading] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addCoTeacherDialogOpen, setAddCoTeacherDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [studentToRemove, setStudentToRemove] = useState<string | null>(null);
   const [coTeacherToRemove, setCoTeacherToRemove] = useState<string | null>(null);
 
@@ -196,6 +198,8 @@ const ClassDetail = () => {
   }
 
   const isOwner = isTeacher && classData.teacher_id === user?.id;
+  // Co-teachers can also manage (add students/co-teachers)
+  const isClassTeacher = isTeacher && (classData.teacher_id === user?.id || coTeachers.some(ct => ct.teacher_id === user?.id));
 
   return (
     <DashboardLayout>
@@ -206,7 +210,19 @@ const ClassDetail = () => {
         </Button>
 
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">{classData.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold">{classData.name}</h1>
+            {isOwner && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setEditDialogOpen(true)}
+                aria-label="Modifica classe"
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
           <p className="text-muted-foreground mt-1">{classData.academic_year}</p>
           {classData.description && (
             <p className="mt-2 text-muted-foreground">{classData.description}</p>
@@ -230,7 +246,7 @@ const ClassDetail = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Studenti Iscritti</CardTitle>
-                  {isOwner && (
+                  {isClassTeacher && (
                     <Button onClick={() => setAddDialogOpen(true)}>
                       <UserPlus className="w-4 h-4 mr-2" />
                       Aggiungi Studente
@@ -250,7 +266,7 @@ const ClassDetail = () => {
                         <TableHead>Nome</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Data Iscrizione</TableHead>
-                        {isOwner && <TableHead className="text-right">Azioni</TableHead>}
+                        {isClassTeacher && <TableHead className="text-right">Azioni</TableHead>}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -263,12 +279,13 @@ const ClassDetail = () => {
                           <TableCell>
                             {new Date(student.enrolled_at).toLocaleDateString('it-IT')}
                           </TableCell>
-                          {isOwner && (
+                          {isClassTeacher && (
                             <TableCell className="text-right">
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setStudentToRemove(student.id)}
+                                aria-label="Rimuovi studente"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
@@ -288,7 +305,7 @@ const ClassDetail = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Co-Insegnanti</CardTitle>
-                  {isOwner && (
+                  {isClassTeacher && (
                     <Button onClick={() => setAddCoTeacherDialogOpen(true)}>
                       <UserPlus className="w-4 h-4 mr-2" />
                       Aggiungi Co-Insegnante
@@ -308,7 +325,7 @@ const ClassDetail = () => {
                         <TableHead>Nome</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Aggiunto il</TableHead>
-                        {isOwner && <TableHead className="text-right">Azioni</TableHead>}
+                        {isClassTeacher && <TableHead className="text-right">Azioni</TableHead>}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -321,12 +338,13 @@ const ClassDetail = () => {
                           <TableCell>
                             {new Date(coTeacher.added_at).toLocaleDateString('it-IT')}
                           </TableCell>
-                          {isOwner && (
+                          {isClassTeacher && (
                             <TableCell className="text-right">
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setCoTeacherToRemove(coTeacher.id)}
+                                aria-label="Rimuovi co-insegnante"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
@@ -342,7 +360,7 @@ const ClassDetail = () => {
           </TabsContent>
         </Tabs>
 
-        {isOwner && (
+        {isClassTeacher && (
           <>
             <AddStudentDialog
               open={addDialogOpen}
@@ -392,6 +410,15 @@ const ClassDetail = () => {
               </AlertDialogContent>
             </AlertDialog>
           </>
+        )}
+
+        {isOwner && classData && (
+          <EditClassDialog
+            open={editDialogOpen}
+            onOpenChange={setEditDialogOpen}
+            classData={classData}
+            onClassUpdated={fetchClassData}
+          />
         )}
       </div>
     </DashboardLayout>
