@@ -30,6 +30,7 @@ const Index = () => {
   const [currentLine, setCurrentLine] = useState<number | undefined>();
   const runIntervalRef = useRef<number | null>(null);
   const stepCountRef = useRef(0);
+  const hasInitializedRef = useRef(false);
   const MAX_STEPS_PER_RUN = 100000;
 
   // Load code from localStorage if coming from dashboard
@@ -39,13 +40,15 @@ const Index = () => {
       setCode(savedCode);
       localStorage.removeItem('microasm_loaded_code');
       toast.success('Programma caricato');
+      hasInitializedRef.current = true;
     }
   }, [location, setCode]);
 
-  // Initialize with example if no current program
+  // Initialize with example ONLY on first mount, not when code is deleted
   useEffect(() => {
-    if (!currentProgram && !code) {
+    if (!hasInitializedRef.current && !currentProgram && !code) {
       setCode(EXAMPLE_PROGRAMS.factorial);
+      hasInitializedRef.current = true;
     }
   }, [currentProgram, code, setCode]);
 
