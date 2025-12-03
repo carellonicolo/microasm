@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronRight, ChevronDown, Folder, FileCode, MoreVertical, Edit, Trash2, FolderInput } from 'lucide-react';
+import { ChevronRight, ChevronDown, Folder, FileCode, MoreVertical, Edit, Trash2, FolderInput, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -21,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 interface FolderTreeViewProps {
   tree: FolderNode;
@@ -89,6 +90,19 @@ const TreeNode = ({ node, onOpenProgram, onDeleteProgram, level }: TreeNodeProps
     }
   };
 
+  const handleDownload = () => {
+    const blob = new Blob([program.code], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${program.name}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success('Programma scaricato!');
+  };
+
   return (
     <>
       <div
@@ -121,6 +135,10 @@ const TreeNode = ({ node, onOpenProgram, onDeleteProgram, level }: TreeNodeProps
             <DropdownMenuItem onClick={() => setMoveOpen(true)}>
               <FolderInput className="w-4 h-4 mr-2" />
               Sposta
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDownload}>
+              <Download className="w-4 h-4 mr-2" />
+              Scarica (.txt)
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
