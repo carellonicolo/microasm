@@ -11,6 +11,7 @@ import { CPUExecutor } from "@/utils/executor";
 import { toast } from "sonner";
 import { EXAMPLE_PROGRAMS } from "@/data/examples";
 import { useEditor } from "@/contexts/EditorContext";
+import { getSessionId, sessionScopedStorage, cleanupOldAutosaves } from "@/utils/sessionManager";
 
 const Index = () => {
   const location = useLocation();
@@ -33,7 +34,15 @@ const Index = () => {
   const hasInitializedRef = useRef(false);
   const MAX_STEPS_PER_RUN = 100000;
 
-  // Load code from localStorage if coming from dashboard
+  // Cleanup old autosaves on mount (garbage collection)
+  useEffect(() => {
+    const removed = cleanupOldAutosaves();
+    if (removed > 0) {
+      console.log(`[SessionManager] Rimossi ${removed} autosave vecchi`);
+    }
+  }, []);
+
+  // Load code from localStorage if coming from dashboard (global key for cross-tab navigation)
   useEffect(() => {
     const savedCode = localStorage.getItem('microasm_loaded_code');
     if (savedCode) {
@@ -44,6 +53,23 @@ const Index = () => {
     }
   }, [location, setCode]);
 
+  // Restore autosave ONLY if it belongs to this session (page reload, not new tab)
+  useEffect(() => {
+    const sessionId = getSessionId();
+    const autosaved = sessionScopedStorage.getItem('microasm_autosave');
+    const savedSessionId = sessionScopedStorage.getItem('microasm_autosave_session');
+    
+    // Only restore if:
+    // 1. There's an autosave
+    // 2. It belongs to THIS session (same tab reloaded)
+    // 3. We haven't already initialized
+    if (autosaved && savedSessionId === sessionId && !hasInitializedRef.current) {
+      setCode(autosaved);
+      hasInitializedRef.current = true;
+      toast.info('Codice precedente ripristinato');
+    }
+  }, [setCode]);
+
   // Initialize with example ONLY on first mount, not when code is deleted
   useEffect(() => {
     if (!hasInitializedRef.current && !currentProgram && !code) {
@@ -52,37 +78,17 @@ const Index = () => {
     }
   }, [currentProgram, code, setCode]);
 
-  // Autosave code every 5 seconds
+  // Autosave code every 5 seconds with session-scoped keys
   useEffect(() => {
+    const sessionId = getSessionId();
     const timeoutId = setTimeout(() => {
-      localStorage.setItem('microasm_autosave', code);
-      localStorage.setItem('microasm_autosave_timestamp', Date.now().toString());
+      sessionScopedStorage.setItem('microasm_autosave', code);
+      sessionScopedStorage.setItem('microasm_autosave_timestamp', Date.now().toString());
+      sessionScopedStorage.setItem('microasm_autosave_session', sessionId);
     }, 5000);
     
     return () => clearTimeout(timeoutId);
   }, [code]);
-
-  // Check for autosaved code on mount
-  useEffect(() => {
-    const autosaved = localStorage.getItem('microasm_autosave');
-    const timestamp = localStorage.getItem('microasm_autosave_timestamp');
-    
-    if (autosaved && timestamp) {
-      const savedDate = new Date(parseInt(timestamp));
-      const age = Date.now() - savedDate.getTime();
-      
-      // If the save is recent (< 24 hours) and different from current code
-      if (age < 24 * 60 * 60 * 1000 && autosaved !== code && autosaved !== EXAMPLE_PROGRAMS.factorial) {
-        const restore = window.confirm(
-          `È stato trovato un programma non salvato dal ${savedDate.toLocaleString()}. Vuoi ripristinarlo?`
-        );
-        if (restore) {
-          setCode(autosaved);
-          toast.success('Programma ripristinato');
-        }
-      }
-    }
-  }, []);
 
   // Helper function to safely stop execution
   const stopExecution = useCallback(() => {
