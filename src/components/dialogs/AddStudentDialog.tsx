@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Search, UserPlus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface AddStudentDialogProps {
   open: boolean;
@@ -99,13 +101,16 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
     );
   }, [allStudents, searchQuery]);
 
-  // Studenti disponibili = non già nella classe
+  // Studenti disponibili = non già nella classe (per il conteggio e select all)
   const availableStudents = useMemo(() => 
     filteredStudents.filter(s => !existingStudentIds.has(s.id)),
     [filteredStudents, existingStudentIds]
   );
 
   const handleToggleStudent = (studentId: string) => {
+    // Non permettere selezione di studenti già presenti
+    if (existingStudentIds.has(studentId)) return;
+    
     setSelectedStudentIds(prev => {
       const newSet = new Set(prev);
       if (newSet.has(studentId)) {
@@ -191,56 +196,78 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
             <div className="flex items-center justify-center py-8">
               <p className="text-muted-foreground">Caricamento studenti...</p>
             </div>
-          ) : availableStudents.length === 0 ? (
+          ) : filteredStudents.length === 0 ? (
             <div className="flex items-center justify-center py-8 text-muted-foreground">
               {searchQuery ? 
                 'Nessuno studente trovato con questa ricerca' : 
-                'Tutti gli studenti sono già nella classe'}
+                'Nessuno studente registrato nel sistema'}
             </div>
           ) : (
             <>
-              {/* Seleziona tutti */}
-              <div className="flex items-center gap-2 pb-2 border-b">
-                <Checkbox
-                  id="select-all"
-                  checked={selectedStudentIds.size === availableStudents.length && availableStudents.length > 0}
-                  onCheckedChange={handleSelectAll}
-                />
-                <Label htmlFor="select-all" className="cursor-pointer">
-                  {selectedStudentIds.size === availableStudents.length && availableStudents.length > 0
-                    ? 'Deseleziona tutti'
-                    : `Seleziona tutti (${availableStudents.length} disponibili)`}
-                </Label>
-              </div>
+              {/* Seleziona tutti (solo disponibili) */}
+              {availableStudents.length > 0 && (
+                <div className="flex items-center gap-2 pb-2 border-b">
+                  <Checkbox
+                    id="select-all"
+                    checked={selectedStudentIds.size === availableStudents.length && availableStudents.length > 0}
+                    onCheckedChange={handleSelectAll}
+                  />
+                  <Label htmlFor="select-all" className="cursor-pointer">
+                    {selectedStudentIds.size === availableStudents.length && availableStudents.length > 0
+                      ? 'Deseleziona tutti'
+                      : `Seleziona tutti (${availableStudents.length} disponibili)`}
+                  </Label>
+                </div>
+              )}
 
               {/* Lista studenti con checkbox */}
               <ScrollArea className="h-[400px] -mx-6 px-6">
                 <div className="space-y-2 pr-4">
-                  {availableStudents.map((student) => (
-                    <div 
-                      key={student.id}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
-                      onClick={() => handleToggleStudent(student.id)}
-                    >
-                      <Checkbox
-                        id={`student-${student.id}`}
-                        checked={selectedStudentIds.has(student.id)}
-                        onCheckedChange={() => handleToggleStudent(student.id)}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <Label 
-                          htmlFor={`student-${student.id}`}
-                          className="font-medium cursor-pointer"
-                        >
-                          {student.last_name} {student.first_name}
-                        </Label>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {student.email}
-                        </p>
+                  {filteredStudents.map((student) => {
+                    const isAlreadyInClass = existingStudentIds.has(student.id);
+                    
+                    return (
+                      <div 
+                        key={student.id}
+                        className={cn(
+                          "flex items-center gap-3 p-3 rounded-lg transition-colors",
+                          isAlreadyInClass 
+                            ? "opacity-50 cursor-not-allowed bg-muted" 
+                            : "hover:bg-accent/50 cursor-pointer"
+                        )}
+                        onClick={() => !isAlreadyInClass && handleToggleStudent(student.id)}
+                      >
+                        <Checkbox
+                          id={`student-${student.id}`}
+                          checked={isAlreadyInClass || selectedStudentIds.has(student.id)}
+                          disabled={isAlreadyInClass}
+                          onCheckedChange={() => !isAlreadyInClass && handleToggleStudent(student.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <Label 
+                              htmlFor={`student-${student.id}`}
+                              className={cn(
+                                "font-medium",
+                                isAlreadyInClass ? "cursor-not-allowed" : "cursor-pointer"
+                              )}
+                            >
+                              {student.last_name} {student.first_name}
+                            </Label>
+                            {isAlreadyInClass && (
+                              <Badge variant="secondary" className="text-xs">
+                                Già nella classe
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {student.email}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </ScrollArea>
             </>
