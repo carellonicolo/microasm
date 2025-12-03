@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from './useAuth';
@@ -338,8 +338,15 @@ export const useSavedPrograms = () => {
     }
   }, [session?.user?.id, authLoading]); // ✅ Usa solo l'ID dell'utente, non l'intero oggetto session
 
+  // userPrograms: solo i programmi dell'utente corrente (filtro client-side)
+  const userPrograms = useMemo(() => {
+    if (!user) return [];
+    return programs.filter(p => p.user_id === user.id);
+  }, [programs, user?.id]);
+
   return {
-    programs,
+    programs,        // Tutti i programmi visibili (inclusi pubblici di altri)
+    userPrograms,    // Solo programmi dell'utente corrente
     loading,
     fetchPrograms,
     saveProgram,

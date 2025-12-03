@@ -29,7 +29,7 @@ import { PromoteToTeacherDialog } from '@/components/dialogs/PromoteToTeacherDia
 const Dashboard = () => {
   const { user } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
-  const { programs, loading: programsLoading } = useSavedPrograms();
+  const { userPrograms, loading: programsLoading } = useSavedPrograms();
   const { classes, loading: classesLoading } = useClasses();
   const { assignments, loading: assignmentsLoading } = useAssignments();
   const navigate = useNavigate();
@@ -45,7 +45,7 @@ const Dashboard = () => {
     );
   }
 
-  const recentPrograms = programs.slice(0, 5);
+  const recentPrograms = userPrograms.slice(0, 5);
   const upcomingAssignments = assignments
     .filter(a => a.due_date && new Date(a.due_date) > new Date())
     .slice(0, 3);
@@ -74,9 +74,9 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             title="Programmi Salvati"
-            value={programs.length}
+            value={userPrograms.length}
             icon={Code}
-            description="Totale programmi"
+            description="I tuoi programmi"
           />
           <StatCard
             title={role === 'teacher' ? 'Classi Gestite' : 'Classi Iscritte'}

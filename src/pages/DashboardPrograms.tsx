@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { useSavedPrograms } from '@/hooks/useSavedPrograms';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,19 +10,14 @@ import { toast } from 'sonner';
 
 const DashboardPrograms = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
-  const { programs, loading: programsLoading, deleteProgram, generatePublicLink } = useSavedPrograms();
+  const { loading: authLoading } = useAuth();
+  const { userPrograms, loading: programsLoading, deleteProgram, generatePublicLink } = useSavedPrograms();
   const { openProgram } = useEditor();
 
-  const userPrograms = useMemo(() => 
-    programs.filter(p => p.user_id === user?.id),
-    [programs, user]
-  );
-
-  const isInitializing = authLoading || (programsLoading && programs.length === 0);
+  const isInitializing = authLoading || (programsLoading && userPrograms.length === 0);
 
   const handleOpenProgram = (code: string, programId: string) => {
-    const program = programs.find(p => p.id === programId);
+    const program = userPrograms.find(p => p.id === programId);
     if (program) {
       openProgram(program);
     }
