@@ -260,41 +260,43 @@ const ClassDetail = () => {
                     Nessuno studente nella classe
                   </p>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nome</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Data Iscrizione</TableHead>
-                        {isClassTeacher && <TableHead className="text-right">Azioni</TableHead>}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {students.map((student) => (
-                        <TableRow key={student.id}>
-                          <TableCell className="font-medium">
-                            {student.profiles.first_name} {student.profiles.last_name}
-                          </TableCell>
-                          <TableCell>{student.profiles.email}</TableCell>
-                          <TableCell>
-                            {new Date(student.enrolled_at).toLocaleDateString('it-IT')}
-                          </TableCell>
-                          {isClassTeacher && (
-                            <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setStudentToRemove(student.id)}
-                                aria-label="Rimuovi studente"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </TableCell>
-                          )}
+                  <div className="max-h-[720px] overflow-y-auto">
+                    <Table>
+                      <TableHeader className="sticky top-0 bg-card z-10">
+                        <TableRow>
+                          <TableHead>Nome</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Data Iscrizione</TableHead>
+                          {isClassTeacher && <TableHead className="text-right">Azioni</TableHead>}
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {students.map((student) => (
+                          <TableRow key={student.id}>
+                            <TableCell className="font-medium">
+                              {student.profiles.first_name} {student.profiles.last_name}
+                            </TableCell>
+                            <TableCell>{student.profiles.email}</TableCell>
+                            <TableCell>
+                              {new Date(student.enrolled_at).toLocaleDateString('it-IT')}
+                            </TableCell>
+                            {isClassTeacher && (
+                              <TableCell className="text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setStudentToRemove(student.id)}
+                                  aria-label="Rimuovi studente"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
