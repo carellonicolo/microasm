@@ -258,7 +258,7 @@ const Index = () => {
       </div>
 
       <div className="max-w-[1800px] mx-auto space-y-2 relative z-0">
-        <Header onLoadExample={setCode} />
+        <Header />
         
         <main className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-4">
@@ -273,6 +273,7 @@ const Index = () => {
                 executionState={executionState}
                 currentLine={currentLine}
                 onLoadExercise={setCode}
+                onLoadExample={setCode}
               />
             </div>
             
