@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Play, Pause, RotateCcw, SkipForward } from "lucide-react";
 import { ExecutionState } from "@/types/microasm";
 import { DocumentationDialog } from "./DocumentationDialog";
+import { ExercisesDialog } from "./ExercisesDialog";
 import { useEffect, useRef } from "react";
 
 interface CodeEditorProps {
@@ -15,6 +16,7 @@ interface CodeEditorProps {
   onReset: () => void;
   executionState: ExecutionState;
   currentLine?: number;
+  onLoadExercise?: (code: string) => void;
 }
 
 export function CodeEditor({
@@ -25,7 +27,8 @@ export function CodeEditor({
   onStep,
   onReset,
   executionState,
-  currentLine
+  currentLine,
+  onLoadExercise
 }: CodeEditorProps) {
   const lines = code.split('\n');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -53,6 +56,7 @@ export function CodeEditor({
         <h2 className="text-xl font-bold font-heading">Codice Sorgente</h2>
         <div className="flex gap-2">
           <DocumentationDialog />
+          {onLoadExercise && <ExercisesDialog onLoadExercise={onLoadExercise} />}
           <Button 
             onClick={onLoad} 
             variant="secondary" 

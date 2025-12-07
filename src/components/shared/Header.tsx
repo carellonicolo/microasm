@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useEditor } from '@/contexts/EditorContext';
 import { ExamplesDialog } from '@/components/ExamplesDialog';
-import { ExercisesDialog } from '@/components/ExercisesDialog';
 import { SaveAsDialog } from '@/components/dialogs/SaveAsDialog';
 import { Save, ChevronDown, FileText, FilePlus } from 'lucide-react';
 import {
@@ -19,10 +18,9 @@ import {
 
 interface HeaderProps {
   onLoadExample?: (code: string) => void;
-  onLoadExercise?: (code: string) => void;
 }
 
-export const Header = ({ onLoadExample, onLoadExercise }: HeaderProps) => {
+export const Header = ({ onLoadExample }: HeaderProps) => {
   const { user, loading } = useAuth();
   const { currentProgram, isModified, code, saveCurrentProgram, closeProgram } = useEditor();
   const [saveAsOpen, setSaveAsOpen] = useState(false);
@@ -61,11 +59,8 @@ export const Header = ({ onLoadExample, onLoadExercise }: HeaderProps) => {
 
           {/* Auth Controls (destra) */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Pulsanti Esempi ed Esercizi */}
-            <div className="flex items-center gap-1 sm:gap-2">
-              {onLoadExample && <ExamplesDialog onLoadExample={onLoadExample} />}
-              {onLoadExercise && <ExercisesDialog onLoadExercise={onLoadExercise} />}
-            </div>
+            {/* Pulsante Esempi */}
+            {onLoadExample && <ExamplesDialog onLoadExample={onLoadExample} />}
 
             {/* Menu Salvataggio (solo per utenti autenticati) */}
             {user && (
