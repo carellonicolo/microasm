@@ -5,6 +5,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Internal secret for cron job authentication
+const CRON_SECRET = Deno.env.get('CRON_SECRET');
+
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -12,6 +15,22 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Validate internal caller (pg_cron or authorized service)
+    const authHeader = req.headers.get('Authorization');
+    const cronSecret = req.headers.get('X-Cron-Secret');
+    
+    // Allow if: has valid cron secret OR has service role key in Authorization
+    const isAuthorizedCron = CRON_SECRET && cronSecret === CRON_SECRET;
+    const isServiceRole = authHeader?.includes(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '');
+    
+    if (!isAuthorizedCron && !isServiceRole) {
+      console.error('❌ Unauthorized access attempt to auto-grade-scheduler');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - this endpoint is for internal use only' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);

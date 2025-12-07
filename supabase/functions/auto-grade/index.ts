@@ -616,11 +616,37 @@ Deno.serve(async (req) => {
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
+    // Validate caller authorization
+    const authHeader = req.headers.get('Authorization');
+    const cronSecret = req.headers.get('X-Cron-Secret');
+    const CRON_SECRET = Deno.env.get('CRON_SECRET');
+    
+    // Allow if: has valid cron secret (from scheduler) OR has service role key
+    const isAuthorizedCron = CRON_SECRET && cronSecret === CRON_SECRET;
+    const isServiceRole = authHeader?.includes(supabaseServiceRoleKey);
+    
+    if (!isAuthorizedCron && !isServiceRole) {
+      console.error('❌ Unauthorized access attempt to auto-grade function');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - this endpoint is for internal use only' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { assignment_id } = await req.json();
 
     if (!assignment_id) {
       return new Response(
         JSON.stringify({ error: 'assignment_id is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate assignment_id format (UUID)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(assignment_id)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid assignment_id format' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
