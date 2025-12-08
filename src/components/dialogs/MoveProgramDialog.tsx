@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useSavedPrograms } from '@/hooks/useSavedPrograms';
 import { getAllFolderPaths } from '@/utils/folderTree';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface MoveProgramDialogProps {
   open: boolean;
@@ -29,6 +30,7 @@ export const MoveProgramDialog = ({
   programName,
   currentFolderPath 
 }: MoveProgramDialogProps) => {
+  const t = useTranslation();
   const [folderPath, setFolderPath] = useState(currentFolderPath);
   const [loading, setLoading] = useState(false);
   const { updateProgram, programs } = useSavedPrograms();
@@ -43,7 +45,7 @@ export const MoveProgramDialog = ({
 
   const handleMove = async () => {
     if (folderPath === currentFolderPath) {
-      toast.info('La cartella selezionata è uguale a quella attuale');
+      toast.info(t.common.noResults);
       onOpenChange(false);
       return;
     }
@@ -53,7 +55,7 @@ export const MoveProgramDialog = ({
     setLoading(false);
 
     if (success) {
-      toast.success(`"${programName}" spostato in ${folderPath}`);
+      toast.success(t.programs.programMoved);
       onOpenChange(false);
     }
   };
@@ -62,15 +64,15 @@ export const MoveProgramDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Sposta Programma</DialogTitle>
+          <DialogTitle>{t.programs.move}</DialogTitle>
           <DialogDescription>
-            Sposta "{programName}" in un'altra cartella
+            {t.dialogs.moveToFolder}: "{programName}"
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="folder">Cartella di Destinazione</Label>
+            <Label htmlFor="folder">{t.dialogs.selectFolder}</Label>
             <Select value={folderPath} onValueChange={setFolderPath}>
               <SelectTrigger>
                 <SelectValue />
@@ -78,31 +80,20 @@ export const MoveProgramDialog = ({
               <SelectContent>
                 {folderPaths.map(path => (
                   <SelectItem key={path} value={path}>
-                    {path === '/' ? '📁 Root' : `📁 ${path}`}
+                    {path === '/' ? `📁 ${t.dialogs.rootFolder}` : `📁 ${path}`}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-
-          <div className="p-3 bg-muted rounded-md space-y-1">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Da:</span>
-              <span className="font-mono">{currentFolderPath}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">A:</span>
-              <span className="font-mono font-medium">{folderPath}</span>
-            </div>
-          </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-            Annulla
+            {t.common.cancel}
           </Button>
           <Button onClick={handleMove} disabled={loading}>
-            {loading ? 'Spostamento...' : 'Sposta'}
+            {loading ? t.common.loading : t.programs.move}
           </Button>
         </DialogFooter>
       </DialogContent>

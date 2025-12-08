@@ -8,37 +8,22 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { useTranslation } from '@/hooks/useTranslation';
 
-const classSchema = z.object({
-  name: z.string()
-    .trim()
-    .min(3, 'Il nome deve contenere almeno 3 caratteri')
-    .max(100, 'Il nome non può superare 100 caratteri'),
-  description: z.string()
-    .trim()
-    .max(1000, 'La descrizione non può superare 1000 caratteri')
-    .optional(),
-  academicYear: z.string()
-    .trim()
-    .regex(
-      /^\d{4}\/\d{4}$/,
-      'L\'anno accademico deve essere nel formato YYYY/YYYY (es. 2024/2025)'
-    )
-    .refine(
-      (val) => {
-        const [start, end] = val.split('/').map(Number);
-        return end === start + 1;
-      },
-      'L\'anno accademico deve essere consecutivo (es. 2024/2025)'
-    ),
-});
+interface CreateClassDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onClassCreated: () => void;
+}
 
 interface AcademicYearInputProps {
   value: string;
   onChange: (value: string) => void;
+  label: string;
+  hint: string;
 }
 
-const AcademicYearInput = ({ value, onChange }: AcademicYearInputProps) => {
+const AcademicYearInput = ({ value, onChange, label, hint }: AcademicYearInputProps) => {
   const [startYear, endYear] = value.split('/').map(y => y || '');
 
   const handleStartYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +43,7 @@ const AcademicYearInput = ({ value, onChange }: AcademicYearInputProps) => {
 
   return (
     <div className="space-y-2">
-      <Label>Anno Accademico *</Label>
+      <Label>{label} *</Label>
       <div className="flex items-center gap-2">
         <Input
           type="text"
@@ -83,31 +68,44 @@ const AcademicYearInput = ({ value, onChange }: AcademicYearInputProps) => {
         />
       </div>
       <p className="text-xs text-muted-foreground">
-        Gli anni devono essere consecutivi
+        {hint}
       </p>
     </div>
   );
 };
 
-interface CreateClassDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onClassCreated: () => void;
-}
-
 export const CreateClassDialog = ({ open, onOpenChange, onClassCreated }: CreateClassDialogProps) => {
+  const t = useTranslation();
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [academicYear, setAcademicYear] = useState(() => {
     const currentYear = new Date().getFullYear();
     const month = new Date().getMonth();
-    // Se siamo dopo settembre, usa anno corrente/successivo
-    // Altrimenti usa anno precedente/corrente
-    const startYear = month >= 8 ? currentYear : currentYear - 1; // 8 = settembre
+    const startYear = month >= 8 ? currentYear : currentYear - 1;
     return `${startYear}/${startYear + 1}`;
   });
   const [loading, setLoading] = useState(false);
+
+  const classSchema = z.object({
+    name: z.string()
+      .trim()
+      .min(3, t.auth.validation.firstNameMin)
+      .max(100),
+    description: z.string()
+      .trim()
+      .max(1000)
+      .optional(),
+    academicYear: z.string()
+      .trim()
+      .regex(/^\d{4}\/\d{4}$/)
+      .refine(
+        (val) => {
+          const [start, end] = val.split('/').map(Number);
+          return end === start + 1;
+        }
+      ),
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,7 +113,6 @@ export const CreateClassDialog = ({ open, onOpenChange, onClassCreated }: Create
 
     setLoading(true);
     try {
-      // Validate input data
       const validationResult = classSchema.safeParse({
         name,
         description: description || '',
@@ -140,7 +137,7 @@ export const CreateClassDialog = ({ open, onOpenChange, onClassCreated }: Create
 
       if (error) throw error;
 
-      toast.success('Classe creata con successo');
+      toast.success(t.classes.classCreated);
       setName('');
       setDescription('');
       const currentYear = new Date().getFullYear();
@@ -150,7 +147,7 @@ export const CreateClassDialog = ({ open, onOpenChange, onClassCreated }: Create
       onOpenChange(false);
       onClassCreated();
     } catch (error: any) {
-      toast.error('Errore nella creazione della classe: ' + error.message);
+      toast.error(t.toasts.error + ': ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -160,42 +157,44 @@ export const CreateClassDialog = ({ open, onOpenChange, onClassCreated }: Create
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Crea Nuova Classe</DialogTitle>
+          <DialogTitle>{t.dialogs.createClass}</DialogTitle>
           <DialogDescription>
-            Inserisci i dettagli della nuova classe
+            {t.dialogs.enterClassDetails}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">Nome Classe *</Label>
+            <Label htmlFor="name">{t.classes.className} *</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="es. 3A Informatica"
+              placeholder={t.dialogs.classNamePlaceholder}
               required
             />
           </div>
           <AcademicYearInput
             value={academicYear}
             onChange={setAcademicYear}
+            label={t.classes.academicYear}
+            hint={t.dialogs.consecutiveYears}
           />
           <div>
-            <Label htmlFor="description">Descrizione</Label>
+            <Label htmlFor="description">{t.classes.description}</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descrizione opzionale della classe"
+              placeholder={t.dialogs.descriptionPlaceholder}
               rows={3}
             />
           </div>
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Annulla
+              {t.common.cancel}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creazione...' : 'Crea Classe'}
+              {loading ? t.dialogs.creating : t.common.create + ' ' + t.classes.student.charAt(0).toUpperCase() + 'lasse'}
             </Button>
           </div>
         </form>

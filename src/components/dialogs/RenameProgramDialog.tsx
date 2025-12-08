@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useSavedPrograms } from '@/hooks/useSavedPrograms';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface RenameProgramDialogProps {
   open: boolean;
@@ -26,6 +27,7 @@ export const RenameProgramDialog = ({
   programId, 
   currentName 
 }: RenameProgramDialogProps) => {
+  const t = useTranslation();
   const [name, setName] = useState(currentName);
   const [loading, setLoading] = useState(false);
   const { updateProgram } = useSavedPrograms();
@@ -40,17 +42,17 @@ export const RenameProgramDialog = ({
     const trimmedName = name.trim();
     
     if (!trimmedName) {
-      toast.error('Il nome non può essere vuoto');
+      toast.error(t.auth.validation.firstNameMin);
       return;
     }
 
     if (trimmedName.length > 100) {
-      toast.error('Nome troppo lungo (max 100 caratteri)');
+      toast.error('Max 100 characters');
       return;
     }
 
     if (trimmedName === currentName) {
-      toast.info('Il nome non è cambiato');
+      toast.info(t.common.noResults);
       onOpenChange(false);
       return;
     }
@@ -68,20 +70,20 @@ export const RenameProgramDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Rinomina Programma</DialogTitle>
+          <DialogTitle>{t.programs.rename}</DialogTitle>
           <DialogDescription>
-            Modifica il nome del programma
+            {t.dialogs.renameTo}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nuovo Nome *</Label>
+            <Label htmlFor="name">{t.dialogs.programName} *</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Es. Calcolo Fattoriale v2"
+              placeholder={t.dialogs.programName}
               maxLength={100}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -94,10 +96,10 @@ export const RenameProgramDialog = ({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-            Annulla
+            {t.common.cancel}
           </Button>
           <Button onClick={handleRename} disabled={!name.trim() || loading}>
-            {loading ? 'Rinomina...' : 'Rinomina'}
+            {loading ? t.common.loading : t.programs.rename}
           </Button>
         </DialogFooter>
       </DialogContent>

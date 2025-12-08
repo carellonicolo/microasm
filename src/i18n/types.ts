@@ -355,6 +355,74 @@ export interface Translations {
     renameTo: string;
     gradeSubmission: string;
     addFeedback: string;
+    // Class dialogs
+    createClass: string;
+    editClass: string;
+    enterClassDetails: string;
+    classNamePlaceholder: string;
+    descriptionPlaceholder: string;
+    consecutiveYears: string;
+    creating: string;
+    saving: string;
+    // Student/Teacher dialogs
+    addStudentsToClass: string;
+    addCoTeachersToClass: string;
+    selectOneOrMore: string;
+    searchByNameEmail: string;
+    loadingStudents: string;
+    loadingTeachers: string;
+    noStudentFound: string;
+    noTeacherFound: string;
+    noStudentRegistered: string;
+    noTeacherRegistered: string;
+    selectAll: string;
+    deselectAll: string;
+    available: string;
+    selected: string;
+    adding: string;
+    addStudents: string;
+    addCoTeachers: string;
+    studentsAdded: string;
+    coTeachersAdded: string;
+    selectAtLeastOne: string;
+    // Assignment dialogs
+    createAssignment: string;
+    editAssignment: string;
+    newMultiExercise: string;
+    updateExercises: string;
+    title: string;
+    description: string;
+    class: string;
+    selectClass: string;
+    dueDateOptional: string;
+    lateSubmissions: string;
+    solutionAfterDeadline: string;
+    assignedExercises: string;
+    noExerciseSelected: string;
+    searchAddExercises: string;
+    searchByTitleCategory: string;
+    noExerciseFound: string;
+    points: string;
+    createAssignmentBtn: string;
+    hasSubmissions: string;
+    cannotChangeClass: string;
+    assignmentUpdated: string;
+    assignmentCreated: string;
+    // Grade dialog
+    gradeStudent: string;
+    studentLabel: string;
+    gradeOutOf: string;
+    feedbackPlaceholder: string;
+    savingGrade: string;
+    saveGrade: string;
+    gradeSuccess: string;
+    // View code dialog
+    viewCodeTitle: string;
+    copyCode: string;
+    openInSimulator: string;
+    submission: string;
+    codeCopied: string;
+    codeLoadedInSimulator: string;
   };
   
   theme: {
