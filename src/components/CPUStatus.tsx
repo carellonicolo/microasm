@@ -5,6 +5,7 @@ import { CPUState, DisplayFormat } from "@/types/microasm";
 import { formatValue } from "@/utils/formatter";
 import { CPUArchitectureDialog } from "./CPUArchitectureDialog";
 import { Cpu } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface CPUStatusProps {
   cpu: CPUState;
@@ -12,6 +13,7 @@ interface CPUStatusProps {
 }
 
 export function CPUStatus({ cpu, format }: CPUStatusProps) {
+  const t = useTranslation();
   const [architectureDialogOpen, setArchitectureDialogOpen] = useState(false);
 
   return (
@@ -20,7 +22,7 @@ export function CPUStatus({ cpu, format }: CPUStatusProps) {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold font-heading flex items-center gap-2">
             <Cpu className="h-5 w-5 text-primary" />
-            Stato CPU
+            {t.cpu.status}
           </h2>
           <Button
             variant="outline"
@@ -29,13 +31,13 @@ export function CPUStatus({ cpu, format }: CPUStatusProps) {
             className="gap-2 hover:border-primary/50 hover:bg-primary/5 transition-all"
           >
             <Cpu className="h-4 w-4" />
-            Architettura
+            {t.cpu.architecture}
           </Button>
         </div>
       
       <div className="space-y-4">
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Registri Generici</h3>
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t.cpu.generalRegisters}</h3>
           <div className="grid grid-cols-2 gap-3">
             {(['R0', 'R1', 'R2', 'R3'] as const).map((reg) => (
               <div key={reg} className="group relative">
@@ -52,7 +54,7 @@ export function CPUStatus({ cpu, format }: CPUStatusProps) {
         </div>
         
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Registri Speciali</h3>
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t.cpu.specialRegisters}</h3>
           <div className="space-y-2">
             <div className="flex justify-between items-center p-3 bg-gradient-to-r from-primary/5 to-transparent rounded-xl border border-primary/20 hover:border-primary/40 transition-all">
               <span className="font-mono text-sm font-bold text-primary">PC</span>
@@ -66,7 +68,7 @@ export function CPUStatus({ cpu, format }: CPUStatusProps) {
         </div>
         
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Flags</h3>
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t.cpu.flags}</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className={`relative p-3 rounded-xl border transition-all ${
               cpu.ZF 

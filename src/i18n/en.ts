@@ -176,6 +176,15 @@ export const en: Translations = {
     continueWithGoogle: 'Continue with Google',
     alreadyHaveAccount: 'Already have an account?',
     dontHaveAccount: "Don't have an account?",
+    simulatorSubtitle: 'Educational Assembly Simulator',
+    redirecting: 'Redirecting...',
+    enablePopups: 'Enable popups to continue with Google',
+    features: {
+      simulate: 'Simulate simplified 80x86 assembly instructions',
+      visualize: 'Visualize registers, memory and flags in real-time',
+      exercises: '100 progressive educational exercises',
+      saveShare: 'Save your programs and share them',
+    },
     validation: {
       emailInvalid: 'Invalid email',
       passwordMin: 'Password must be at least 6 characters',

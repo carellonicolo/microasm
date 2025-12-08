@@ -178,6 +178,15 @@ export interface Translations {
     continueWithGoogle: string;
     alreadyHaveAccount: string;
     dontHaveAccount: string;
+    simulatorSubtitle: string;
+    redirecting: string;
+    enablePopups: string;
+    features: {
+      simulate: string;
+      visualize: string;
+      exercises: string;
+      saveShare: string;
+    };
     validation: {
       emailInvalid: string;
       passwordMin: string;

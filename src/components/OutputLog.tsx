@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Terminal, CheckCircle, AlertCircle, Trash2, Copy } from "lucide-react";
 import { useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface OutputLogProps {
   output: string[];
@@ -14,6 +15,7 @@ interface OutputLogProps {
 }
 
 export function OutputLog({ output, errors, onClear }: OutputLogProps) {
+  const t = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isEmpty = output.length === 0 && errors.length === 0;
 
@@ -30,7 +32,7 @@ export function OutputLog({ output, errors, onClear }: OutputLogProps) {
       ...errors.map((err, idx) => `[ERROR ${idx + 1}] ${err}`)
     ].join('\n');
     navigator.clipboard.writeText(text);
-    toast.success('Log copiato negli appunti');
+    toast.success(t.output.logCopied);
   };
 
   return (
@@ -39,18 +41,18 @@ export function OutputLog({ output, errors, onClear }: OutputLogProps) {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Terminal className="h-5 w-5" />
-          Log Output
+          {t.output.logOutput}
         </h2>
         {!isEmpty && (
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="font-mono text-xs">
-              {output.length} output • {errors.length} errori
+              {output.length} {t.output.output} • {errors.length} {t.output.errors}
             </Badge>
-            <Button variant="ghost" size="sm" onClick={handleCopy} title="Copia log">
+            <Button variant="ghost" size="sm" onClick={handleCopy} title={t.output.copyLog} aria-label={t.output.copyLog}>
               <Copy className="h-4 w-4" />
             </Button>
             {onClear && (
-              <Button variant="ghost" size="sm" onClick={onClear} title="Pulisci log">
+              <Button variant="ghost" size="sm" onClick={onClear} title={t.output.clearLog} aria-label={t.output.clearLog}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}
@@ -62,9 +64,9 @@ export function OutputLog({ output, errors, onClear }: OutputLogProps) {
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-12">
             <Terminal className="h-12 w-12 mb-3 opacity-50" />
-            <p className="text-sm font-medium">Nessun output</p>
+            <p className="text-sm font-medium">{t.output.noOutput}</p>
             <p className="text-xs mt-1 text-center max-w-[200px]">
-              I risultati dell'istruzione OUT appariranno qui
+              {t.output.outputWillAppear}
             </p>
           </div>
         ) : (
@@ -102,7 +104,7 @@ export function OutputLog({ output, errors, onClear }: OutputLogProps) {
                 <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-destructive text-sm mb-1">
-                    Errore di Runtime
+                    {t.output.runtimeError}
                   </p>
                   <p className="font-mono text-xs text-destructive/90 break-words">
                     {error}

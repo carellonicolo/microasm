@@ -5,8 +5,10 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { SignupForm } from '@/components/auth/SignupForm';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const Auth = () => {
+  const t = useTranslation();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get('mode') || 'login';
   const navigate = useNavigate();
@@ -35,14 +37,14 @@ const Auth = () => {
             MicroASM
           </h2>
           <p className="text-muted-foreground mt-2">
-            Simulatore Assembly Didattico
+            {t.auth.simulatorSubtitle}
           </p>
         </div>
 
         <Tabs defaultValue={mode} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Accedi</TabsTrigger>
-            <TabsTrigger value="signup">Registrati</TabsTrigger>
+            <TabsTrigger value="login">{t.auth.login}</TabsTrigger>
+            <TabsTrigger value="signup">{t.auth.signup}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="login">

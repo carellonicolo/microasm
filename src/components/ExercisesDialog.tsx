@@ -27,6 +27,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useExercises, generateExerciseTemplate, type Exercise } from "@/hooks/useExercises";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ExercisesDialogProps {
   onLoadExercise: (code: string) => void;
@@ -90,6 +91,7 @@ const getDifficultyColor = (difficulty: string): string => {
 };
 
 export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
+  const t = useTranslation();
   const { exercises: EXERCISES, loading } = useExercises();
   const [open, setOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(1);
@@ -117,7 +119,7 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
     onLoadExercise(template);
     setOpen(false);
     
-    toast.success(`Esercizio ${selectedExercise.id} caricato!`, {
+    toast.success(t.exercises.exerciseLoaded, {
       description: selectedExercise.title,
       icon: <GraduationCap className="w-4 h-4" />
     });
@@ -165,16 +167,11 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
           variant="outline" 
           size="sm"
           className="group relative overflow-hidden hover:border-primary/50 transition-all gap-1 sm:gap-2"
+          aria-label={t.header.exercises}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <GraduationCap className="w-4 h-4 relative group-hover:text-primary transition-colors" />
-          <span className="relative">Esercizi</span>
-          <Badge 
-            variant="secondary" 
-            className="ml-2 relative font-mono text-xs"
-          >
-            {EXERCISES.length}
-          </Badge>
+          <span className="relative">{t.header.exercises}</span>
         </Button>
       </DialogTrigger>
 
@@ -185,14 +182,14 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
             <div>
               <DialogTitle className="text-3xl flex items-center gap-3 mb-2">
                 <GraduationCap className="w-8 h-8 text-primary" />
-                Esercizi MicroASM
+                {t.exercises.exercises}
               </DialogTitle>
               <DialogDescription className="flex items-center gap-4 text-base">
-                <span>{EXERCISES.length} esercizi progressivi dal livello base all'avanzato</span>
+                <span>{EXERCISES.length} {t.exercises.exerciseCount}</span>
                 {progress.completed.length > 0 && (
                   <Badge variant="outline" className="font-mono gap-2">
                     <Trophy className="w-3 h-3 text-yellow-500" />
-                    Completati: {progress.completed.length}/{EXERCISES.length} ({completionRate}%)
+                    {t.exercises.completed}: {progress.completed.length}/{EXERCISES.length} ({completionRate}%)
                   </Badge>
                 )}
               </DialogDescription>
@@ -209,29 +206,29 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
             className="justify-start flex-wrap"
           >
             <ToggleGroupItem value="all" className="text-xs">
-              Tutte <span className="ml-1 opacity-60">({EXERCISES.length})</span>
+              {t.exercises.difficulty.all} <span className="ml-1 opacity-60">({EXERCISES.length})</span>
             </ToggleGroupItem>
             <ToggleGroupItem value="principiante" className="text-xs">
-              ⭐ Principiante
+              ⭐ {t.exercises.difficulty.beginner}
             </ToggleGroupItem>
             <ToggleGroupItem value="intermedio" className="text-xs">
-              ⭐⭐ Intermedio
+              ⭐⭐ {t.exercises.difficulty.intermediate}
             </ToggleGroupItem>
             <ToggleGroupItem value="avanzato" className="text-xs">
-              ⭐⭐⭐ Avanzato
+              ⭐⭐⭐ {t.exercises.difficulty.advanced}
             </ToggleGroupItem>
             <ToggleGroupItem value="esperto" className="text-xs">
-              ⭐⭐⭐⭐ Esperto
+              ⭐⭐⭐⭐ {t.exercises.difficulty.expert}
             </ToggleGroupItem>
             <ToggleGroupItem value="impossibile" className="text-xs">
-              ⭐⭐⭐⭐⭐ Impossibile
+              ⭐⭐⭐⭐⭐ {t.exercises.difficulty.impossible}
             </ToggleGroupItem>
           </ToggleGroup>
 
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
-              placeholder="Cerca esercizio..." 
+              placeholder={t.common.search + '...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 text-sm"
@@ -247,13 +244,13 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
               {loading ? (
                 <div className="text-center py-12 px-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
-                  <p className="text-sm text-muted-foreground">Caricamento...</p>
+                  <p className="text-sm text-muted-foreground">{t.common.loading}</p>
                 </div>
               ) : filteredExercises.length === 0 ? (
                 <div className="text-center py-12 px-4">
                   <Search className="w-12 h-12 mx-auto text-muted-foreground mb-3 opacity-50" />
                   <p className="text-sm text-muted-foreground">
-                    Nessun esercizio trovato
+                    {t.exercises.noExercisesFound}
                   </p>
                 </div>
               ) : (
@@ -316,7 +313,7 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
                 <div className="glass-card p-5 rounded-xl border border-primary/20">
                   <h4 className="font-semibold mb-3 flex items-center gap-2 text-base">
                     <FileText className="w-5 h-5 text-primary" />
-                    Consegna
+                    {t.exercises.assignment}
                   </h4>
                   <p className="text-sm leading-relaxed">{selectedExercise.description}</p>
                 </div>
@@ -325,7 +322,7 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
                 <div className="glass-card p-5 rounded-xl border border-green-500/20">
                   <h4 className="font-semibold mb-3 flex items-center gap-2 text-base">
                     <CheckCircle2 className="w-5 h-5 text-green-500" />
-                    Requisiti
+                    {t.exercises.requirements}
                   </h4>
                   <ul className="space-y-2">
                     {selectedExercise.requirements.map((req, idx) => (
@@ -342,7 +339,7 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
                   <div className="glass-card p-5 rounded-xl border border-accent/20">
                     <h4 className="font-semibold mb-3 flex items-center gap-2 text-base">
                       <Target className="w-5 h-5 text-accent" />
-                      Output Atteso
+                      {t.exercises.expectedOutput}
                     </h4>
                     <pre className="bg-background/50 text-foreground p-4 rounded-lg font-mono text-xs leading-relaxed whitespace-pre-wrap border">
 {selectedExercise.expectedOutput}
@@ -358,7 +355,7 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
         <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/30">
           <div className="flex items-center gap-3">
             <div className="text-xs text-muted-foreground font-mono">
-              Esercizio <span className="font-bold text-foreground">{selectedExercise?.id}</span> di <span className="font-bold">{EXERCISES.length}</span>
+              {t.exercises.title} <span className="font-bold text-foreground">{selectedExercise?.id}</span> / <span className="font-bold">{EXERCISES.length}</span>
             </div>
             <div className="flex gap-1">
               <Button 
@@ -367,6 +364,7 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
                 disabled={selectedId === 1}
                 onClick={handlePrevious}
                 className="h-8 w-8 p-0"
+                aria-label={t.common.previous}
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
@@ -376,6 +374,7 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
                 disabled={selectedId === EXERCISES.length}
                 onClick={handleNext}
                 className="h-8 w-8 p-0"
+                aria-label={t.common.next}
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
@@ -384,7 +383,7 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
 
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setOpen(false)} size="sm">
-              Chiudi
+              {t.common.close}
             </Button>
             <Button 
               onClick={handleLoadExercise}
@@ -392,7 +391,7 @@ export function ExercisesDialog({ onLoadExercise }: ExercisesDialogProps) {
               size="sm"
             >
               <Code className="w-4 h-4 mr-2" />
-              Inizia Esercizio
+              {t.exercises.startExercise}
             </Button>
           </div>
         </div>
