@@ -8,13 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { z } from 'zod';
-
-const gradeSchema = z.object({
-  grade: z.number()
-    .min(0, 'Il voto non può essere negativo')
-    .max(100, 'Il voto non può superare 100'),
-  feedback: z.string().trim().max(2000, 'Il feedback non può superare 2000 caratteri').optional(),
-});
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface GradeSubmissionDialogProps {
   submission: any;
@@ -24,10 +18,18 @@ interface GradeSubmissionDialogProps {
 }
 
 export const GradeSubmissionDialog = ({ submission, open, onOpenChange, onSuccess }: GradeSubmissionDialogProps) => {
+  const t = useTranslation();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [grade, setGrade] = useState(submission.grade?.toString() || '');
   const [feedback, setFeedback] = useState(submission.feedback || '');
+
+  const gradeSchema = z.object({
+    grade: z.number()
+      .min(0)
+      .max(100),
+    feedback: z.string().trim().max(2000).optional(),
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +37,6 @@ export const GradeSubmissionDialog = ({ submission, open, onOpenChange, onSucces
 
     setLoading(true);
     try {
-      // Validate input data
       const gradeNum = parseFloat(grade);
       const maxGrade = submission.max_grade || 100;
       
@@ -52,7 +53,7 @@ export const GradeSubmissionDialog = ({ submission, open, onOpenChange, onSucces
       }
 
       if (gradeNum > maxGrade) {
-        toast.error(`Il voto non può superare ${maxGrade}`);
+        toast.error(`${t.assignments.grade} max: ${maxGrade}`);
         setLoading(false);
         return;
       }
@@ -70,7 +71,7 @@ export const GradeSubmissionDialog = ({ submission, open, onOpenChange, onSucces
 
       if (error) throw error;
 
-      toast.success('Consegna corretta con successo');
+      toast.success(t.dialogs.gradeSuccess);
       onOpenChange(false);
       onSuccess?.();
     } catch (error: any) {
@@ -84,18 +85,18 @@ export const GradeSubmissionDialog = ({ submission, open, onOpenChange, onSucces
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Correggi Consegna</DialogTitle>
+          <DialogTitle>{t.dialogs.gradeStudent}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label>Studente</Label>
+            <Label>{t.dialogs.studentLabel}</Label>
             <p className="text-sm font-medium">
               {submission.profiles?.first_name} {submission.profiles?.last_name}
             </p>
           </div>
 
           <div>
-            <Label htmlFor="grade">Voto (su {submission.max_grade})</Label>
+            <Label htmlFor="grade">{t.dialogs.gradeOutOf.replace('{max}', submission.max_grade?.toString() || '100')}</Label>
             <Input
               id="grade"
               type="number"
@@ -109,22 +110,22 @@ export const GradeSubmissionDialog = ({ submission, open, onOpenChange, onSucces
           </div>
 
           <div>
-            <Label htmlFor="feedback">Feedback</Label>
+            <Label htmlFor="feedback">{t.assignments.feedback}</Label>
             <Textarea
               id="feedback"
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
               rows={4}
-              placeholder="Inserisci un feedback per lo studente..."
+              placeholder={t.dialogs.feedbackPlaceholder}
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Annulla
+              {t.common.cancel}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Salvataggio...' : 'Salva Valutazione'}
+              {loading ? t.dialogs.savingGrade : t.dialogs.saveGrade}
             </Button>
           </div>
         </form>

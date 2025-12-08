@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getAllFolderPaths, isValidFolderPath, normalizePath } from '@/utils/folderTree';
 import { useSavedPrograms } from '@/hooks/useSavedPrograms';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CreateFolderDialogProps {
   open: boolean;
@@ -22,9 +23,10 @@ interface CreateFolderDialogProps {
 }
 
 export const CreateFolderDialog = ({ open, onOpenChange, onFolderCreated }: CreateFolderDialogProps) => {
+  const t = useTranslation();
   const [folderName, setFolderName] = useState('');
   const [parentPath, setParentPath] = useState('/');
-  const { programs, saveProgram } = useSavedPrograms();
+  const { programs } = useSavedPrograms();
 
   const folderPaths = getAllFolderPaths(programs);
 
@@ -32,30 +34,28 @@ export const CreateFolderDialog = ({ open, onOpenChange, onFolderCreated }: Crea
     const trimmedName = folderName.trim();
     
     if (!trimmedName) {
-      toast.error('Inserisci un nome per la cartella');
+      toast.error(t.dialogs.folderName);
       return;
     }
 
     if (!/^[a-zA-Z0-9\s_-]+$/.test(trimmedName)) {
-      toast.error('Il nome può contenere solo lettere, numeri, spazi, - e _');
+      toast.error(t.toasts.error);
       return;
     }
 
     const newPath = normalizePath(parentPath + '/' + trimmedName);
 
     if (!isValidFolderPath(newPath)) {
-      toast.error('Path della cartella non valido');
+      toast.error(t.toasts.error);
       return;
     }
 
     if (folderPaths.includes(newPath)) {
-      toast.error('Questa cartella esiste già');
+      toast.error(t.toasts.error);
       return;
     }
 
-    // Per creare una cartella, creiamo un file placeholder che poi verrà eliminato
-    // o semplicemente notifichiamo l'utente che la cartella verrà creata al primo salvataggio
-    toast.success(`Cartella "${trimmedName}" creata in ${parentPath}`);
+    toast.success(t.toasts.success);
     
     setFolderName('');
     setParentPath('/');
@@ -67,15 +67,15 @@ export const CreateFolderDialog = ({ open, onOpenChange, onFolderCreated }: Crea
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Crea Nuova Cartella</DialogTitle>
+          <DialogTitle>{t.dialogs.createFolder}</DialogTitle>
           <DialogDescription>
-            Le cartelle vengono create automaticamente quando salvi un programma
+            {t.dialogs.programDescription}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="parent">Cartella Padre</Label>
+            <Label htmlFor="parent">{t.dialogs.selectFolder}</Label>
             <Select value={parentPath} onValueChange={setParentPath}>
               <SelectTrigger>
                 <SelectValue />
@@ -83,7 +83,7 @@ export const CreateFolderDialog = ({ open, onOpenChange, onFolderCreated }: Crea
               <SelectContent>
                 {folderPaths.map(path => (
                   <SelectItem key={path} value={path}>
-                    {path === '/' ? '📁 Root' : `📁 ${path}`}
+                    {path === '/' ? `📁 ${t.dialogs.rootFolder}` : `📁 ${path}`}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -91,22 +91,19 @@ export const CreateFolderDialog = ({ open, onOpenChange, onFolderCreated }: Crea
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="folderName">Nome Cartella *</Label>
+            <Label htmlFor="folderName">{t.dialogs.folderName} *</Label>
             <Input
               id="folderName"
               value={folderName}
               onChange={(e) => setFolderName(e.target.value)}
-              placeholder="Es. Esercitazioni"
+              placeholder={t.dialogs.folderName}
               maxLength={50}
             />
-            <p className="text-xs text-muted-foreground">
-              Solo lettere, numeri, spazi, trattini e underscore
-            </p>
           </div>
 
           {folderName.trim() && (
             <div className="p-3 bg-muted rounded-md">
-              <p className="text-sm font-medium">Path completo:</p>
+              <p className="text-sm font-medium">Path:</p>
               <p className="text-sm text-muted-foreground font-mono">
                 {normalizePath(parentPath + '/' + folderName.trim())}
               </p>
@@ -116,10 +113,10 @@ export const CreateFolderDialog = ({ open, onOpenChange, onFolderCreated }: Crea
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Annulla
+            {t.common.cancel}
           </Button>
           <Button onClick={handleCreate} disabled={!folderName.trim()}>
-            Crea Cartella
+            {t.common.create}
           </Button>
         </DialogFooter>
       </DialogContent>

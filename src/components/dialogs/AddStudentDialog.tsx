@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Search, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface AddStudentDialogProps {
   open: boolean;
@@ -26,6 +27,7 @@ interface StudentProfile {
 }
 
 export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }: AddStudentDialogProps) => {
+  const t = useTranslation();
   const [allStudents, setAllStudents] = useState<StudentProfile[]>([]);
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,7 +39,6 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
     if (open) {
       fetchAllStudents();
     } else {
-      // Reset quando si chiude
       setSearchQuery('');
       setSelectedStudentIds(new Set());
     }
@@ -46,7 +47,6 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
   const fetchAllStudents = async () => {
     setLoading(true);
     try {
-      // Step 1: Ottieni tutti i profili con ruolo studente
       const { data: studentRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id')
@@ -62,7 +62,6 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
         return;
       }
 
-      // Step 2: Ottieni i profili completi (la nuova RLS policy permette questo!)
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, first_name, last_name, email')
@@ -71,7 +70,6 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
 
       if (profilesError) throw profilesError;
 
-      // Step 3: Ottieni studenti già nella classe
       const { data: existingStudents, error: existingError } = await supabase
         .from('class_students')
         .select('student_id')
@@ -82,8 +80,8 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
       setExistingStudentIds(new Set(existingStudents?.map(s => s.student_id) || []));
       setAllStudents(profiles || []);
     } catch (error: any) {
-      console.error('Errore nel caricamento studenti:', error);
-      toast.error('Errore nel caricamento della lista studenti: ' + error.message);
+      console.error('Error loading students:', error);
+      toast.error(t.toasts.error + ': ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -101,14 +99,12 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
     );
   }, [allStudents, searchQuery]);
 
-  // Studenti disponibili = non già nella classe (per il conteggio e select all)
   const availableStudents = useMemo(() => 
     filteredStudents.filter(s => !existingStudentIds.has(s.id)),
     [filteredStudents, existingStudentIds]
   );
 
   const handleToggleStudent = (studentId: string) => {
-    // Non permettere selezione di studenti già presenti
     if (existingStudentIds.has(studentId)) return;
     
     setSelectedStudentIds(prev => {
@@ -124,23 +120,20 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
 
   const handleSelectAll = () => {
     if (selectedStudentIds.size === availableStudents.length) {
-      // Deseleziona tutti
       setSelectedStudentIds(new Set());
     } else {
-      // Seleziona tutti gli studenti disponibili
       setSelectedStudentIds(new Set(availableStudents.map(s => s.id)));
     }
   };
 
   const handleAddSelectedStudents = async () => {
     if (selectedStudentIds.size === 0) {
-      toast.warning('Seleziona almeno uno studente');
+      toast.warning(t.dialogs.selectAtLeastOne);
       return;
     }
 
     setAdding(true);
     try {
-      // Inserimento batch con array di oggetti
       const studentsToAdd = Array.from(selectedStudentIds).map(studentId => ({
         class_id: classId,
         student_id: studentId,
@@ -153,14 +146,14 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
       if (error) throw error;
 
       const count = selectedStudentIds.size;
-      toast.success(`${count} student${count > 1 ? 'i aggiunti' : 'e aggiunto'} alla classe`);
+      toast.success(`${count} ${t.dialogs.studentsAdded}`);
       
       setSelectedStudentIds(new Set());
       onStudentAdded();
       onOpenChange(false);
     } catch (error: any) {
-      console.error('Errore nell\'aggiunta studenti:', error);
-      toast.error('Errore nell\'aggiunta degli studenti: ' + error.message);
+      console.error('Error adding students:', error);
+      toast.error(t.toasts.error + ': ' + error.message);
     } finally {
       setAdding(false);
     }
@@ -170,23 +163,22 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Aggiungi Studenti alla Classe</DialogTitle>
+          <DialogTitle>{t.dialogs.addStudentsToClass}</DialogTitle>
           <DialogDescription>
-            Seleziona uno o più studenti da aggiungere
+            {t.dialogs.selectOneOrMore}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
-          {/* Campo di ricerca */}
           <div>
-            <Label htmlFor="search">Cerca Studente</Label>
+            <Label htmlFor="search">{t.common.search} {t.classes.student}</Label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 id="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cerca per nome, cognome o email..."
+                placeholder={t.dialogs.searchByNameEmail}
                 className="pl-10"
               />
             </div>
@@ -194,17 +186,14 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
 
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <p className="text-muted-foreground">Caricamento studenti...</p>
+              <p className="text-muted-foreground">{t.dialogs.loadingStudents}</p>
             </div>
           ) : filteredStudents.length === 0 ? (
             <div className="flex items-center justify-center py-8 text-muted-foreground">
-              {searchQuery ? 
-                'Nessuno studente trovato con questa ricerca' : 
-                'Nessuno studente registrato nel sistema'}
+              {searchQuery ? t.dialogs.noStudentFound : t.dialogs.noStudentRegistered}
             </div>
           ) : (
             <>
-              {/* Seleziona tutti (solo disponibili) */}
               {availableStudents.length > 0 && (
                 <div className="flex items-center gap-2 pb-2 border-b">
                   <Checkbox
@@ -214,13 +203,12 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
                   />
                   <Label htmlFor="select-all" className="cursor-pointer">
                     {selectedStudentIds.size === availableStudents.length && availableStudents.length > 0
-                      ? 'Deseleziona tutti'
-                      : `Seleziona tutti (${availableStudents.length} disponibili)`}
+                      ? t.dialogs.deselectAll
+                      : `${t.dialogs.selectAll} (${availableStudents.length} ${t.dialogs.available})`}
                   </Label>
                 </div>
               )}
 
-              {/* Lista studenti con checkbox */}
               <ScrollArea className="h-[400px] -mx-6 px-6">
                 <div className="space-y-2 pr-4">
                   {filteredStudents.map((student) => {
@@ -257,7 +245,7 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
                             </Label>
                             {isAlreadyInClass && (
                               <Badge variant="secondary" className="text-xs">
-                                Già nella classe
+                                {t.classes.alreadyInClass}
                               </Badge>
                             )}
                           </div>
@@ -274,12 +262,11 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
           )}
         </div>
 
-        {/* Footer con contatore e pulsanti */}
         <div className="flex items-center justify-between pt-4 border-t">
           <p className="text-sm text-muted-foreground">
             {selectedStudentIds.size > 0 && (
               <span className="font-medium text-foreground">
-                {selectedStudentIds.size} student{selectedStudentIds.size > 1 ? 'i' : 'e'} selezionat{selectedStudentIds.size > 1 ? 'i' : 'o'}
+                {selectedStudentIds.size} {t.dialogs.selected}
               </span>
             )}
           </p>
@@ -289,18 +276,18 @@ export const AddStudentDialog = ({ open, onOpenChange, classId, onStudentAdded }
               onClick={() => onOpenChange(false)}
               disabled={adding}
             >
-              Annulla
+              {t.common.cancel}
             </Button>
             <Button 
               onClick={handleAddSelectedStudents}
               disabled={selectedStudentIds.size === 0 || adding}
             >
               {adding ? (
-                'Aggiunta in corso...'
+                t.dialogs.adding
               ) : (
                 <>
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Aggiungi {selectedStudentIds.size > 0 ? selectedStudentIds.size : ''} Student{selectedStudentIds.size !== 1 ? 'i' : 'e'}
+                  {t.dialogs.addStudents} {selectedStudentIds.size > 0 ? `(${selectedStudentIds.size})` : ''}
                 </>
               )}
             </Button>

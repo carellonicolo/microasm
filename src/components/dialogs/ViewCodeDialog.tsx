@@ -5,6 +5,7 @@ import { Copy, Play, Code2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useEditor } from '@/contexts/EditorContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ViewCodeDialogProps {
   open: boolean;
@@ -23,12 +24,13 @@ export const ViewCodeDialog = ({
   submissionNumber,
   submittedAt
 }: ViewCodeDialogProps) => {
+  const t = useTranslation();
   const navigate = useNavigate();
   const { setCode, closeProgram } = useEditor();
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(code);
-    toast.success('Codice copiato negli appunti');
+    toast.success(t.dialogs.codeCopied);
   };
 
   const handleOpenInSimulator = () => {
@@ -36,7 +38,7 @@ export const ViewCodeDialog = ({
     setCode(code);
     onOpenChange(false);
     navigate('/');
-    toast.success('Codice caricato nel simulatore');
+    toast.success(t.dialogs.codeLoadedInSimulator);
   };
 
   const lines = code.split('\n');
@@ -49,12 +51,12 @@ export const ViewCodeDialog = ({
             <div>
               <DialogTitle className="flex items-center gap-2">
                 <Code2 className="w-5 h-5" />
-                Visualizza Codice
+                {t.dialogs.viewCodeTitle}
               </DialogTitle>
               {studentName && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  {studentName} - Consegna #{submissionNumber}
-                  {submittedAt && ` • ${new Date(submittedAt).toLocaleString('it-IT')}`}
+                  {studentName} - {t.dialogs.submission} #{submissionNumber}
+                  {submittedAt && ` • ${new Date(submittedAt).toLocaleString()}`}
                 </p>
               )}
             </div>
@@ -64,11 +66,11 @@ export const ViewCodeDialog = ({
         <div className="flex gap-2 mb-4">
           <Button variant="outline" size="sm" onClick={handleCopyCode}>
             <Copy className="w-4 h-4 mr-2" />
-            Copia Codice
+            {t.dialogs.copyCode}
           </Button>
           <Button size="sm" onClick={handleOpenInSimulator}>
             <Play className="w-4 h-4 mr-2" />
-            Apri nel Simulatore
+            {t.dialogs.openInSimulator}
           </Button>
         </div>
 

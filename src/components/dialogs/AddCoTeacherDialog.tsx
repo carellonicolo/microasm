@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { Search, UserPlus } from 'lucide-react';
 import { RoleBadge } from '@/components/shared/RoleBadge';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface AddCoTeacherDialogProps {
   open: boolean;
@@ -27,6 +28,7 @@ interface TeacherProfile {
 }
 
 export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdded }: AddCoTeacherDialogProps) => {
+  const t = useTranslation();
   const [allTeachers, setAllTeachers] = useState<TeacherProfile[]>([]);
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,7 +40,6 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
     if (open) {
       fetchAllTeachers();
     } else {
-      // Reset quando si chiude
       setSearchQuery('');
       setSelectedTeacherIds(new Set());
     }
@@ -47,7 +48,6 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
   const fetchAllTeachers = async () => {
     setLoading(true);
     try {
-      // Step 1: Ottieni tutti i profili con ruolo teacher
       const { data: teacherRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id')
@@ -63,7 +63,6 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
         return;
       }
 
-      // Step 2: Ottieni i profili completi
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, first_name, last_name, email')
@@ -72,7 +71,6 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
 
       if (profilesError) throw profilesError;
 
-      // Step 3: Ottieni insegnanti già nella classe
       const { data: existingTeachers, error: existingError } = await supabase
         .from('class_teachers')
         .select('teacher_id')
@@ -83,8 +81,8 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
       setExistingTeacherIds(new Set(existingTeachers?.map(t => t.teacher_id) || []));
       setAllTeachers(profiles || []);
     } catch (error: any) {
-      console.error('Errore nel caricamento insegnanti:', error);
-      toast.error('Errore nel caricamento della lista insegnanti: ' + error.message);
+      console.error('Error loading teachers:', error);
+      toast.error(t.toasts.error + ': ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -102,14 +100,12 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
     );
   }, [allTeachers, searchQuery]);
 
-  // Insegnanti disponibili = non già nella classe (per il conteggio e select all)
   const availableTeachers = useMemo(() => 
     filteredTeachers.filter(t => !existingTeacherIds.has(t.id)),
     [filteredTeachers, existingTeacherIds]
   );
 
   const handleToggleTeacher = (teacherId: string) => {
-    // Non permettere selezione di insegnanti già presenti
     if (existingTeacherIds.has(teacherId)) return;
     
     setSelectedTeacherIds(prev => {
@@ -125,17 +121,15 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
 
   const handleSelectAll = () => {
     if (selectedTeacherIds.size === availableTeachers.length) {
-      // Deseleziona tutti
       setSelectedTeacherIds(new Set());
     } else {
-      // Seleziona tutti gli insegnanti disponibili
       setSelectedTeacherIds(new Set(availableTeachers.map(t => t.id)));
     }
   };
 
   const handleAddSelectedTeachers = async () => {
     if (selectedTeacherIds.size === 0) {
-      toast.warning('Seleziona almeno un insegnante');
+      toast.warning(t.dialogs.selectAtLeastOne);
       return;
     }
 
@@ -143,7 +137,6 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
     try {
       const { data: currentUser } = await supabase.auth.getUser();
       
-      // Inserimento batch con array di oggetti
       const teachersToAdd = Array.from(selectedTeacherIds).map(teacherId => ({
         class_id: classId,
         teacher_id: teacherId,
@@ -157,14 +150,14 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
       if (error) throw error;
 
       const count = selectedTeacherIds.size;
-      toast.success(`${count} co-insegnant${count > 1 ? 'i aggiunti' : 'e aggiunto'} alla classe`);
+      toast.success(`${count} ${t.dialogs.coTeachersAdded}`);
       
       setSelectedTeacherIds(new Set());
       onCoTeacherAdded();
       onOpenChange(false);
     } catch (error: any) {
-      console.error('Errore nell\'aggiunta co-insegnanti:', error);
-      toast.error('Errore nell\'aggiunta dei co-insegnanti: ' + error.message);
+      console.error('Error adding co-teachers:', error);
+      toast.error(t.toasts.error + ': ' + error.message);
     } finally {
       setAdding(false);
     }
@@ -174,23 +167,22 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Aggiungi Co-Insegnanti alla Classe</DialogTitle>
+          <DialogTitle>{t.dialogs.addCoTeachersToClass}</DialogTitle>
           <DialogDescription>
-            Seleziona uno o più insegnanti da aggiungere come co-insegnanti
+            {t.dialogs.selectOneOrMore}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
-          {/* Campo di ricerca */}
           <div>
-            <Label htmlFor="search-teacher">Cerca Insegnante</Label>
+            <Label htmlFor="search-teacher">{t.common.search} {t.classes.teacher}</Label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 id="search-teacher"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cerca per nome, cognome o email..."
+                placeholder={t.dialogs.searchByNameEmail}
                 className="pl-10"
               />
             </div>
@@ -198,17 +190,14 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
 
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <p className="text-muted-foreground">Caricamento insegnanti...</p>
+              <p className="text-muted-foreground">{t.dialogs.loadingTeachers}</p>
             </div>
           ) : filteredTeachers.length === 0 ? (
             <div className="flex items-center justify-center py-8 text-muted-foreground">
-              {searchQuery ? 
-                'Nessun insegnante trovato con questa ricerca' : 
-                'Nessun insegnante registrato nel sistema'}
+              {searchQuery ? t.dialogs.noTeacherFound : t.dialogs.noTeacherRegistered}
             </div>
           ) : (
             <>
-              {/* Seleziona tutti (solo disponibili) */}
               {availableTeachers.length > 0 && (
                 <div className="flex items-center gap-2 pb-2 border-b">
                   <Checkbox
@@ -218,13 +207,12 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
                   />
                   <Label htmlFor="select-all-teachers" className="cursor-pointer">
                     {selectedTeacherIds.size === availableTeachers.length && availableTeachers.length > 0
-                      ? 'Deseleziona tutti'
-                      : `Seleziona tutti (${availableTeachers.length} disponibili)`}
+                      ? t.dialogs.deselectAll
+                      : `${t.dialogs.selectAll} (${availableTeachers.length} ${t.dialogs.available})`}
                   </Label>
                 </div>
               )}
 
-              {/* Lista insegnanti con checkbox */}
               <ScrollArea className="h-[400px] -mx-6 px-6">
                 <div className="space-y-2 pr-4">
                   {filteredTeachers.map((teacher) => {
@@ -262,7 +250,7 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
                             <RoleBadge role="teacher" />
                             {isAlreadyInClass && (
                               <Badge variant="secondary" className="text-xs">
-                                Già nella classe
+                                {t.classes.alreadyInClass}
                               </Badge>
                             )}
                           </div>
@@ -279,12 +267,11 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
           )}
         </div>
 
-        {/* Footer con contatore e pulsanti */}
         <div className="flex items-center justify-between pt-4 border-t">
           <p className="text-sm text-muted-foreground">
             {selectedTeacherIds.size > 0 && (
               <span className="font-medium text-foreground">
-                {selectedTeacherIds.size} insegnant{selectedTeacherIds.size > 1 ? 'i' : 'e'} selezionat{selectedTeacherIds.size > 1 ? 'i' : 'o'}
+                {selectedTeacherIds.size} {t.dialogs.selected}
               </span>
             )}
           </p>
@@ -294,18 +281,18 @@ export const AddCoTeacherDialog = ({ open, onOpenChange, classId, onCoTeacherAdd
               onClick={() => onOpenChange(false)}
               disabled={adding}
             >
-              Annulla
+              {t.common.cancel}
             </Button>
             <Button 
               onClick={handleAddSelectedTeachers}
               disabled={selectedTeacherIds.size === 0 || adding}
             >
               {adding ? (
-                'Aggiunta in corso...'
+                t.dialogs.adding
               ) : (
                 <>
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Aggiungi {selectedTeacherIds.size > 0 ? selectedTeacherIds.size : ''} Co-Insegnant{selectedTeacherIds.size !== 1 ? 'i' : 'e'}
+                  {t.dialogs.addCoTeachers} {selectedTeacherIds.size > 0 ? `(${selectedTeacherIds.size})` : ''}
                 </>
               )}
             </Button>
