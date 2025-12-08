@@ -7,26 +7,14 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { Eye, EyeOff } from 'lucide-react';
 import { GoogleAuthButton } from './GoogleAuthButton';
-
-const signupSchema = z.object({
-  firstName: z.string().min(2, 'Nome minimo 2 caratteri').max(50),
-  lastName: z.string().min(2, 'Cognome minimo 2 caratteri').max(50),
-  email: z.string().email('Email non valida'),
-  password: z.string()
-    .min(8, 'Password minimo 8 caratteri')
-    .regex(/[A-Z]/, 'Password deve contenere almeno una maiuscola')
-    .regex(/[0-9]/, 'Password deve contenere almeno un numero'),
-  confirmPassword: z.string()
-}).refine(data => data.password === data.confirmPassword, {
-  message: 'Le password non coincidono',
-  path: ['confirmPassword']
-});
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SignupFormProps {
   onSuccess: () => void;
 }
 
 export const SignupForm = ({ onSuccess }: SignupFormProps) => {
+  const t = useTranslation();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -36,6 +24,20 @@ export const SignupForm = ({ onSuccess }: SignupFormProps) => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const signupSchema = z.object({
+    firstName: z.string().min(2, t.auth.validation.firstNameMin).max(50),
+    lastName: z.string().min(2, t.auth.validation.lastNameMin).max(50),
+    email: z.string().email(t.auth.validation.emailInvalid),
+    password: z.string()
+      .min(8, t.auth.validation.passwordMin)
+      .regex(/[A-Z]/, t.auth.validation.passwordsMatch)
+      .regex(/[0-9]/, t.auth.validation.passwordsMatch),
+    confirmPassword: z.string()
+  }).refine(data => data.password === data.confirmPassword, {
+    message: t.auth.validation.passwordsMatch,
+    path: ['confirmPassword']
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,12 +66,12 @@ export const SignupForm = ({ onSuccess }: SignupFormProps) => {
 
     if (error) {
       if (error.message.includes('User already registered')) {
-        toast.error('Email già registrata');
+        toast.error(t.auth.validation.emailInvalid);
       } else {
         toast.error(error.message);
       }
     } else {
-      toast.success('Registrazione completata! Accesso automatico in corso...');
+      toast.success(t.auth.signupSuccess);
       onSuccess();
     }
   };
@@ -84,7 +86,7 @@ export const SignupForm = ({ onSuccess }: SignupFormProps) => {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            oppure registrati con email
+            {t.auth.orContinueWith}
           </span>
         </div>
       </div>
@@ -92,7 +94,7 @@ export const SignupForm = ({ onSuccess }: SignupFormProps) => {
       <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="firstName">Nome</Label>
+          <Label htmlFor="firstName">{t.auth.firstName}</Label>
           <Input
             id="firstName"
             value={formData.firstName}
@@ -103,7 +105,7 @@ export const SignupForm = ({ onSuccess }: SignupFormProps) => {
           />
         </div>
         <div>
-          <Label htmlFor="lastName">Cognome</Label>
+          <Label htmlFor="lastName">{t.auth.lastName}</Label>
           <Input
             id="lastName"
             value={formData.lastName}
@@ -116,7 +118,7 @@ export const SignupForm = ({ onSuccess }: SignupFormProps) => {
       </div>
 
       <div>
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t.auth.email}</Label>
         <Input
           id="email"
           type="email"
@@ -129,7 +131,7 @@ export const SignupForm = ({ onSuccess }: SignupFormProps) => {
       </div>
 
       <div>
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t.auth.password}</Label>
         <div className="relative">
           <Input
             id="password"
@@ -144,17 +146,18 @@ export const SignupForm = ({ onSuccess }: SignupFormProps) => {
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          Minimo 8 caratteri, una maiuscola e un numero
+          {t.auth.validation.passwordMin}
         </p>
       </div>
 
       <div>
-        <Label htmlFor="confirmPassword">Conferma Password</Label>
+        <Label htmlFor="confirmPassword">{t.auth.confirmPassword}</Label>
         <Input
           id="confirmPassword"
           type={showPassword ? 'text' : 'password'}
@@ -167,11 +170,11 @@ export const SignupForm = ({ onSuccess }: SignupFormProps) => {
       </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Registrazione in corso...' : 'Registrati come Studente'}
+          {loading ? t.auth.signingUp : t.auth.signup}
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
-          Tutti gli utenti si registrano come studenti. Gli insegnanti già approvati possono promuoverti.
+          {t.classes.student}
         </p>
       </form>
     </div>

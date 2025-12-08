@@ -4,6 +4,7 @@ import { DisplayFormat } from "@/types/microasm";
 import { formatValue } from "@/utils/formatter";
 import { HelpCircle } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface MemoryViewProps {
   memory: number[];
@@ -13,42 +14,38 @@ interface MemoryViewProps {
 }
 
 export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewProps) {
+  const t = useTranslation();
+
   return (
     <Card className="p-6 flex flex-col h-full card-hover rounded-2xl border-2 border-memory/10 bg-gradient-to-br from-card via-card to-card/80">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold font-heading">Memoria e Stack</h2>
+          <h2 className="text-xl font-bold font-heading">{t.memory.title}</h2>
           <Popover>
             <PopoverTrigger asChild>
               <button 
                 className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Informazioni su memoria e stack"
+                aria-label={t.memory.memoryInfo}
               >
                 <HelpCircle className="h-4 w-4" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-80">
               <div className="space-y-2 text-sm">
-                <h3 className="font-semibold">Memoria (256 byte)</h3>
-                <p>
-                  La memoria contiene tutti i dati del programma.
-                  Ogni cella ha un indirizzo da 0 a 255.
-                </p>
+                <h3 className="font-semibold">{t.memory.memoryInfo}</h3>
+                <p>{t.memory.memoryDescription}</p>
                 
-                <h3 className="font-semibold mt-3">Stack (Pila)</h3>
-                <p>
-                  Lo stack cresce dall'alto verso il basso.
-                  SP (Stack Pointer) punta alla prossima posizione libera dello stack.
-                </p>
+                <h3 className="font-semibold mt-3">{t.memory.stackInfo}</h3>
+                <p>{t.memory.stackDescription}</p>
                 <ul className="list-disc pl-4 space-y-1">
-                  <li><strong>PUSH</strong>: aggiunge valore in cima (SP diminuisce)</li>
-                  <li><strong>POP</strong>: rimuove valore dalla cima (SP aumenta)</li>
-                  <li><strong>SP=256</strong>: stack vuoto</li>
-                  <li><strong>SP=0</strong>: stack pieno (overflow!)</li>
+                  <li><strong>PUSH</strong>: {t.memory.pushDescription}</li>
+                  <li><strong>POP</strong>: {t.memory.popDescription}</li>
+                  <li><strong>{t.memory.stackEmpty}</strong></li>
+                  <li><strong>{t.memory.stackFull}</strong></li>
                 </ul>
                 
                 <div className="mt-3 p-2 bg-secondary rounded text-xs font-mono">
-                  <strong>Esempio:</strong><br/>
+                  <strong>{t.memory.example}:</strong><br/>
                   PUSH R0 → SP: 256→255, memory[255]=R0<br/>
                   PUSH R1 → SP: 255→254, memory[254]=R1<br/>
                   POP R2 → R2=memory[254], SP: 254→255
@@ -63,7 +60,7 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
             variant={format === 'decimal' ? 'default' : 'outline'}
             onClick={() => onFormatChange('decimal')}
             className={format === 'decimal' ? 'glow-primary' : ''}
-            aria-label="DEC - Visualizza in formato decimale"
+            aria-label="DEC"
           >
             DEC
           </Button>
@@ -72,7 +69,7 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
             variant={format === 'hexadecimal' ? 'default' : 'outline'}
             onClick={() => onFormatChange('hexadecimal')}
             className={format === 'hexadecimal' ? 'glow-primary' : ''}
-            aria-label="HEX - Visualizza in formato esadecimale"
+            aria-label="HEX"
           >
             HEX
           </Button>
@@ -81,7 +78,7 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
             variant={format === 'binary' ? 'default' : 'outline'}
             onClick={() => onFormatChange('binary')}
             className={format === 'binary' ? 'glow-primary' : ''}
-            aria-label="BIN - Visualizza in formato binario"
+            aria-label="BIN"
           >
             BIN
           </Button>
@@ -108,7 +105,7 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
                     : 'bg-secondary/30 border border-border/50 hover:border-border'
                 }`}
                 title={`[${addr}] = ${formatValue(value, format)}${
-                  isTopOfStack ? ' (SP - Top of Stack)' : ''
+                  isTopOfStack ? ` (SP - ${t.memory.topOfStack})` : ''
                 }`}
               >
                 {/* Tooltip glassmorphism */}
@@ -133,15 +130,15 @@ export function MemoryView({ memory, sp, format, onFormatChange }: MemoryViewPro
       <div className="mt-3 text-xs text-muted-foreground flex flex-wrap gap-4">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-gradient-to-br from-memory/15 to-memory-to/5 border border-memory/30 rounded"></div>
-          <span className="font-medium">Dati</span>
+          <span className="font-medium">{t.memory.data}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-gradient-to-br from-warning/15 to-transparent border border-warning/30 rounded"></div>
-          <span className="font-medium">Stack</span>
+          <span className="font-medium">{t.memory.stack}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-gradient-to-br from-warning/30 to-warning/10 border-2 border-warning rounded ring-1 ring-warning/30"></div>
-          <span className="font-medium">Top (SP)</span>
+          <span className="font-medium">{t.memory.topSP}</span>
         </div>
       </div>
     </Card>

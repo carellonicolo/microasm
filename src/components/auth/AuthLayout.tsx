@@ -1,10 +1,13 @@
 import { ReactNode } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface AuthLayoutProps {
   children: ReactNode;
 }
 
 export const AuthLayout = ({ children }: AuthLayoutProps) => {
+  const t = useTranslation();
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/5">
       <div className="w-full max-w-6xl grid md:grid-cols-2 gap-8 items-center">
@@ -14,24 +17,24 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
             MicroASM
           </h1>
           <p className="text-xl text-muted-foreground">
-            Simulatore Assembly Didattico
+            {t.auth.simulatorSubtitle}
           </p>
           <div className="space-y-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-primary" />
-              <span>Simula istruzioni assembly 80x86 semplificate</span>
+              <span>{t.auth.features.simulate}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-accent" />
-              <span>Visualizza registri, memoria e flag in tempo reale</span>
+              <span>{t.auth.features.visualize}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-primary" />
-              <span>100 esercizi didattici progressivi</span>
+              <span>{t.auth.features.exercises}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-accent" />
-              <span>Salva i tuoi programmi e condividili</span>
+              <span>{t.auth.features.saveShare}</span>
             </div>
           </div>
         </div>

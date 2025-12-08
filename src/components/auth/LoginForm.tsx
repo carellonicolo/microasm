@@ -7,21 +7,23 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { Eye, EyeOff } from 'lucide-react';
 import { GoogleAuthButton } from './GoogleAuthButton';
-
-const loginSchema = z.object({
-  email: z.string().email('Email non valida'),
-  password: z.string().min(6, 'Password minimo 6 caratteri')
-});
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface LoginFormProps {
   onSuccess: () => void;
 }
 
 export const LoginForm = ({ onSuccess }: LoginFormProps) => {
+  const t = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const loginSchema = z.object({
+    email: z.string().email(t.auth.validation.emailInvalid),
+    password: z.string().min(6, t.auth.validation.passwordMin)
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,14 +45,14 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
 
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
-        toast.error('Email o password errati');
+        toast.error(t.auth.invalidCredentials);
       } else if (error.message.includes('Email not confirmed')) {
-        toast.error('Conferma prima la tua email');
+        toast.error(t.auth.confirmEmail);
       } else {
         toast.error(error.message);
       }
     } else {
-      toast.success('Accesso effettuato!');
+      toast.success(t.auth.loginSuccess);
       onSuccess();
     }
   };
@@ -65,27 +67,27 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            oppure continua con email
+            {t.auth.orContinueWith}
           </span>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t.auth.email}</Label>
         <Input
           id="email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="studente@example.com"
+          placeholder="student@example.com"
           required
           autoComplete="email"
         />
       </div>
       
       <div>
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t.auth.password}</Label>
         <div className="relative">
           <Input
             id="password"
@@ -100,6 +102,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
@@ -107,7 +110,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
       </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Accesso in corso...' : 'Accedi'}
+          {loading ? t.auth.loggingIn : t.auth.login}
         </Button>
       </form>
     </div>

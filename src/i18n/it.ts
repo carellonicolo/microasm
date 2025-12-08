@@ -176,6 +176,15 @@ export const it: Translations = {
     continueWithGoogle: 'Continua con Google',
     alreadyHaveAccount: 'Hai già un account?',
     dontHaveAccount: 'Non hai un account?',
+    simulatorSubtitle: 'Simulatore Assembly Didattico',
+    redirecting: 'Reindirizzamento...',
+    enablePopups: 'Abilita i popup per continuare con Google',
+    features: {
+      simulate: 'Simula istruzioni assembly 80x86 semplificate',
+      visualize: 'Visualizza registri, memoria e flag in tempo reale',
+      exercises: '100 esercizi didattici progressivi',
+      saveShare: 'Salva i tuoi programmi e condividili',
+    },
     validation: {
       emailInvalid: 'Email non valida',
       passwordMin: 'Password minimo 6 caratteri',

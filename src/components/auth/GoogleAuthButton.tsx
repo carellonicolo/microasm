@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface GoogleAuthButtonProps {
   mode: 'login' | 'signup';
 }
 
 export const GoogleAuthButton = ({ mode }: GoogleAuthButtonProps) => {
+  const t = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const handleGoogleAuth = async () => {
@@ -27,7 +29,7 @@ export const GoogleAuthButton = ({ mode }: GoogleAuthButtonProps) => {
 
       if (error) {
         if (error.message.includes('popup')) {
-          toast.error('Abilita i popup per continuare con Google');
+          toast.error(t.auth.enablePopups);
         } else {
           toast.error(error.message);
         }
@@ -36,7 +38,7 @@ export const GoogleAuthButton = ({ mode }: GoogleAuthButtonProps) => {
       // Non resettiamo loading qui perché l'utente verrà reindirizzato
     } catch (err) {
       console.error('Google auth error:', err);
-      toast.error('Errore durante l\'autenticazione con Google');
+      toast.error(t.toasts.error);
       setLoading(false);
     }
   };
@@ -52,7 +54,7 @@ export const GoogleAuthButton = ({ mode }: GoogleAuthButtonProps) => {
       {loading ? (
         <div className="flex items-center gap-2">
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-          <span>Reindirizzamento...</span>
+          <span>{t.auth.redirecting}</span>
         </div>
       ) : (
         <div className="flex items-center gap-2">
@@ -75,7 +77,7 @@ export const GoogleAuthButton = ({ mode }: GoogleAuthButtonProps) => {
             />
           </svg>
           <span>
-            {mode === 'login' ? 'Continua con Google' : 'Registrati con Google'}
+            {mode === 'login' ? t.auth.continueWithGoogle : t.auth.continueWithGoogle}
           </span>
         </div>
       )}

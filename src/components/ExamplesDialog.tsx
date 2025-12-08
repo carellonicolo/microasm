@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { EXAMPLES_METADATA } from "@/data/examples";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ExamplesDialogProps {
   onLoadExample: (code: string) => void;
@@ -58,6 +59,7 @@ const getDifficultyColor = (difficulty: string): string => {
 };
 
 export function ExamplesDialog({ onLoadExample }: ExamplesDialogProps) {
+  const t = useTranslation();
   const [open, setOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(1);
   const { progress, markLoaded } = useExampleProgress();
@@ -70,7 +72,7 @@ export function ExamplesDialog({ onLoadExample }: ExamplesDialogProps) {
       onLoadExample(selectedExample.code);
       markLoaded(selectedExample.id);
       setOpen(false);
-      toast.success(`Esempio "${selectedExample.title}" caricato`);
+      toast.success(`${t.examples.exampleLoaded}: "${selectedExample.title}"`);
     }
   };
 
@@ -107,28 +109,28 @@ export function ExamplesDialog({ onLoadExample }: ExamplesDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1 sm:gap-2" aria-label="Apri esempi di codice">
+        <Button variant="outline" size="sm" className="gap-1 sm:gap-2" aria-label={t.header.examples}>
           <Code className="w-4 h-4" />
-          <span className="hidden sm:inline">Esempi</span>
+          <span className="hidden sm:inline">{t.header.examples}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-6xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-2xl">
             <Code className="w-6 h-6 text-primary" />
-            Esempi di Codice
+            {t.examples.codeExamples}
             <Badge variant="secondary" className="ml-2 relative font-mono text-xs">
               {EXAMPLES_METADATA.length}
             </Badge>
           </DialogTitle>
           <DialogDescription className="flex items-center gap-4 text-base">
             <span>
-              {EXAMPLES_METADATA.length} esempi per imparare le basi del MicroASM
+              {EXAMPLES_METADATA.length} {t.examples.examplesCount}
             </span>
             {progress.loaded.length > 0 && (
               <Badge variant="outline" className="font-mono gap-2">
                 <CheckCircle2 className="w-3 h-3 text-green-500" />
-                Caricati: {progress.loaded.length}/{EXAMPLES_METADATA.length}
+                {t.examples.loaded}: {progress.loaded.length}/{EXAMPLES_METADATA.length}
               </Badge>
             )}
           </DialogDescription>
@@ -207,7 +209,7 @@ export function ExamplesDialog({ onLoadExample }: ExamplesDialogProps) {
               <div className="space-y-2">
                 <h4 className="text-sm font-semibold flex items-center gap-2">
                   <Code className="w-4 h-4" />
-                  Anteprima Codice
+                  {t.examples.codePreview}
                 </h4>
                 <ScrollArea className="h-[280px] rounded-md border bg-muted/30">
                   <pre className="p-4 text-xs font-mono">
@@ -224,6 +226,7 @@ export function ExamplesDialog({ onLoadExample }: ExamplesDialogProps) {
                   variant="outline"
                   size="sm"
                   onClick={handlePrevious}
+                  aria-label={t.common.previous}
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
@@ -231,6 +234,7 @@ export function ExamplesDialog({ onLoadExample }: ExamplesDialogProps) {
                   variant="outline"
                   size="sm"
                   onClick={handleNext}
+                  aria-label={t.common.next}
                 >
                   <ChevronRight className="w-4 h-4" />
                 </Button>
@@ -238,12 +242,12 @@ export function ExamplesDialog({ onLoadExample }: ExamplesDialogProps) {
               
               <Button onClick={handleLoadExample} className="gap-2">
                 <Code className="w-4 h-4" />
-                Carica nel Simulatore
+                {t.examples.loadIntoSimulator}
               </Button>
             </div>
 
             <p className="text-xs text-muted-foreground text-center">
-              Usa le frecce ← → per navigare • Premi Invio per caricare
+              {t.examples.useArrows}
             </p>
           </div>
         </div>
