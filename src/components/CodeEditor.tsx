@@ -95,12 +95,9 @@ export function CodeEditor({
             {user && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1">
+                  <Button variant="outline" size="sm" className="gap-1" aria-label={t.common.save}>
                     <Save className="w-4 h-4" />
-                    <span className="hidden sm:inline">
-                      {currentProgram ? currentProgram.name : t.common.save}
-                      {isModified && ' *'}
-                    </span>
+                    {isModified && <span className="text-xs">*</span>}
                     <ChevronDown className="w-3 h-3 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
