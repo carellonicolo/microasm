@@ -77,13 +77,11 @@ export function CPUStatus({ cpu, format }: CPUStatusProps) {
           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t.cpu.flags}</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="group relative">
-              <div className={`absolute -inset-0.5 bg-gradient-to-r rounded-xl blur opacity-20 group-hover:opacity-60 transition ${
-                cpu.ZF ? 'from-success to-success/50' : 'from-muted to-muted/50'
-              }`} />
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-success to-success/50 rounded-xl blur opacity-20 group-hover:opacity-60 transition" />
               <div className={`relative p-3 bg-card/80 backdrop-blur-sm rounded-xl border transition-all ${
                 cpu.ZF 
                   ? 'border-success/30 group-hover:border-success/50' 
-                  : 'border-border group-hover:border-muted-foreground/40'
+                  : 'border-border group-hover:border-success/30'
               }`}>
                 <div className="flex justify-between items-center">
                   <span className="font-mono text-sm font-bold">ZF</span>
@@ -95,13 +93,11 @@ export function CPUStatus({ cpu, format }: CPUStatusProps) {
               </div>
             </div>
             <div className="group relative">
-              <div className={`absolute -inset-0.5 bg-gradient-to-r rounded-xl blur opacity-20 group-hover:opacity-60 transition ${
-                cpu.SF ? 'from-warning to-warning/50' : 'from-muted to-muted/50'
-              }`} />
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-warning to-warning/50 rounded-xl blur opacity-20 group-hover:opacity-60 transition" />
               <div className={`relative p-3 bg-card/80 backdrop-blur-sm rounded-xl border transition-all ${
                 cpu.SF 
                   ? 'border-warning/30 group-hover:border-warning/50' 
-                  : 'border-border group-hover:border-muted-foreground/40'
+                  : 'border-border group-hover:border-warning/30'
               }`}>
                 <div className="flex justify-between items-center">
                   <span className="font-mono text-sm font-bold">SF</span>
