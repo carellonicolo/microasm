@@ -76,31 +76,45 @@ export function CPUStatus({ cpu, format }: CPUStatusProps) {
         <div className="space-y-3">
           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t.cpu.flags}</h3>
           <div className="grid grid-cols-2 gap-3">
-            <div className={`relative p-3 rounded-xl border transition-all ${
-              cpu.ZF 
-                ? 'bg-success/10 border-success/30 glow-success' 
-                : 'bg-secondary/50 border-border'
-            }`}>
-              <div className="flex justify-between items-center">
-                <span className="font-mono text-sm font-bold">ZF</span>
-                <span className={`font-mono text-lg font-bold ${cpu.ZF ? 'text-success' : 'text-muted-foreground'}`}>
-                  {cpu.ZF ? '1' : '0'}
-                </span>
+            <div className="group relative">
+              <div className={`absolute -inset-0.5 rounded-xl blur transition ${
+                cpu.ZF 
+                  ? 'bg-gradient-to-r from-success to-success/50 opacity-40 group-hover:opacity-70' 
+                  : 'bg-gradient-to-r from-muted to-muted/50 opacity-20 group-hover:opacity-60'
+              }`} />
+              <div className={`relative p-3 bg-card/80 backdrop-blur-sm rounded-xl border transition-all ${
+                cpu.ZF 
+                  ? 'border-success/30 group-hover:border-success/50' 
+                  : 'border-border group-hover:border-muted-foreground/40'
+              }`}>
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-sm font-bold">ZF</span>
+                  <span className={`font-mono text-lg font-bold ${cpu.ZF ? 'text-success' : 'text-muted-foreground'}`}>
+                    {cpu.ZF ? '1' : '0'}
+                  </span>
+                </div>
+                {cpu.ZF && <div className="absolute inset-0 bg-success/5 rounded-xl animate-pulse" />}
               </div>
-              {cpu.ZF && <div className="absolute inset-0 bg-success/5 rounded-xl animate-pulse" />}
             </div>
-            <div className={`relative p-3 rounded-xl border transition-all ${
-              cpu.SF 
-                ? 'bg-warning/10 border-warning/30' 
-                : 'bg-secondary/50 border-border'
-            }`}>
-              <div className="flex justify-between items-center">
-                <span className="font-mono text-sm font-bold">SF</span>
-                <span className={`font-mono text-lg font-bold ${cpu.SF ? 'text-warning' : 'text-muted-foreground'}`}>
-                  {cpu.SF ? '1' : '0'}
-                </span>
+            <div className="group relative">
+              <div className={`absolute -inset-0.5 rounded-xl blur transition ${
+                cpu.SF 
+                  ? 'bg-gradient-to-r from-warning to-warning/50 opacity-40 group-hover:opacity-70' 
+                  : 'bg-gradient-to-r from-muted to-muted/50 opacity-20 group-hover:opacity-60'
+              }`} />
+              <div className={`relative p-3 bg-card/80 backdrop-blur-sm rounded-xl border transition-all ${
+                cpu.SF 
+                  ? 'border-warning/30 group-hover:border-warning/50' 
+                  : 'border-border group-hover:border-muted-foreground/40'
+              }`}>
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-sm font-bold">SF</span>
+                  <span className={`font-mono text-lg font-bold ${cpu.SF ? 'text-warning' : 'text-muted-foreground'}`}>
+                    {cpu.SF ? '1' : '0'}
+                  </span>
+                </div>
+                {cpu.SF && <div className="absolute inset-0 bg-warning/5 rounded-xl animate-pulse" />}
               </div>
-              {cpu.SF && <div className="absolute inset-0 bg-warning/5 rounded-xl animate-pulse" />}
             </div>
           </div>
         </div>
