@@ -70,7 +70,7 @@ export const en: Translations = {
     architecture: 'Architecture',
     generalRegisters: 'General Registers',
     specialRegisters: 'Special Registers',
-    flags: 'Flags',
+    flags: 'Status Register',
   },
 
   memory: {
