@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { RoleBadge } from './RoleBadge';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface UserMenuProps {
   user: User;
@@ -22,6 +23,7 @@ interface UserMenuProps {
 
 export const UserMenu = ({ user }: UserMenuProps) => {
   const navigate = useNavigate();
+  const t = useTranslation();
   const { role } = useUserRole();
   const [profile, setProfile] = useState<{ first_name: string; last_name: string } | null>(null);
 
@@ -42,16 +44,16 @@ export const UserMenu = ({ user }: UserMenuProps) => {
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast.error('Errore durante il logout');
+      toast.error(t.toasts.error);
     } else {
-      toast.success('Logout effettuato');
+      toast.success(t.auth.logoutSuccess);
       navigate('/');
     }
   };
 
   const displayName = profile 
     ? `${profile.first_name} ${profile.last_name}`
-    : user.email?.split('@')[0] || 'Utente';
+    : user.email?.split('@')[0] || t.common.user;
 
   return (
     <DropdownMenu>
@@ -74,16 +76,16 @@ export const UserMenu = ({ user }: UserMenuProps) => {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => navigate('/dashboard')} className="cursor-pointer">
           <LayoutDashboard className="w-4 h-4 mr-2" />
-          Dashboard
+          {t.header.dashboard}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/dashboard/profile')} className="cursor-pointer">
           <Settings className="w-4 h-4 mr-2" />
-          Il Mio Profilo
+          {t.profile.myProfile}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
           <LogOut className="w-4 h-4 mr-2" />
-          Logout
+          {t.header.logout}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

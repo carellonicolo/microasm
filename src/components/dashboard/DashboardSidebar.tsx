@@ -2,23 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, Code, Users, BookOpen, FileText, UserCog, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RoleBadge } from '@/components/shared/RoleBadge';
-
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ElementType;
-  roles: ('student' | 'teacher')[];
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { label: 'Simulatore', href: '/', icon: Home, roles: ['student', 'teacher'] },
-  { label: 'I Miei Programmi', href: '/dashboard/programs', icon: Code, roles: ['student', 'teacher'] },
-  { label: 'Le Mie Classi', href: '/dashboard/classes', icon: Users, roles: ['student', 'teacher'] },
-  { label: 'Esercitazioni', href: '/dashboard/assignments', icon: FileText, roles: ['student', 'teacher'] },
-  { label: 'Il Mio Profilo', href: '/dashboard/profile', icon: User, roles: ['student', 'teacher'] },
-  { label: 'Repository Esercizi', href: '/dashboard/exercises', icon: BookOpen, roles: ['teacher'] },
-  { label: 'Gestione Utenti', href: '/dashboard/users', icon: UserCog, roles: ['teacher'] },
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface DashboardSidebarProps {
   userRole: 'student' | 'teacher' | null;
@@ -26,6 +10,17 @@ interface DashboardSidebarProps {
 
 export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
   const location = useLocation();
+  const t = useTranslation();
+
+  const NAV_ITEMS: { label: string; href: string; icon: React.ElementType; roles: ('student' | 'teacher')[] }[] = [
+    { label: t.sidebar.simulator, href: '/', icon: Home, roles: ['student', 'teacher'] },
+    { label: t.sidebar.myPrograms, href: '/dashboard/programs', icon: Code, roles: ['student', 'teacher'] },
+    { label: t.sidebar.myClasses, href: '/dashboard/classes', icon: Users, roles: ['student', 'teacher'] },
+    { label: t.dashboard.assignments, href: '/dashboard/assignments', icon: FileText, roles: ['student', 'teacher'] },
+    { label: t.profile.myProfile, href: '/dashboard/profile', icon: User, roles: ['student', 'teacher'] },
+    { label: t.sidebar.exerciseRepository, href: '/dashboard/exercises', icon: BookOpen, roles: ['teacher'] },
+    { label: t.sidebar.userManagement, href: '/dashboard/users', icon: UserCog, roles: ['teacher'] },
+  ];
 
   const visibleItems = NAV_ITEMS.filter(item => 
     userRole && item.roles.includes(userRole)
@@ -71,7 +66,7 @@ export const DashboardSidebar = ({ userRole }: DashboardSidebarProps) => {
 
       <div className="p-6 border-t border-border">
         <p className="text-xs text-muted-foreground">
-          Powered by{' '}
+          {t.common.poweredBy}{' '}
           <a 
             href="https://apps.nicolocarello.it" 
             target="_blank" 

@@ -22,9 +22,11 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { it } from 'date-fns/locale';
+import { it, enUS } from 'date-fns/locale';
 import { RoleBadge } from '@/components/shared/RoleBadge';
 import { PromoteToTeacherDialog } from '@/components/dialogs/PromoteToTeacherDialog';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -34,6 +36,9 @@ const Dashboard = () => {
   const { assignments, loading: assignmentsLoading } = useAssignments();
   const navigate = useNavigate();
   const [promoteDialogOpen, setPromoteDialogOpen] = useState(false);
+  const t = useTranslation();
+  const { language } = useLanguage();
+  const dateLocale = language === 'it' ? it : enUS;
 
   if (roleLoading || programsLoading || classesLoading || assignmentsLoading) {
     return (
@@ -58,14 +63,14 @@ const Dashboard = () => {
           <div>
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-3xl font-bold">
-                Benvenuto, {user?.user_metadata?.first_name || 'Utente'}
+                {t.dashboard.welcome}, {user?.user_metadata?.first_name || t.common.user}
               </h1>
               {role && <RoleBadge role={role} />}
             </div>
             <p className="text-muted-foreground">
               {role === 'teacher' 
-                ? 'Gestisci le tue classi ed esercitazioni' 
-                : 'Continua il tuo percorso di apprendimento'}
+                ? t.dashboard.manageClasses
+                : t.dashboard.continueLearning}
             </p>
           </div>
         </div>
@@ -73,74 +78,74 @@ const Dashboard = () => {
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="Programmi Salvati"
+            title={t.dashboard.savedPrograms}
             value={userPrograms.length}
             icon={Code}
-            description="I tuoi programmi"
+            description={t.dashboard.yourPrograms}
           />
           <StatCard
-            title={role === 'teacher' ? 'Classi Gestite' : 'Classi Iscritte'}
+            title={role === 'teacher' ? t.dashboard.managedClasses : t.dashboard.enrolledClasses}
             value={classes.length}
             icon={Users}
-            description={role === 'teacher' ? 'Classi attive' : 'Classi seguite'}
+            description={role === 'teacher' ? t.dashboard.activeClasses : t.dashboard.followedClasses}
           />
           <StatCard
-            title={role === 'teacher' ? 'Assegnazioni Create' : 'Assegnazioni'}
+            title={role === 'teacher' ? t.dashboard.createdAssignments : t.dashboard.assignments}
             value={assignments.length}
             icon={FileText}
-            description={role === 'teacher' ? 'Totale assegnazioni' : 'Da completare'}
+            description={role === 'teacher' ? t.dashboard.totalAssignments : t.dashboard.toComplete}
           />
           <StatCard
-            title="Esercizi Disponibili"
+            title={t.dashboard.availableExercises}
             value="100"
             icon={BookOpen}
-            description="Nel repository"
+            description={t.dashboard.inRepository}
           />
         </div>
 
         {/* Quick Actions */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Azioni Rapide</h2>
+          <h2 className="text-xl font-semibold mb-4">{t.dashboard.quickActions}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <QuickActionCard
-              title="Nuovo Programma"
-              description="Inizia a scrivere codice assembly"
+              title={t.dashboard.newProgram}
+              description={t.dashboard.startWritingCode}
               icon={Plus}
               href="/"
-              buttonText="Apri Editor"
+              buttonText={t.dashboard.openEditor}
             />
             <QuickActionCard
-              title="Esercizi"
-              description="Esplora 100+ esercizi didattici"
+              title={t.exercises.title}
+              description={t.dashboard.exploreExercises}
               icon={BookOpen}
               href="/dashboard/exercises"
-              buttonText="Vedi Esercizi"
+              buttonText={t.dashboard.viewExercises}
             />
             {role === 'teacher' ? (
               <>
                 <QuickActionCard
-                  title="Crea Classe"
-                  description="Aggiungi una nuova classe"
+                  title={t.dashboard.createClass}
+                  description={t.dashboard.addNewClass}
                   icon={GraduationCap}
                   href="/dashboard/classes"
-                  buttonText="Crea Classe"
+                  buttonText={t.dashboard.createClass}
                 />
                 <QuickActionCard
-                  title="Promuovi Studente"
-                  description="Promuovi uno studente a insegnante"
+                  title={t.dashboard.promoteStudent}
+                  description={t.dashboard.promoteToTeacher}
                   icon={UserCog}
                   onClick={() => setPromoteDialogOpen(true)}
-                  buttonText="Promuovi"
+                  buttonText={t.users.promote}
                   variant="secondary"
                 />
               </>
             ) : (
               <QuickActionCard
-                title="Assegnazioni"
-                description="Vedi i compiti assegnati"
+                title={t.dashboard.assignments}
+                description={t.dashboard.viewAssignments}
                 icon={ClipboardList}
                 href="/dashboard/assignments"
-                buttonText="Vedi Assegnazioni"
+                buttonText={t.dashboard.viewAssignments}
               />
             )}
           </div>
@@ -150,29 +155,29 @@ const Dashboard = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Programmi Recenti</CardTitle>
-              <CardDescription>I tuoi ultimi programmi salvati</CardDescription>
+              <CardTitle>{t.dashboard.recentPrograms}</CardTitle>
+              <CardDescription>{t.dashboard.latestSavedPrograms}</CardDescription>
             </div>
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => navigate('/dashboard/programs')}
             >
-              Vedi Tutti
+              {t.common.viewAll}
             </Button>
           </CardHeader>
           <CardContent>
             {recentPrograms.length === 0 ? (
               <div className="text-center py-8">
                 <Code className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-                <p className="text-muted-foreground">Nessun programma salvato</p>
+                <p className="text-muted-foreground">{t.dashboard.noSavedPrograms}</p>
                 <Button 
                   variant="outline" 
                   size="sm" 
                   className="mt-4"
                   onClick={() => navigate('/')}
                 >
-                  Inizia a Programmare
+                  {t.dashboard.startProgramming}
                 </Button>
               </div>
             ) : (
@@ -193,12 +198,12 @@ const Dashboard = () => {
                         <p className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(program.updated_at), {
                             addSuffix: true,
-                            locale: it,
+                            locale: dateLocale,
                           })}
                         </p>
                       </div>
                     </div>
-                    <Button size="sm" variant="ghost">
+                    <Button size="sm" variant="ghost" aria-label={t.programs.openInSimulator}>
                       <Play className="h-4 w-4" />
                     </Button>
                   </div>
@@ -214,12 +219,12 @@ const Dashboard = () => {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>
-                  {role === 'teacher' ? 'Assegnazioni Recenti' : 'Prossime Scadenze'}
+                  {role === 'teacher' ? t.dashboard.recentAssignments : t.dashboard.upcomingDeadlines}
                 </CardTitle>
                 <CardDescription>
                   {role === 'teacher' 
-                    ? 'Le tue ultime assegnazioni create' 
-                    : 'Assegnazioni da completare'}
+                    ? t.dashboard.latestCreatedAssignments
+                    : t.dashboard.assignmentsToComplete}
                 </CardDescription>
               </div>
               <Button 
@@ -227,7 +232,7 @@ const Dashboard = () => {
                 size="sm"
                 onClick={() => navigate('/dashboard/assignments')}
               >
-                Vedi Tutte
+                {t.common.viewAll}
               </Button>
             </CardHeader>
             <CardContent>
@@ -244,9 +249,9 @@ const Dashboard = () => {
                         <p className="font-medium truncate">{assignment.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {assignment.class_name}
-                          {assignment.due_date && ` • Scadenza: ${formatDistanceToNow(new Date(assignment.due_date), {
+                          {assignment.due_date && ` • ${t.dashboard.deadline}: ${formatDistanceToNow(new Date(assignment.due_date), {
                             addSuffix: true,
-                            locale: it,
+                            locale: dateLocale,
                           })}`}
                         </p>
                       </div>
