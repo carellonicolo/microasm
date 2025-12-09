@@ -26,12 +26,17 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
-import { it } from 'date-fns/locale';
+import { it, enUS } from 'date-fns/locale';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type RoleFilter = 'all' | 'students' | 'teachers' | 'dual';
 type SortBy = 'name' | 'email' | 'date';
 
 export default function DashboardUsers() {
+  const t = useTranslation();
+  const { language } = useLanguage();
+  const dateLocale = language === 'it' ? it : enUS;
   const { users, loading } = useAllUsers();
   const { isSuperAdmin } = useUserRole();
   const [searchQuery, setSearchQuery] = useState('');
@@ -123,10 +128,10 @@ export default function DashboardUsers() {
     setOperatingUserId(userId);
     try {
       await callAdminOperation('promote', userId);
-      toast.success(`${firstName} ${lastName} promosso a insegnante!`);
+      toast.success(t.users.userPromoted);
       window.location.reload();
     } catch (error: any) {
-      toast.error(error.message || 'Errore durante la promozione');
+      toast.error(error.message || t.toasts.error);
     } finally {
       setOperatingUserId(null);
     }
@@ -136,10 +141,10 @@ export default function DashboardUsers() {
     setOperatingUserId(userId);
     try {
       await callAdminOperation('revoke_teacher', userId);
-      toast.success(`Ruolo insegnante revocato per ${firstName} ${lastName}`);
+      toast.success(t.users.teacherRevoked);
       window.location.reload();
     } catch (error: any) {
-      toast.error(error.message || 'Errore durante la revoca del ruolo');
+      toast.error(error.message || t.toasts.error);
     } finally {
       setOperatingUserId(null);
     }
@@ -160,14 +165,14 @@ export default function DashboardUsers() {
         return;
       }
 
-      toast.success(`Utente ${userToDelete.first_name} ${userToDelete.last_name} eliminato con successo`);
+      toast.success(t.users.userDeleted);
       setDeleteDialogOpen(false);
       setForceDeleteDialogOpen(false);
       setUserToDelete(null);
       setDependencies(null);
       window.location.reload();
     } catch (error: any) {
-      toast.error(error.message || 'Errore durante l\'eliminazione');
+      toast.error(error.message || t.toasts.error);
       setDeleteDialogOpen(false);
       setForceDeleteDialogOpen(false);
       setUserToDelete(null);
@@ -210,44 +215,44 @@ export default function DashboardUsers() {
       <div className="p-6 space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold">Gestione Utenti</h1>
+          <h1 className="text-3xl font-bold">{t.sidebar.userManagement}</h1>
           <p className="text-muted-foreground mt-1">
-            Visualizza e gestisci tutti gli utenti registrati
+            {t.users.allUsers}
           </p>
         </div>
 
         {/* Statistiche */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            title="Studenti"
+            title={t.users.students}
             value={stats.totalStudents}
             icon={GraduationCap}
-            description="Utenti con ruolo studente"
+            description={t.classes.student}
           />
           <StatCard
-            title="Insegnanti"
+            title={t.users.teachers}
             value={stats.totalTeachers}
             icon={BookOpen}
-            description="Utenti con ruolo insegnante"
+            description={t.classes.teacher}
           />
           <StatCard
-            title="Doppio Ruolo"
+            title={t.users.roles}
             value={stats.dualRoles}
             icon={UserCog}
-            description="Studenti e insegnanti"
+            description={t.users.students + ' & ' + t.users.teachers}
           />
           <StatCard
-            title="Totale Utenti"
+            title={t.users.allUsers}
             value={stats.totalUsers}
             icon={Users}
-            description="Tutti gli utenti registrati"
+            description={t.users.registeredOn}
           />
         </div>
 
         {/* Filtri */}
         <div className="flex flex-col sm:flex-row gap-4">
           <Input
-            placeholder="Cerca per nome, cognome o email..."
+            placeholder={t.dialogs.searchByNameEmail}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="sm:max-w-xs"
@@ -255,24 +260,24 @@ export default function DashboardUsers() {
 
           <Select value={roleFilter} onValueChange={(value) => setRoleFilter(value as RoleFilter)}>
             <SelectTrigger className="sm:w-[180px]">
-              <SelectValue placeholder="Filtra per ruolo" />
+              <SelectValue placeholder={t.common.filter} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tutti i ruoli</SelectItem>
-              <SelectItem value="students">Solo Studenti</SelectItem>
-              <SelectItem value="teachers">Solo Insegnanti</SelectItem>
-              <SelectItem value="dual">Doppio Ruolo</SelectItem>
+              <SelectItem value="all">{t.common.all}</SelectItem>
+              <SelectItem value="students">{t.users.students}</SelectItem>
+              <SelectItem value="teachers">{t.users.teachers}</SelectItem>
+              <SelectItem value="dual">{t.users.roles}</SelectItem>
             </SelectContent>
           </Select>
 
           <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
             <SelectTrigger className="sm:w-[180px]">
-              <SelectValue placeholder="Ordina per" />
+              <SelectValue placeholder={t.common.filter} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="name">Nome</SelectItem>
-              <SelectItem value="email">Email</SelectItem>
-              <SelectItem value="date">Data Registrazione</SelectItem>
+              <SelectItem value="name">{t.auth.firstName}</SelectItem>
+              <SelectItem value="email">{t.auth.email}</SelectItem>
+              <SelectItem value="date">{t.users.registeredOn}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -283,18 +288,18 @@ export default function DashboardUsers() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Ruoli</TableHead>
-                  <TableHead>Registrato</TableHead>
-                  <TableHead className="text-right">Azioni</TableHead>
+                  <TableHead>{t.auth.firstName}</TableHead>
+                  <TableHead>{t.auth.email}</TableHead>
+                  <TableHead>{t.users.roles}</TableHead>
+                  <TableHead>{t.users.registeredOn}</TableHead>
+                  <TableHead className="text-right">{t.common.view}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredUsers.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                      Nessun utente trovato
+                      {t.users.noUsersFound}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -318,7 +323,7 @@ export default function DashboardUsers() {
                       <TableCell className="text-muted-foreground text-sm">
                         {formatDistanceToNow(new Date(user.created_at), {
                           addSuffix: true,
-                          locale: it,
+                          locale: dateLocale,
                         })}
                       </TableCell>
                       <TableCell>
@@ -356,7 +361,7 @@ export default function DashboardUsers() {
                                   ) : (
                                     <UserCog className="w-4 h-4 mr-2" />
                                   )}
-                                  Promuovi
+                                  {t.users.promote}
                                 </Button>
                               )}
 
@@ -372,7 +377,7 @@ export default function DashboardUsers() {
                                   ) : (
                                     <UserX className="w-4 h-4 mr-2" />
                                   )}
-                                  Revoca
+                                  {t.users.revoke}
                                 </Button>
                               )}
 
@@ -426,20 +431,18 @@ export default function DashboardUsers() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Conferma Eliminazione Utente</AlertDialogTitle>
+            <AlertDialogTitle>{t.common.confirm}</AlertDialogTitle>
             <AlertDialogDescription>
-              Sei sicuro di voler eliminare <strong>{userToDelete?.first_name} {userToDelete?.last_name}</strong>?
-              <br /><br />
-              Questa azione è irreversibile e potrebbe comportare la perdita di dati.
+              {t.programs.confirmDelete} <strong>{userToDelete?.first_name} {userToDelete?.last_name}</strong>?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={() => handleDeleteUser(false)} 
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Elimina Utente
+              {t.users.deleteUser}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -449,11 +452,11 @@ export default function DashboardUsers() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-destructive">
-              ⚠️ Attenzione: Dati Critici Rilevati
+              ⚠️ {t.toasts.warning}
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3">
               <p>
-                L'utente <strong>{userToDelete?.first_name} {userToDelete?.last_name}</strong> ha i seguenti dati nel sistema:
+                {t.users.deleteUser}: <strong>{userToDelete?.first_name} {userToDelete?.last_name}</strong>
               </p>
               {dependencies && (
                 <ul className="list-disc list-inside space-y-1 text-sm">
@@ -478,7 +481,7 @@ export default function DashboardUsers() {
                 </ul>
               )}
               <p className="text-destructive font-semibold">
-                Eliminando questo utente, tutti i dati correlati verranno persi definitivamente.
+                {t.toasts.warning}
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -488,13 +491,13 @@ export default function DashboardUsers() {
               setUserToDelete(null);
               setDependencies(null);
             }}>
-              Annulla
+              {t.common.cancel}
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleForceDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Conferma Eliminazione Forzata
+              {t.common.confirm}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

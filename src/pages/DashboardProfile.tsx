@@ -12,7 +12,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { profileSchema, type ProfileFormData } from '@/schemas/profile';
 import { format } from 'date-fns';
-import { it } from 'date-fns/locale';
+import { it, enUS } from 'date-fns/locale';
 import {
   Form,
   FormControl,
@@ -26,8 +26,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const DashboardProfile = () => {
+  const t = useTranslation();
+  const { language } = useLanguage();
+  const dateLocale = language === 'it' ? it : enUS;
   const { profile, loading, saving, updateProfile } = useProfile();
   const { roles } = useUserRole();
 
@@ -73,7 +78,7 @@ const DashboardProfile = () => {
           <Card>
             <CardContent className="pt-6">
               <p className="text-center text-muted-foreground">
-                Impossibile caricare il profilo
+                {t.toasts.error}
               </p>
             </CardContent>
           </Card>
@@ -89,19 +94,19 @@ const DashboardProfile = () => {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <User className="w-8 h-8" />
-            Il Mio Profilo
+            {t.profile.myProfile}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Gestisci le tue informazioni personali
+            {t.profile.personalInfo}
           </p>
         </div>
 
         {/* Profile Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Informazioni Personali</CardTitle>
+            <CardTitle>{t.profile.personalInfo}</CardTitle>
             <CardDescription>
-              Modifica il tuo nome e cognome. L'email è collegata al tuo account e non può essere modificata qui.
+              {t.profile.emailNotEditable}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -113,7 +118,7 @@ const DashboardProfile = () => {
                   name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome</FormLabel>
+                      <FormLabel>{t.auth.firstName}</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -132,7 +137,7 @@ const DashboardProfile = () => {
                   name="lastName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cognome</FormLabel>
+                      <FormLabel>{t.auth.lastName}</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -148,14 +153,13 @@ const DashboardProfile = () => {
                 {/* Email (Read-only) */}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="flex items-center gap-2">
-                    Email
+                    {t.auth.email}
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Lock className="w-4 h-4 text-muted-foreground cursor-help" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>L'email è collegata al tuo account di autenticazione</p>
-                        <p>e non può essere modificata da qui.</p>
+                        <p>{t.profile.emailNotEditable}</p>
                       </TooltipContent>
                     </Tooltip>
                   </Label>
@@ -165,14 +169,11 @@ const DashboardProfile = () => {
                     disabled
                     className="bg-muted cursor-not-allowed"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Per modificare l'email contatta l'amministratore
-                  </p>
                 </div>
 
                 {/* Roles */}
                 <div className="space-y-2">
-                  <Label>Ruoli Assegnati</Label>
+                  <Label>{t.users.roles}</Label>
                   <div className="flex items-center gap-2">
                     <UserRolesBadges roles={roles} />
                   </div>
@@ -180,9 +181,9 @@ const DashboardProfile = () => {
 
                 {/* Registration Date */}
                 <div className="space-y-2">
-                  <Label>Membro dal</Label>
+                  <Label>{t.users.registeredOn}</Label>
                   <div className="text-sm text-muted-foreground">
-                    {format(new Date(profile.created_at), "d MMMM yyyy 'alle' HH:mm", { locale: it })}
+                    {format(new Date(profile.created_at), "d MMMM yyyy 'alle' HH:mm", { locale: dateLocale })}
                   </div>
                 </div>
 
@@ -196,12 +197,12 @@ const DashboardProfile = () => {
                     {saving ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Salvataggio...
+                        {t.dialogs.saving}
                       </>
                     ) : (
                       <>
                         <Save className="w-4 h-4" />
-                        Salva Modifiche
+                        {t.profile.updateProfile}
                       </>
                     )}
                   </Button>

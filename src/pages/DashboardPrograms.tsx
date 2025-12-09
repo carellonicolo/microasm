@@ -7,8 +7,10 @@ import { Plus, FileCode } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { FileExplorer } from '@/components/file-explorer/FileExplorer';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const DashboardPrograms = () => {
+  const t = useTranslation();
   const navigate = useNavigate();
   const { loading: authLoading } = useAuth();
   const { userPrograms, loading: programsLoading, deleteProgram, generatePublicLink } = useSavedPrograms();
@@ -23,7 +25,7 @@ const DashboardPrograms = () => {
     }
     localStorage.setItem('microasm_loaded_code', code);
     navigate('/');
-    toast.success('Programma aperto nell\'editor');
+    toast.success(t.programs.openInSimulator);
   };
 
   return (
@@ -31,14 +33,14 @@ const DashboardPrograms = () => {
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">I Miei Programmi</h1>
+            <h1 className="text-3xl font-bold">{t.programs.myPrograms}</h1>
             <p className="text-muted-foreground mt-1">
-              Gestisci i tuoi programmi assembly salvati
+              {t.dashboard.yourPrograms}
             </p>
           </div>
           <Button onClick={() => navigate('/')}>
             <Plus className="w-4 h-4 mr-2" />
-            Nuovo Programma
+            {t.dashboard.newProgram}
           </Button>
         </div>
 
@@ -46,7 +48,7 @@ const DashboardPrograms = () => {
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
-              <p className="text-sm text-muted-foreground">Caricamento in corso...</p>
+              <p className="text-sm text-muted-foreground">{t.common.loading}</p>
             </div>
           </div>
         ) : programsLoading ? (
@@ -56,12 +58,12 @@ const DashboardPrograms = () => {
         ) : userPrograms.length === 0 ? (
           <div className="text-center py-12 glass-card rounded-xl">
             <FileCode className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Nessun programma salvato</h3>
+            <h3 className="text-lg font-semibold mb-2">{t.programs.noPrograms}</h3>
             <p className="text-muted-foreground mb-4">
-              Inizia a scrivere codice assembly e salvalo per riutilizzarlo
+              {t.programs.createFirst}
             </p>
             <Button onClick={() => navigate('/')}>
-              Vai al Simulatore
+              {t.sidebar.simulator}
             </Button>
           </div>
         ) : (

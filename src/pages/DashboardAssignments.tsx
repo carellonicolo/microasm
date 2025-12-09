@@ -10,8 +10,10 @@ import { useNavigate } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const DashboardAssignments = () => {
+  const t = useTranslation();
   const { isTeacher, loading: roleLoading } = useUserRole();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -116,11 +118,11 @@ const DashboardAssignments = () => {
 
       if (error) throw error;
 
-      toast.success('Esercitazione eliminata con successo');
+      toast.success(t.dialogs.assignmentUpdated);
       setDeletingAssignment(null);
       fetchAssignments();
     } catch (error: any) {
-      toast.error('Errore nell\'eliminazione dell\'esercitazione');
+      toast.error(t.toasts.error);
       if (import.meta.env.DEV) console.error(error);
     }
   };
@@ -141,12 +143,12 @@ const DashboardAssignments = () => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold">
-              {isTeacher ? 'Le Mie Esercitazioni' : 'Esercitazioni Assegnate'}
+              {isTeacher ? t.dashboard.createdAssignments : t.dashboard.assignments}
             </h1>
             <p className="text-muted-foreground mt-1">
               {isTeacher 
-                ? 'Gestisci e monitora le esercitazioni assegnate alle tue classi' 
-                : 'Visualizza e completa le esercitazioni assegnate'}
+                ? t.dashboard.manageClasses
+                : t.dashboard.assignmentsToComplete}
             </p>
           </div>
           {isTeacher && <CreateAssignmentDialog onSuccess={fetchAssignments} />}
@@ -156,12 +158,12 @@ const DashboardAssignments = () => {
           <div className="text-center py-12 glass-card rounded-xl">
             <BookOpen className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">
-              {isTeacher ? 'Nessuna esercitazione creata' : 'Nessuna esercitazione assegnata'}
+              {isTeacher ? t.assignments.noSubmissions : t.assignments.noSubmissions}
             </h3>
             <p className="text-muted-foreground">
               {isTeacher 
-                ? 'Crea la tua prima esercitazione per assegnarla agli studenti' 
-                : 'Al momento non ci sono esercitazioni da completare'}
+                ? t.dialogs.createAssignment
+                : t.dashboard.assignmentsToComplete}
             </p>
           </div>
         ) : (
@@ -207,24 +209,23 @@ const DashboardAssignments = () => {
       <AlertDialog open={!!deletingAssignment} onOpenChange={(open) => !open && setDeletingAssignment(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Conferma Eliminazione</AlertDialogTitle>
+            <AlertDialogTitle>{t.common.confirm}</AlertDialogTitle>
             <AlertDialogDescription>
-              Sei sicuro di voler eliminare l'esercitazione "{deletingAssignment?.title}"?
+              {t.programs.confirmDelete} "{deletingAssignment?.title}"?
               {deletingAssignment && deletingAssignment.submissionsCount > 0 && (
                 <>
                   <br /><br />
                   <strong className="text-destructive">
-                    Attenzione: Questa esercitazione ha {deletingAssignment.submissionsCount} consegne. 
-                    Eliminandola perderai tutti i dati delle consegne.
+                    {t.toasts.warning}: {deletingAssignment.submissionsCount} {t.assignments.noSubmissions}
                   </strong>
                 </>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Elimina
+              {t.common.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

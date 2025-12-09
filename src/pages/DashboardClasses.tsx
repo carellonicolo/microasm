@@ -18,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ClassWithStats {
   id: string;
@@ -30,6 +31,7 @@ interface ClassWithStats {
 }
 
 const DashboardClasses = () => {
+  const t = useTranslation();
   const { isTeacher } = useUserRole();
   const { user } = useAuth();
   const [classes, setClasses] = useState<ClassWithStats[]>([]);
@@ -72,7 +74,7 @@ const DashboardClasses = () => {
 
       setClasses(classesWithStats);
     } catch (error: any) {
-      toast.error('Errore nel caricamento: ' + error.message);
+      toast.error(t.toasts.error + ': ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -89,10 +91,10 @@ const DashboardClasses = () => {
 
       if (error) throw error;
 
-      toast.success('Classe eliminata');
+      toast.success(t.classes.classDeleted);
       fetchClasses();
     } catch (error: any) {
-      toast.error('Errore: ' + error.message);
+      toast.error(t.toasts.error + ': ' + error.message);
     } finally {
       setClassToDelete(null);
     }
@@ -117,15 +119,15 @@ const DashboardClasses = () => {
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Le Mie Classi</h1>
+            <h1 className="text-3xl font-bold">{t.sidebar.myClasses}</h1>
             <p className="text-muted-foreground mt-1">
-              {isTeacher ? 'Gestisci le tue classi e studenti' : 'Visualizza le classi a cui appartieni'}
+              {isTeacher ? t.dashboard.manageClasses : t.dashboard.continueLearning}
             </p>
           </div>
           {isTeacher && (
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
-              Nuova Classe
+              {t.dashboard.createClass}
             </Button>
           )}
         </div>
@@ -134,10 +136,10 @@ const DashboardClasses = () => {
           <div className="text-center py-12 glass-card rounded-xl">
             <Users className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">
-              {isTeacher ? 'Nessuna classe creata' : 'Non appartieni a nessuna classe'}
+              {isTeacher ? t.classes.noClasses : t.classes.noClasses}
             </h3>
             <p className="text-muted-foreground">
-              {isTeacher ? 'Crea la tua prima classe per iniziare' : 'Contatta il tuo insegnante per essere aggiunto'}
+              {isTeacher ? t.classes.createFirstClass : t.dashboard.continueLearning}
             </p>
           </div>
         ) : (
@@ -164,16 +166,15 @@ const DashboardClasses = () => {
             <AlertDialog open={!!classToDelete} onOpenChange={() => setClassToDelete(null)}>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Eliminare questa classe?</AlertDialogTitle>
+                  <AlertDialogTitle>{t.common.confirm}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Questa azione eliminerà la classe e tutti i dati associati (studenti, esercitazioni).
-                    Non può essere annullata.
+                    {t.programs.confirmDelete}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Annulla</AlertDialogCancel>
+                  <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
                   <AlertDialogAction onClick={handleDeleteClass}>
-                    Elimina
+                    {t.common.delete}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
