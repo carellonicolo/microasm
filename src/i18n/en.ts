@@ -447,6 +447,33 @@ export const en: Translations = {
   documentation: {
     title: 'Documentation',
     guide: 'MicroASM Guide',
+    // Section titles
+    formalReference: 'Formal Reference',
+    beginnerTutorial: 'Beginner Tutorial',
+    opcodeDetails: 'Opcode Details',
+    memoryArchitecture: 'Memory & Stack',
+    // UI labels
+    sections: 'Sections',
+    searchDocs: 'Search documentation...',
+    languageSwitch: 'Switch language',
+    // Table labels
+    instruction: 'Instruction',
+    syntax: 'Syntax',
+    description: 'Description',
+    cycles: 'Cycles',
+    flags: 'Flags',
+    opcode: 'Opcode',
+    encoding: 'Encoding',
+    components: 'Components',
+    binary: 'Binary',
+    hexadecimal: 'Hexadecimal',
+    category: 'Category',
+    // Actions
+    copyCode: 'Copy Code',
+    tryInSimulator: 'Try in Simulator',
+    // Disclaimers
+    educationalSchema: 'Educational Schema',
+    educationalDisclaimer: 'NOTE: These opcodes are a hypothetical educational schema. The MicroASM simulator internally uses ASCII string opcodes, not binary encodings.',
   },
 
   toasts: {

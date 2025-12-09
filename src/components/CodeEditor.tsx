@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Play, Pause, RotateCcw, SkipForward, Save, ChevronDown, FileText, FilePlus } from "lucide-react";
 import { ExecutionState } from "@/types/microasm";
-import { DocumentationDialog } from "./DocumentationDialog";
+import { DocumentationDialog } from "./documentation/DocumentationDialog";
 import { ExercisesDialog } from "./ExercisesDialog";
 import { ExamplesDialog } from "./ExamplesDialog";
 import { SaveAsDialog } from "./dialogs/SaveAsDialog";

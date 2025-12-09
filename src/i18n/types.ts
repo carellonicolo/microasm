@@ -449,8 +449,35 @@ export interface Translations {
   documentation: {
     title: string;
     guide: string;
+    // Section titles
+    formalReference: string;
+    beginnerTutorial: string;
+    opcodeDetails: string;
+    memoryArchitecture: string;
+    // UI labels
+    sections: string;
+    searchDocs: string;
+    languageSwitch: string;
+    // Table labels
+    instruction: string;
+    syntax: string;
+    description: string;
+    cycles: string;
+    flags: string;
+    opcode: string;
+    encoding: string;
+    components: string;
+    binary: string;
+    hexadecimal: string;
+    category: string;
+    // Actions
+    copyCode: string;
+    tryInSimulator: string;
+    // Disclaimers
+    educationalSchema: string;
+    educationalDisclaimer: string;
   };
-  
+
   toasts: {
     success: string;
     error: string;
