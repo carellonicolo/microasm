@@ -77,10 +77,8 @@ export function CPUStatus({ cpu, format }: CPUStatusProps) {
           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t.cpu.flags}</h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="group relative">
-              <div className={`absolute -inset-0.5 rounded-xl blur transition ${
-                cpu.ZF 
-                  ? 'bg-gradient-to-r from-success to-success/50 opacity-40 group-hover:opacity-70' 
-                  : 'bg-gradient-to-r from-muted to-muted/50 opacity-20 group-hover:opacity-60'
+              <div className={`absolute -inset-0.5 bg-gradient-to-r rounded-xl blur opacity-20 group-hover:opacity-60 transition ${
+                cpu.ZF ? 'from-success to-success/50' : 'from-muted to-muted/50'
               }`} />
               <div className={`relative p-3 bg-card/80 backdrop-blur-sm rounded-xl border transition-all ${
                 cpu.ZF 
@@ -97,10 +95,8 @@ export function CPUStatus({ cpu, format }: CPUStatusProps) {
               </div>
             </div>
             <div className="group relative">
-              <div className={`absolute -inset-0.5 rounded-xl blur transition ${
-                cpu.SF 
-                  ? 'bg-gradient-to-r from-warning to-warning/50 opacity-40 group-hover:opacity-70' 
-                  : 'bg-gradient-to-r from-muted to-muted/50 opacity-20 group-hover:opacity-60'
+              <div className={`absolute -inset-0.5 bg-gradient-to-r rounded-xl blur opacity-20 group-hover:opacity-60 transition ${
+                cpu.SF ? 'from-warning to-warning/50' : 'from-muted to-muted/50'
               }`} />
               <div className={`relative p-3 bg-card/80 backdrop-blur-sm rounded-xl border transition-all ${
                 cpu.SF 
