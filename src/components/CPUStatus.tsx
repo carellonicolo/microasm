@@ -56,13 +56,19 @@ export function CPUStatus({ cpu, format }: CPUStatusProps) {
         <div className="space-y-3">
           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{t.cpu.specialRegisters}</h3>
           <div className="space-y-2">
-            <div className="flex justify-between items-center p-3 bg-gradient-to-r from-primary/5 to-transparent rounded-xl border border-primary/20 hover:border-primary/40 transition-all">
-              <span className="font-mono text-sm font-bold text-primary">PC</span>
-              <span className="font-mono text-sm font-semibold">{cpu.PC}</span>
+            <div className="group relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-primary/50 rounded-xl blur opacity-20 group-hover:opacity-60 transition" />
+              <div className="relative flex justify-between items-center p-3 bg-card/80 backdrop-blur-sm rounded-xl border border-primary/20 group-hover:border-primary/40 transition-all">
+                <span className="font-mono text-sm font-bold text-primary">PC</span>
+                <span className="font-mono text-sm font-semibold">{cpu.PC}</span>
+              </div>
             </div>
-            <div className="flex justify-between items-center p-3 bg-gradient-to-r from-accent/5 to-transparent rounded-xl border border-accent/20 hover:border-accent/40 transition-all">
-              <span className="font-mono text-sm font-bold text-accent">SP</span>
-              <span className="font-mono text-sm font-semibold">{cpu.SP}</span>
+            <div className="group relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-accent to-accent/50 rounded-xl blur opacity-20 group-hover:opacity-60 transition" />
+              <div className="relative flex justify-between items-center p-3 bg-card/80 backdrop-blur-sm rounded-xl border border-accent/20 group-hover:border-accent/40 transition-all">
+                <span className="font-mono text-sm font-bold text-accent">SP</span>
+                <span className="font-mono text-sm font-semibold">{cpu.SP}</span>
+              </div>
             </div>
           </div>
         </div>
