@@ -12,8 +12,10 @@ import { toast } from "sonner";
 import { EXAMPLE_PROGRAMS } from "@/data/examples";
 import { useEditor } from "@/contexts/EditorContext";
 import { getSessionId, sessionScopedStorage, cleanupOldAutosaves } from "@/utils/sessionManager";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const Index = () => {
+  const t = useTranslation();
   const location = useLocation();
   const { code, setCode, currentProgram } = useEditor();
   const [format, setFormat] = useState<DisplayFormat>('decimal');
@@ -48,7 +50,7 @@ const Index = () => {
     if (savedCode) {
       setCode(savedCode);
       localStorage.removeItem('microasm_loaded_code');
-      toast.success('Programma caricato');
+      toast.success(t.editor.programLoaded);
       hasInitializedRef.current = true;
     }
   }, [location, setCode]);
@@ -66,6 +68,7 @@ const Index = () => {
     if (autosaved && savedSessionId === sessionId && !hasInitializedRef.current) {
       setCode(autosaved);
       hasInitializedRef.current = true;
+      // Note: toast.info is called outside useEffect to avoid stale closure
       toast.info('Codice precedente ripristinato');
     }
   }, [setCode]);
@@ -127,7 +130,7 @@ const Index = () => {
     if (error) {
       setErrors([`Riga ${error.line}: ${error.message}`]);
       setExecutionState('error');
-      toast.error('Errore di compilazione');
+      toast.error(t.editor.compilationError);
       return;
     }
     
@@ -137,12 +140,12 @@ const Index = () => {
     stepCountRef.current = 0;
     updateState();
     setCurrentLine(instructions.length > 0 ? instructions[0].line : undefined);
-    toast.success('Programma caricato con successo');
+    toast.success(t.editor.programLoaded);
   };
 
   const handleStep = () => {
     if (!executorRef.current) {
-      toast.error('Carica prima un programma');
+      toast.error(t.editor.loadProgramFirst);
       return;
     }
     
@@ -150,10 +153,10 @@ const Index = () => {
     if (error) {
       setErrors([`Riga ${error.line || '?'}: ${error.message}`]);
       setExecutionState('error');
-      toast.error('Errore di runtime');
+      toast.error(t.editor.runtimeError);
     } else if (executorRef.current.halted) {
       setExecutionState('idle');
-      toast.success('Programma terminato');
+      toast.success(t.editor.programTerminated);
     }
     
     updateState();
@@ -161,7 +164,7 @@ const Index = () => {
 
   const handleRun = () => {
     if (!executorRef.current) {
-      toast.error('Carica prima un programma');
+      toast.error(t.editor.loadProgramFirst);
       return;
     }
     
@@ -169,7 +172,7 @@ const Index = () => {
       // PAUSA: Ferma l'esecuzione
       stopExecution();
       setExecutionState('paused');
-      toast.info('Esecuzione in pausa');
+      toast.info(t.editor.executionPaused);
     } else {
       // PLAY: Avvia l'esecuzione
       // Protezione doppio avvio (solo nel branch di avvio!)
@@ -187,8 +190,8 @@ const Index = () => {
           if (stepCountRef.current > MAX_STEPS_PER_RUN) {
             stopExecution();
             setExecutionState('error');
-            setErrors([`Possibile ciclo infinito rilevato. Esecuzione fermata dopo ${MAX_STEPS_PER_RUN.toLocaleString()} istruzioni.`]);
-            toast.error('Ciclo infinito rilevato!');
+            setErrors([t.editor.infiniteLoopDetected]);
+            toast.error(t.editor.infiniteLoopDetected);
             return;
           }
           
@@ -199,15 +202,15 @@ const Index = () => {
             setErrors([`Riga ${error.line || '?'}: ${error.message}`]);
             setExecutionState('error');
             stopExecution();
-            toast.error('Errore di runtime');
+            toast.error(t.editor.runtimeError);
           } else if (executorRef.current.halted) {
             setExecutionState('idle');
             stopExecution();
-            toast.success('Programma terminato');
+            toast.success(t.editor.programTerminated);
           }
         }
       }, 200);
-      toast.info('Esecuzione in corso...');
+      toast.info(t.editor.executionRunning);
     }
   };
 
@@ -227,13 +230,13 @@ const Index = () => {
     setErrors([]);
     setExecutionState('idle');
     stepCountRef.current = 0;
-    toast.info('Reset completato');
+    toast.info(t.editor.resetComplete);
   };
 
   const handleClearLog = () => {
     setOutput([]);
     setErrors([]);
-    toast.info('Log pulito');
+    toast.info(t.output.logCleared);
   };
 
   useEffect(() => {
